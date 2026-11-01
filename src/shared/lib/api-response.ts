@@ -7,9 +7,18 @@ export function apiSuccess<T>(data: T, meta?: Record<string, unknown>) {
   return NextResponse.json({ data });
 }
 
-export function apiError(code: string, message: string, status: number = 400) {
-  return NextResponse.json(
-    { error: { code, message } },
-    { status },
-  );
+export function apiError(
+  code: string,
+  message: string,
+  status: number = 400,
+  details?: unknown,
+) {
+  const error: { code: string; message: string; details?: unknown } = {
+    code,
+    message,
+  };
+  if (details !== undefined) {
+    error.details = details;
+  }
+  return NextResponse.json({ error }, { status });
 }

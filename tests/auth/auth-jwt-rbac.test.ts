@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { NextRequest } from "next/server";
 import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@/shared/db/client";
 import { getEnv } from "@/shared/config/env";
@@ -9,6 +10,7 @@ import {
   verifyAccessToken,
   verifyRefreshToken,
   ACCESS_COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
 } from "@/modules/auth/token.service";
 import {
   register,
@@ -21,6 +23,11 @@ import { getSession } from "@/shared/middlewares/get-session";
 import { requireAuth } from "@/shared/middlewares/require-auth";
 import { requireRole } from "@/shared/middlewares/require-role";
 import { HttpError } from "@/shared/lib/errors";
+import { POST as registerRoute } from "@/app/api/v1/auth/register/route";
+import { POST as loginRoute } from "@/app/api/v1/auth/login/route";
+import { POST as refreshRoute } from "@/app/api/v1/auth/refresh/route";
+import { POST as logoutRoute } from "@/app/api/v1/auth/logout/route";
+import { GET as meRoute } from "@/app/api/v1/auth/me/route";
 
 const RUN = Date.now().toString(36);
 const email = `auth-test-${RUN}@example.com`;
@@ -297,5 +304,226 @@ describe("auth middlewares", () => {
     const user = { sub: userId, role: "ADMIN" };
     const checked = requireRole(["ADMIN"])(user);
     expect(checked.role).toBe("ADMIN");
+  });
+});
+
+describe("auth API routes", () => {
+  const uniqueEmail = `route-test-${RUN}@example.com`;
+  const uniquePassword = "route-secret-123";
+  let accessToken: string;
+  let refreshToken: string;
+
+  function parseCookies(res: Response): Map<string, string> {
+    const map = new Map<string, string>();
+    for (const cookie of res.headers.getSetCookie()) {
+      const pair = cookie.split(";")[0];
+      const idx = pair.indexOf("=");
+      if (idx !== -1) map.set(pair.slice(0, idx), pair.slice(idx + 1));
+    }
+    return map;
+  }
+
+  function jsonPost(path: string, body: unknown) {
+    return new NextRequest(`http://localhost${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+
+  function withCookie(name: string, value: string) {
+    return { headers: { cookie: `${name}=${value}` } };
+  }
+
+  beforeAll(async () => {
+    const res = await registerRoute(
+      jsonPost("/api/v1/auth/register", { email: uniqueEmail, password: uniquePassword }),
+    );
+    expect(res.status).toBe(201);
+    const cookies = parseCookies(res);
+    accessToken = cookies.get(ACCESS_COOKIE_NAME)!;
+    refreshToken = cookies.get(REFRESH_COOKIE_NAME)!;
+  });
+
+  afterAll(async () => {
+    const user = await prisma.user.findUnique({ where: { email: uniqueEmail } });
+    if (user) {
+      await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
+      await prisma.user.delete({ where: { id: user.id } });
+    }
+    const rlUser = await prisma.user.findUnique({
+      where: { email: `rl-test-${RUN}@example.com` },
+    });
+    if (rlUser) {
+      await prisma.refreshToken.deleteMany({ where: { userId: rlUser.id } });
+      await prisma.user.delete({ where: { id: rlUser.id } });
+    }
+  });
+
+  it("POST /register returns 201 with both cookies and user data", async () => {
+    const res = await registerRoute(
+      jsonPost("/api/v1/auth/register", {
+        email: `reg-route-${RUN}@example.com`,
+        password: uniquePassword,
+      }),
+    );
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.data).toMatchObject({
+      email: `reg-route-${RUN}@example.com`,
+      role: "CLIENT",
+    });
+    expect(body.data.id).toBeTruthy();
+    const cookies = parseCookies(res);
+    expect(cookies.has(ACCESS_COOKIE_NAME)).toBe(true);
+    expect(cookies.has(REFRESH_COOKIE_NAME)).toBe(true);
+    const user = await prisma.user.findUnique({
+      where: { email: `reg-route-${RUN}@example.com` },
+    });
+    await prisma.refreshToken.deleteMany({ where: { userId: user!.id } });
+    await prisma.user.delete({ where: { id: user!.id } });
+  });
+
+  it("POST /register with missing fields returns 400 VALIDATION_ERROR with details", async () => {
+    const res = await registerRoute(
+      jsonPost("/api/v1/auth/register", { email: "bad" }),
+    );
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error.code).toBe("VALIDATION_ERROR");
+    expect(Array.isArray(body.error.details)).toBe(true);
+    expect(body.error.details.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("POST /register with duplicate email returns 409 EMAIL_TAKEN", async () => {
+    const res = await registerRoute(
+      jsonPost("/api/v1/auth/register", { email: uniqueEmail, password: uniquePassword }),
+    );
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.error.code).toBe("EMAIL_TAKEN");
+  });
+
+  it("POST /login with valid credentials returns 200 and sets both cookies", async () => {
+    const res = await loginRoute(
+      jsonPost("/api/v1/auth/login", { email: uniqueEmail, password: uniquePassword }),
+    );
+    expect(res.status).toBe(200);
+    const cookies = parseCookies(res);
+    expect(cookies.has(ACCESS_COOKIE_NAME)).toBe(true);
+    expect(cookies.has(REFRESH_COOKIE_NAME)).toBe(true);
+    accessToken = cookies.get(ACCESS_COOKIE_NAME)!;
+    refreshToken = cookies.get(REFRESH_COOKIE_NAME)!;
+  });
+
+  it("POST /login with wrong password returns 401 INVALID_CREDENTIALS", async () => {
+    const res = await loginRoute(
+      jsonPost("/api/v1/auth/login", { email: uniqueEmail, password: "nope-nope-12345" }),
+    );
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.error.code).toBe("INVALID_CREDENTIALS");
+  });
+
+  it("POST /refresh rotates the refresh token (new cookies, old revoked)", async () => {
+    const res = await refreshRoute(
+      new NextRequest("http://localhost/api/v1/auth/refresh", {
+        method: "POST",
+        ...withCookie(REFRESH_COOKIE_NAME, refreshToken),
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.email).toBe(uniqueEmail);
+    const cookies = parseCookies(res);
+    const newAccess = cookies.get(ACCESS_COOKIE_NAME)!;
+    const newRefresh = cookies.get(REFRESH_COOKIE_NAME)!;
+    expect(newRefresh).not.toBe(refreshToken);
+    // Old jti is revoked in the DB
+    const oldJti = (await verifyRefreshToken(refreshToken)).jti;
+    const oldRow = await prisma.refreshToken.findUnique({ where: { jti: oldJti } });
+    expect(oldRow!.revokedAt).not.toBeNull();
+    accessToken = newAccess;
+    refreshToken = newRefresh;
+  });
+
+  it("POST /refresh without the refresh cookie returns 401 TOKEN_MISSING", async () => {
+    const res = await refreshRoute(
+      new NextRequest("http://localhost/api/v1/auth/refresh", { method: "POST" }),
+    );
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.error.code).toBe("TOKEN_MISSING");
+  });
+
+  it("POST /logout revokes the refresh token and clears both cookies", async () => {
+    const jti = (await verifyRefreshToken(refreshToken)).jti;
+    const res = await logoutRoute(
+      new NextRequest("http://localhost/api/v1/auth/logout", {
+        method: "POST",
+        ...withCookie(REFRESH_COOKIE_NAME, refreshToken),
+      }),
+    );
+    expect(res.status).toBe(200);
+    const row = await prisma.refreshToken.findUnique({ where: { jti } });
+    expect(row!.revokedAt).not.toBeNull();
+    // Cookies are cleared (maxAge=0)
+    const setCookies = res.headers.getSetCookie();
+    expect(setCookies.some((c) => c.startsWith("access_token=") && c.includes("Max-Age=0"))).toBe(true);
+    expect(setCookies.some((c) => c.startsWith("refresh_token=") && c.includes("Max-Age=0"))).toBe(true);
+  });
+
+  it("GET /me with a valid access cookie returns the current user", async () => {
+    const res = await meRoute(
+      new NextRequest("http://localhost/api/v1/auth/me", {
+        ...withCookie(ACCESS_COOKIE_NAME, accessToken),
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.email).toBe(uniqueEmail);
+    expect(body.data.role).toBe("CLIENT");
+    expect(body.data).not.toHaveProperty("passwordHash");
+  });
+
+  it("GET /me without an access cookie returns 401", async () => {
+    const res = await meRoute(new NextRequest("http://localhost/api/v1/auth/me"));
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.error.code).toBe("UNAUTHORIZED");
+  });
+
+  it("sets correct cookie attributes (HttpOnly, SameSite=Lax, refresh path)", async () => {
+    const res = await loginRoute(
+      jsonPost("/api/v1/auth/login", { email: uniqueEmail, password: uniquePassword }),
+    );
+    const setCookies = res.headers.getSetCookie();
+    const access = setCookies.find((c) => c.startsWith("access_token="))!;
+    const refreshCookie = setCookies.find((c) => c.startsWith("refresh_token="))!;
+    expect(access.toLowerCase()).toContain("httponly");
+    expect(access.toLowerCase()).toContain("samesite=lax");
+    expect(refreshCookie.toLowerCase()).toContain("httponly");
+    expect(refreshCookie.toLowerCase()).toContain("samesite=lax");
+    expect(refreshCookie).toContain("Path=/api/v1/auth");
+  });
+
+  it("blocks repeated failed logins with 429 TOO_MANY_ATTEMPTS (T-01-04)", async () => {
+    const rlEmail = `rl-test-${RUN}@example.com`;
+    await registerRoute(
+      jsonPost("/api/v1/auth/register", { email: rlEmail, password: uniquePassword }),
+    );
+    for (let i = 0; i < 5; i++) {
+      const fail = await loginRoute(
+        jsonPost("/api/v1/auth/login", { email: rlEmail, password: "wrong-pass-1" }),
+      );
+      expect(fail.status).toBe(401);
+    }
+    // 6th attempt — even with the correct password — is rate limited
+    const blocked = await loginRoute(
+      jsonPost("/api/v1/auth/login", { email: rlEmail, password: uniquePassword }),
+    );
+    expect(blocked.status).toBe(429);
+    const body = await blocked.json();
+    expect(body.error.code).toBe("TOO_MANY_ATTEMPTS");
   });
 });
