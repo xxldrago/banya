@@ -78,7 +78,7 @@ describe("GET /api/v1/catalog/venues", () => {
 describe("GET /api/v1/catalog/venues/[slug]", () => {
   it("returns 200 with full venue detail including photos, amenities, city", async () => {
     const res = await getVenueBySlug(makeRequest("/api/v1/catalog/venues/banya-u-ivana"), {
-      params: { slug: "banya-u-ivana" },
+      params: Promise.resolve({ slug: "banya-u-ivana" }),
     });
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -108,7 +108,7 @@ describe("GET /api/v1/catalog/venues/[slug]", () => {
   it("response shape for single is { data: Venue }", async () => {
     const res = await getVenueBySlug(
       makeRequest("/api/v1/catalog/venues/sauna-loft-arbat"),
-      { params: { slug: "sauna-loft-arbat" } },
+      { params: Promise.resolve({ slug: "sauna-loft-arbat" }) },
     );
     const body = await res.json();
     expect(Object.keys(body)).toEqual(["data"]);
@@ -117,7 +117,7 @@ describe("GET /api/v1/catalog/venues/[slug]", () => {
   it("returns 404 for nonexistent slug", async () => {
     const res = await getVenueBySlug(
       makeRequest("/api/v1/catalog/venues/does-not-exist"),
-      { params: { slug: "does-not-exist" } },
+      { params: Promise.resolve({ slug: "does-not-exist" }) },
     );
     expect(res.status).toBe(404);
     const body = await res.json();

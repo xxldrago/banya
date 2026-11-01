@@ -5,16 +5,11 @@ import { HttpError } from "@/shared/lib/errors";
 
 export async function GET(
   _req: NextRequest,
-  context: { params: Promise<{ slug: string }> | { slug: string } },
+  context: { params: Promise<{ slug: string }> },
 ) {
   try {
-    const rawParams = context.params;
-    const params =
-      rawParams && typeof (rawParams as Promise<{ slug: string }>).then === "function"
-        ? await (rawParams as Promise<{ slug: string }>)
-        : (rawParams as { slug: string });
-
-    const venue = await getVenueBySlug(params.slug);
+    const { slug } = await context.params;
+    const venue = await getVenueBySlug(slug);
     return apiSuccess(venue);
   } catch (err) {
     if (err instanceof HttpError) {
