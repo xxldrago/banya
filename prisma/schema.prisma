@@ -1,0 +1,161 @@
+// Prisma schema for Banya/Sauna portal — Phase 1 full data model
+// Generated on 2026-11-01
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Enums ---
+
+enum Role {
+  CLIENT
+  PARTNER
+  ADMIN
+}
+
+enum VenueStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// --- Models ---
+
+model City {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  isActive  Boolean  @default(true)
+  timezone  String   @default("Europe/Moscow")
+  venues    Venue[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  phone         String?       @unique
+  passwordHash  String
+  role          Role          @default(CLIENT)
+  status        String        @default("active")
+  partner       Partner?
+  refreshTokens RefreshToken[]
+  bookings      Booking[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Partner {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  companyName String?
+  inn         String?
+  status      String   @default("pending")
+  venues      Venue[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Venue {
+  id                String           @id @default(cuid())
+  partnerId         String
+  partner           Partner          @relation(fields: [partnerId], references: [id])
+  cityId            String
+  city              City             @relation(fields: [cityId], references: [id])
+  title             String
+  slug              String           @unique
+  description       String           @db.Text
+  address           String
+  lat               Float?
+  lng               Float?
+  type              String           // bath / sauna
+  minGuests         Int              @default(1)
+  maxGuests         Int
+  minDuration       Int              @default(60) // minutes
+  priceFrom         Int              // rubles
+  rules             String?          @db.Text
+  status            VenueStatus      @default(DRAFT)
+  moderationStatus  ModerationStatus @default(PENDING)
+  publishedAt       DateTime?
+  photos            VenuePhoto[]
+  amenities         VenueAmenity[]
+  bookings          Booking[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([cityId, status, moderationStatus])
+  @@index([partnerId])
+}
+
+model Amenity {
+  id     String          @id @default(cuid())
+  name   String
+  slug   String          @unique
+  icon   String?
+  venues VenueAmenity[]
+  createdAt DateTime     @default(now())
+}
+
+model VenueAmenity {
+  venueId   String
+  amenityId String
+  venue     Venue   @relation(fields: [venueId], references: [id])
+  amenity   Amenity @relation(fields: [amenityId], references: [id])
+
+  @@id([venueId, amenityId])
+}
+
+model VenuePhoto {
+  id        String   @id @default(cuid())
+  venueId   String
+  venue     Venue    @relation(fields: [venueId], references: [id])
+  url       String
+  key       String
+  sortOrder Int      @default(0)
+  isCover   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  jti       String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// Booking stub — Phase 2 preparation per CONTEXT.md
+// No business logic, just the model + index so Phase 2 can add availability
+// checks without a schema migration. Exclusion constraint deferred to Phase 2.
+model Booking {
+  id        String   @id @default(cuid())
+  venueId   String
+  venue     Venue    @relation(fields: [venueId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  startsAt  DateTime
+  endsAt    DateTime
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([venueId, startsAt, endsAt])
+  @@index([userId])
+}

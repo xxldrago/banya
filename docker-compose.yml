@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16
+    container_name: banya-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: banya
+      POSTGRES_PASSWORD: banya_password
+      POSTGRES_DB: banya_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - banya_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U banya -d banya_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  banya_pgdata:
