@@ -207,6 +207,7 @@ export async function getBookingById(id: string, userId: string, role: string) {
       venue: { include: { city: true, partner: { include: { user: true } } } },
       user: { select: { id: true, email: true, phone: true } },
       services: { include: { service: true } },
+      payment: true,
       conversation: { include: { participants: true, messages: { take: 10, orderBy: { createdAt: "desc" } } } },
     },
   });

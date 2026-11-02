@@ -50,6 +50,21 @@ enum ChatParticipantRole {
   admin
 }
 
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  EXPIRED
+}
+
+enum PaymentProvider {
+  mock
+  cloudpayments
+  yookassa
+  tinkoff
+}
+
 // --- Models ---
 
 model City {
@@ -177,6 +192,7 @@ model Booking {
   allowBackToBack Boolean        @default(false)
   services        BookingService[]
   conversation    ChatConversation?
+  payment         Payment?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
@@ -239,4 +255,22 @@ model ChatMessage {
   createdAt      DateTime         @default(now())
 
   @@index([conversationId, createdAt])
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  bookingId         String          @unique
+  booking           Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider          PaymentProvider @default(mock)
+  providerPaymentId String?
+  amount            Int             // in kopecks (rubles * 100)
+  status            PaymentStatus   @default(PENDING)
+  paymentUrl        String?
+  metadata          Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  paidAt            DateTime?
+  refundedAt        DateTime?
+  @@index([bookingId])
+  @@index([status])
 }

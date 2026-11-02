@@ -1,0 +1,32 @@
+import { NextRequest } from "next/server";
+import { requireAuth } from "@/shared/middlewares/require-auth";
+import { apiSuccess, apiError } from "@/shared/lib/api-response";
+import { HttpError } from "@/shared/lib/errors";
+import { initiatePayment } from "@/modules/payments/payment.service";
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const session = await requireAuth(req);
+    const { id } = await params;
+    
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
+    const result = await initiatePayment(id, session.sub, session.role);
+
+    return apiSuccess(result, 200);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      return apiError(err.code, err.message, err.status);
+    }
+    console.error("POST /api/v1/bookings/[id]/pay failed", err);
+    return apiError("INTERNAL_ERROR", "Internal server error", 500);
+  }
+}
