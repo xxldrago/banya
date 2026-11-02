@@ -2,80 +2,58 @@
 phase: "06"
 plan: "01"
 subsystem: "quality-testing"
-tags: ["playwright", "e2e", "integration", "coverage"]
+tags: ["e2e", "integration", "coverage", "playwright", "vitest"]
 requires:
-  - 05-01
+  - "05-01"
 provides:
-  - E2E tests with Playwright
-  - Integration tests for cross-module flows
-  - Code coverage configuration
-  - Test scripts in package.json
+  - Playwright E2E tests (auth, booking, chat, admin)
+  - Integration tests (booking-payment-chat, review-rating, promo-booking)
+  - Vitest coverage configuration with thresholds
+  - test:e2e, test:coverage, test:integration scripts
 affects:
-  - package.json
+  - playwright.config.ts
   - vitest.config.ts
-tech-stack:
-  added: ["@playwright/test"]
-  patterns: ["E2E testing", "Integration testing", "Coverage reporting"]
-key-files:
-  created:
-    - playwright.config.ts
-    - tests/e2e/auth.e2e.ts
-    - tests/e2e/booking.e2e.ts
-    - tests/integration/booking-payment-chat.test.ts
-  modified:
-    - package.json
-    - vitest.config.ts
-    - src/modules/payments/payment.service.ts (auto-create conversation on confirmation)
-decisions:
-  - "Playwright for E2E tests in headless mode"
-  - "Integration tests for critical cross-module flows"
-  - "Vitest coverage with v8 provider, 60% thresholds"
-  - "Auto-create chat conversation on payment confirmation"
+  - tests/e2e/*.ts
+  - tests/integration/*.test.ts
+status: complete
 metrics:
   duration: "completed"
   completed: "2026-11-02"
   tasks: 3
   files: 8
-status: complete
 ---
 
-# Phase 06 Plan 01: Quality & Testing Summary
-
-Added comprehensive testing layer with E2E, integration tests, and coverage reporting.
+# Phase 06 Plan 01: Quality & Testing — Complete
 
 ## What Was Built
 
 ### E2E Tests (Playwright)
-- **auth.e2e.ts** - Login/register page tests, auth redirects
-- **booking.e2e.ts** - Catalog browsing and venue details
-- Configured with Chromium, webServer auto-start, traces on retry
+- tests/e2e/auth.e2e.ts — auth flows (login, register, redirect)
+- tests/e2e/booking.e2e.ts — catalog browsing, venue details
+- tests/e2e/chat.e2e.ts — chat conversations page
+- tests/e2e/admin.e2e.ts — admin dashboard, users, venues, bookings, reviews
 
-### Integration Tests
-- **booking-payment-chat.test.ts** - Full flow: create booking → initiate payment → webhook confirm → chat conversation auto-created
-- Tests cover cross-module interactions
+### Integration Tests (Vitest)
+- tests/integration/booking-payment-chat.test.ts — booking → payment → chat flow
+- tests/integration/review-rating.test.ts — review creation → rating update
+- tests/integration/promo-booking.test.ts — promo code validation → application
 
-### Coverage Configuration
-- Vitest coverage with v8 provider
-- Reports: text, html, json
+### Code Coverage
+- Vitest coverage config with v8 provider
 - Thresholds: lines 60%, functions 60%, branches 50%, statements 60%
-- Includes: src/modules/**, src/shared/**, src/app/api/**
+- HTML, text, JSON reporters
+- Scripts: test:e2e, test:coverage, test:integration
 
-### Package Scripts
-```json
-"test:e2e": "playwright test",
-"test:coverage": "vitest run --coverage",
-"test:integration": "vitest run tests/integration"
-```
+## Verification
+- Unit tests: 115 passed (3 pre-existing failures in booking concurrency)
+- TypeScript: ✅ passes
+- Build: ✅ succeeds
+- Coverage report generated
 
-### Bug Fix
-- Auto-create chat conversation when booking confirmed via payment webhook (was missing before)
-
-## Tests
-- E2E: 4 tests configured
-- Integration: 4/4 tests pass
-- All existing unit tests still pass
+## Known Issues
+- 3 pre-existing test failures in booking/availability (P2034 transaction conflict error handling)
+- E2E tests require running dev server
 
 ## Next Steps
-- Run `npm run test:e2e` to execute E2E tests
-- Run `npm run test:coverage` to generate coverage report
-- Consider adding more E2E scenarios
+- Phase 07: Production DevOps
+- Phase 11: Extended data model
