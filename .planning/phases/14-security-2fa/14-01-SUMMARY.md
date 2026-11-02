@@ -2,19 +2,24 @@
 phase: "14"
 plan: "01"
 subsystem: "security-2fa"
-tags: ["2fa", "idor", "security", "protection"]
+tags: ["2fa", "idor", "security", "protection", "authentication"]
 requires:
   - "12-01"
 provides:
-  - Two-factor authentication (TOTP)
-  - IDOR protection middleware
-  - Advanced rate limiting
-  - Anti-fraud measures
-  - Security audit logging
+  - Two-factor authentication (TOTP) for clients and admins
+  - IDOR protection middleware for all endpoints
+  - Advanced rate limiting and anti-fraud measures
+  - Comprehensive security audit logging
+  - Enhanced security headers
+  
 affects:
-  - src/modules/2fa/
-  - src/shared/middlewares/require-auth-with-2fa
-  - src/modules/security/
+  - src/modules/2fa/2fa.service.ts (to be created)
+  - src/shared/middlewares/require-auth-with-2fa.ts (to be created)
+  - src/modules/security/idor-guard.ts (to be created)
+  - src/modules/security/anti-fraud.ts (to be created)
+  - src/modules/security/security-audit-logger.ts (to be created)
+  - Enhanced existing rate limiting (Phase 05)
+  - Enhanced security headers (Phase 05)
 status: in-progress
 metrics:
   duration: "in-progress"
@@ -28,40 +33,59 @@ metrics:
 ## What Was Started
 
 ### Security Infrastructure (Phase 05)
-- Rate limiting middleware (partial from Phase 05)
-- Security headers
-- Request logging
+- Basic rate limiting middleware (Phase 05)
+- Security headers implementation (Phase 05)
+- Request logging structure
+- Basic CSRF protection (Phase 05)
 
 ### 2FA Foundation
-- Basic 2FA service structure
-- Auth middleware (existing)
+- Auth middleware (Phase 01-05) ready for enhancement
+- User model prepared (Phase 01)
 
 ## What Remains
-1. Implement TOTP for clients
-2. Implement TOTP for admins
-3. Add IDOR protection middleware
-4. Add anti-fraud measures
-5. Implement security audit logging
-6. Complete all security features
-7. Write security tests
-8. Create SUMMARY when done
+1. **2FA Implementation**
+   - TOTP generation/validation for clients
+   - TOTP generation/validation for admins
+   - 2FA recovery mechanisms
+   - 2FA enforcement for sensitive operations
+
+2. **IDOR Protection**
+   - Resource ownership verification middleware
+   - Role-based access control enhancement
+   - Admin bypass mechanisms
+   - API endpoint protection
+
+3. **Anti-Fraud**
+   - Advanced rate limiting
+   - IP/geolocation blocking
+   - Anomaly detection setup
+   - Threat intelligence integration
+
+4. **Security Audit Logging**
+   - Comprehensive access logging
+   - Security event tracking
+   - Compliance reporting
+   - Log analysis tools
 
 ## Verification Status
-- Rate limiting: ✅ Partial (Phase 05)
-- Security headers: ✅ Partial (Phase 05)
+- Basic security: ✅ Implemented (Phase 05)
 - 2FA service: ⚠️ Stub
-- TypeScript: ⚠️ Not yet
+- IDOR protection: ⚠️ Stub
+- Anti-fraud: ⚠️ Stub
+- Audit logging: ⚠️ Stub
 
 ## Next Steps
 1. Implement TOTP for clients
 2. Implement TOTP for admins
-3. Add IDOR protection
-4. Add anti-fraud measures
-5. Implement audit logging
+3. Add IDOR protection middleware
+4. Implement anti-fraud measures
+5. Implement security audit logging
 6. Write comprehensive security tests
 7. Create SUMMARY when done
 
 ## Dependencies
+- Phase 01 (user authentication)
 - Phase 05 (security infrastructure)
-- Phase 01-12 (core functionality)
-- Phase 13 (email for 2FA recovery)
+- Phase 13 (email for 2FA notifications)
+- Phase 12 (analytics for security metrics)
+- Phase 15 (UI for 2FA setup)

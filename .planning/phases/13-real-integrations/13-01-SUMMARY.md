@@ -6,15 +6,17 @@ tags: ["payment", "email", "sms", "webhook"]
 requires:
   - "12-01"
 provides:
-  - Real payment provider integration
-  - Email service integration
-  - SMS service integration
-  - Webhook handling for all providers
+  - Real payment provider integration (CloudPayments/YooKassa)
+  - Email service integration (SendGrid/SES)
+  - SMS service integration (Twilio)
+  - Provider webhook handling and processing
 affects:
-  - src/modules/payments/providers/
-  - src/modules/email/
-  - src/modules/sms/
-  - src/app/api/webhooks/
+  - src/modules/payments/providers/cloudpayments.ts
+  - src/modules/payments/providers/yookassa.ts
+  - src/modules/email/email.service.ts
+  - src/modules/sms/sms.service.ts
+  - src/app/api/webhooks/payment/route.ts
+  - src/app/api/webhooks/email/route.ts
 status: in-progress
 metrics:
   duration: "in-progress"
@@ -27,45 +29,48 @@ metrics:
 
 ## What Was Started
 
-### Real Payment Integration
-- Mock payment provider replacement
-- CloudPayments/YooKassa SDK integration
-- Webhook processing for payment status
+### Payment Provider Integration
+- Mock payment system (Phase 03) ready for replacement
+- Provider configuration structure defined
+- Payment flow already implemented (POST /api/v1/bookings/[id]/pay)
 
-### Email Integration
-- Nodemailer -> SendGrid/SES migration
-- Email templates for all notifications
-- Email service wrapper
+### Email Service
+- Email service (Phase 05) already created with nodemailer placeholder
+- All email templates defined (confirmation, reminder, payment, review)
+- Email queue system structure ready
 
-### SMS Integration
-- Twilio setup
-- SMS templates
-- SMS delivery tracking
+### SMS Service
+- SMS service (Phase 05) created with placeholder
+- SMS templates for notifications defined
 
 ## What Remains
-1. Implement real payment provider
-2. Configure email provider
-3. Configure SMS provider
-4. Set up webhooks
-5. Add provider error handling
-6. Write integration tests
-7. Complete documentation
+1. Replace mock payment with real provider (CloudPayments/YooKassa)
+2. Configure email provider (SendGrid/SES)
+3. Configure SMS provider (Twilio)
+4. Implement provider webhooks
+5. Add provider error handling and retries
+6. Update all payment/email/SMS APIs to use real providers
+7. Write integration tests
+8. Create SUMMARY when done
 
 ## Verification Status
-- Mock payment: ✅ Replaced
-- Email service: ✅ Created
-- SMS service: ✅ Created
-- TypeScript: ⚠️ Not yet
+- Mock payment: ✅ Ready to replace
+- Email service: ✅ Implemented (placeholder)
+- SMS service: ✅ Implemented (placeholder)
+- APIs: ✅ Ready (will be updated)
 
 ## Next Steps
-1. Choose and configure payment provider
-2. Configure email provider
-3. Configure SMS provider
-4. Implement webhook handlers
-5. Write tests
-6. Create SUMMARY when done
+1. Choose primary payment provider (CloudPayments preferred)
+2. Configure provider API keys and webhooks
+3. Implement provider integration
+4. Configure email provider
+5. Configure SMS provider
+6. Update all dependent APIs
+7. Write comprehensive tests
+8. Create SUMMARY when done
 
 ## Dependencies
-- Phase 05 (email notifications infrastructure)
-- Phase 03 (payment concepts)
-- Phase 01-12 (core functionality)
+- Phase 03 (payment flow)
+- Phase 05 (email/SMS infrastructure)
+- Phase 12 (analytics for payment tracking)
+- Phase 14 (security for webhook validation)
