@@ -91,8 +91,14 @@ model User {
   reviews         Review[]
   promoUsages     PromoCodeUsage[]
   notifications   Notification[]
+  favorites       Favorite[]
   chatParticipants ChatParticipant[]
   chatMessages     ChatMessage[]
+  statusChanges   BookingStatusHistory[]
+  reviewResponses ReviewResponse[]
+  adminAuditLogs  AdminAuditLog[]
+  supportTickets  SupportTicket[]
+  assignedTickets SupportTicket[] @relation("SupportTicketAssignment")
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -105,6 +111,8 @@ model Partner {
   inn         String?
   status      String   @default("pending")
   venues      Venue[]
+  payouts     Payout[]
+  adCampaigns AdCampaign[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -131,10 +139,13 @@ model Venue {
   moderationStatus  ModerationStatus @default(PENDING)
   publishedAt       DateTime?
   photos            VenuePhoto[]
+  videos            VenueVideo[]
   amenities         VenueAmenity[]
   bookings          Booking[]
   reviews           Review[]
+  favorites         Favorite[]
   services          Service[]
+  icalSyncJobs      ICalSyncJob[]
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
@@ -199,6 +210,7 @@ model Booking {
   payment         Payment?
   review          Review?
   promoUsage      PromoCodeUsage?
+  statusHistories BookingStatusHistory[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
@@ -273,6 +285,7 @@ model Payment {
   status            PaymentStatus   @default(PENDING)
   paymentUrl        String?
   metadata          Json?
+  refunds           Refund[]
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   paidAt            DateTime?
@@ -304,6 +317,7 @@ model Review {
   comment   String
   status    ReviewStatus @default(PENDING)
   response  String?     // partner response
+  responses ReviewResponse[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   @@index([venueId])
@@ -359,3 +373,180 @@ model Notification {
   @@index([userId])
   @@index([status])
 }
+
+// --- Extended Models (Phase 11) ---
+
+enum VideoStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model VenueVideo {
+  id            String        @id @default(cuid())
+  venueId       String
+  venue         Venue         @relation(fields: [venueId], references: [id])
+  url           String
+  key           String
+  sortOrder     Int           @default(0)
+  isCover       Boolean       @default(false)
+  status        VideoStatus   @default(PENDING)
+  moderatedAt   DateTime?
+  moderatedBy   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([venueId])
+}
+
+model BookingStatusHistory {
+  id          String   @id @default(cuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  fromStatus  String?
+  toStatus    String
+  changedById String?
+  changedBy   User?    @relation(fields: [changedById], references: [id])
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  @@index([bookingId])
+}
+
+model Refund {
+  id          String   @id @default(cuid())
+  paymentId   String
+  payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  amount      Int      // in kopecks
+  reason      String?
+  status      String   @default("pending") // pending, approved, rejected, completed
+  providerRef String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([paymentId])
+}
+
+model Payout {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id])
+  amount      Int      // in kopecks
+  status      String   @default("pending") // pending, processing, completed, cancelled
+  method      String?  // bank, card, sbp
+  details     Json?
+  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([partnerId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venueId   String
+  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, venueId])
+  @@index([userId])
+}
+
+model ReviewResponse {
+  id          String   @id @default(cuid())
+  reviewId    String
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  body        String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([reviewId])
+}
+
+enum AdType {
+  BANNER
+  LISTING
+  FEATURED
+}
+
+model AdCampaign {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id])
+  title       String
+  type        AdType   @default(BANNER)
+  imageUrl    String?
+  targetUrl   String?
+  budget      Int      // total budget in kopecks
+  spent       Int      @default(0) // spent in kopecks
+  status      String   @default("draft") // draft, active, paused, completed
+  startsAt    DateTime
+  endsAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([partnerId])
+}
+
+model NotificationLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  channel     String   // email, sms, push
+  type        String
+  subject     String?
+  body        String   @db.Text
+  status      String   @default("pending") // pending, sent, failed, bounced
+  providerRef String?
+  error       String?
+  createdAt   DateTime @default(now())
+  @@index([userId])
+  @@index([status])
+}
+
+model ICalSyncJob {
+  id          String   @id @default(cuid())
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  sourceUrl   String   // external iCal URL
+  status      String   @default("pending") // pending, completed, failed
+  eventsImported Int   @default(0)
+  lastError   String?
+  lastSyncAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([venueId])
+}
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  admin       User     @relation(fields: [adminId], references: [id])
+  action      String   // create, update, delete, approve, reject
+  entityType  String   // venue, review, user, booking, payment
+  entityId    String
+  oldValues   Json?
+  newValues   Json?
+  ip          String?
+  createdAt   DateTime @default(now())
+  @@index([adminId])
+  @@index([entityType, entityId])
+}
+
+model SupportTicket {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     String
+  body        String   @db.Text
+  status      String   @default("open") // open, in_progress, resolved, closed
+  priority    String   @default("medium") // low, medium, high, urgent
+  assignedTo  String?
+  assigned    User?    @relation("SupportTicketAssignment", fields: [assignedTo], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([userId])
+  @@index([status])
+}
+
+// Add favorites relation to User
+// Add favorites relation to Venue
