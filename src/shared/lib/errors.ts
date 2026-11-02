@@ -37,3 +37,33 @@ export class ValidationError extends HttpError {
     this.name = "ValidationError";
   }
 }
+
+export class SlotUnavailable extends HttpError {
+  constructor(message: string = "Time slot is not available") {
+    super("SLOT_UNAVAILABLE", message, 409);
+    this.name = "SlotUnavailable";
+  }
+}
+
+export class BookingNotFound extends NotFound {
+  constructor(bookingId?: string) {
+    super(bookingId ? `Booking ${bookingId} not found` : "Booking not found");
+    this.name = "BookingNotFound";
+    this.code = "BOOKING_NOT_FOUND";
+  }
+}
+
+export class BookingAlreadyCancelled extends HttpError {
+  constructor(message: string = "Booking already cancelled") {
+    super("BOOKING_ALREADY_CANCELLED", message, 409);
+    this.name = "BookingAlreadyCancelled";
+  }
+}
+
+export class ChatAccessDenied extends Forbidden {
+  constructor(message: string = "Access to this chat is denied") {
+    super(message);
+    this.name = "ChatAccessDenied";
+    this.code = "CHAT_ACCESS_DENIED";
+  }
+}
