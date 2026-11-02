@@ -1,6 +1,7 @@
 import { prisma } from "@/shared/db/client";
 import { HttpError } from "@/shared/lib/errors";
 import { BookingStatus, PaymentProvider, PaymentStatus } from "@prisma/client";
+import { createConversationForBooking } from "@/modules/chat/chat.service";
 
 /**
  * Initiate a mock payment for a booking.
@@ -144,7 +145,20 @@ export async function processPaymentWebhook(payload: {
   const updatedBooking = await prisma.booking.update({
     where: { id: payment.bookingId },
     data: { status: newBookingStatus },
+    include: { venue: { include: { partner: true } } },
   });
+
+  // Create conversation if booking confirmed
+  if (newBookingStatus === "CONFIRMED") {
+    const existingConv = await prisma.chatConversation.findUnique({
+      where: { bookingId: updatedBooking.id },
+    });
+    if (!existingConv) {
+      await prisma.$transaction(async (tx) => {
+        await createConversationForBooking(tx, updatedBooking);
+      });
+    }
+  }
 
   return { payment: updatedPayment, booking: updatedBooking, alreadyProcessed: false };
 }

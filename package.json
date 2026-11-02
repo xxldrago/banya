@@ -10,6 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run tests/integration",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
@@ -39,6 +42,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.0.0",
     "@types/bcryptjs": "^2.4.6",
