@@ -79,87 +79,87 @@ model City {
 }
 
 model User {
-  id              String           @id @default(cuid())
-  email           String           @unique
-  phone           String?          @unique
-  passwordHash    String
-  role            Role             @default(CLIENT)
-  status          String           @default("active")
-  partner         Partner?
-  refreshTokens   RefreshToken[]
-  bookings        Booking[]
-  reviews         Review[]
-  promoUsages     PromoCodeUsage[]
-  notifications   Notification[]
-  favorites       Favorite[]
+  id               String                 @id @default(cuid())
+  email            String                 @unique
+  phone            String?                @unique
+  passwordHash     String
+  role             Role                   @default(CLIENT)
+  status           String                 @default("active")
+  partner          Partner?
+  refreshTokens    RefreshToken[]
+  bookings         Booking[]
+  reviews          Review[]
+  promoUsages      PromoCodeUsage[]
+  notifications    Notification[]
+  favorites        Favorite[]
   chatParticipants ChatParticipant[]
   chatMessages     ChatMessage[]
-  statusChanges   BookingStatusHistory[]
-  reviewResponses ReviewResponse[]
-  adminAuditLogs  AdminAuditLog[]
-  supportTickets  SupportTicket[]
-  assignedTickets SupportTicket[] @relation("SupportTicketAssignment")
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  statusChanges    BookingStatusHistory[]
+  reviewResponses  ReviewResponse[]
+  adminAuditLogs   AdminAuditLog[]
+  supportTickets   SupportTicket[]
+  assignedTickets  SupportTicket[]        @relation("SupportTicketAssignment")
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
 }
 
 model Partner {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id])
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id])
   companyName String?
   inn         String?
-  status      String   @default("pending")
+  status      String       @default("pending")
   venues      Venue[]
   payouts     Payout[]
   adCampaigns AdCampaign[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Venue {
-  id                String           @id @default(cuid())
-  partnerId         String
-  partner           Partner          @relation(fields: [partnerId], references: [id])
-  cityId            String
-  city              City             @relation(fields: [cityId], references: [id])
-  title             String
-  slug              String           @unique
-  description       String           @db.Text
-  address           String
-  lat               Float?
-  lng               Float?
-  type              String           // bath / sauna
-  minGuests         Int              @default(1)
-  maxGuests         Int
-  minDuration       Int              @default(60) // minutes
-  priceFrom         Int              // rubles
-  rules             String?          @db.Text
-  status            VenueStatus      @default(DRAFT)
-  moderationStatus  ModerationStatus @default(PENDING)
-  publishedAt       DateTime?
-  photos            VenuePhoto[]
-  videos            VenueVideo[]
-  amenities         VenueAmenity[]
-  bookings          Booking[]
-  reviews           Review[]
-  favorites         Favorite[]
-  services          Service[]
-  icalSyncJobs      ICalSyncJob[]
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  id               String           @id @default(cuid())
+  partnerId        String
+  partner          Partner          @relation(fields: [partnerId], references: [id])
+  cityId           String
+  city             City             @relation(fields: [cityId], references: [id])
+  title            String
+  slug             String           @unique
+  description      String           @db.Text
+  address          String
+  lat              Float?
+  lng              Float?
+  type             String // bath / sauna
+  minGuests        Int              @default(1)
+  maxGuests        Int
+  minDuration      Int              @default(60) // minutes
+  priceFrom        Int // rubles
+  rules            String?          @db.Text
+  status           VenueStatus      @default(DRAFT)
+  moderationStatus ModerationStatus @default(PENDING)
+  publishedAt      DateTime?
+  photos           VenuePhoto[]
+  videos           VenueVideo[]
+  amenities        VenueAmenity[]
+  bookings         Booking[]
+  reviews          Review[]
+  favorites        Favorite[]
+  services         Service[]
+  icalSyncJobs     ICalSyncJob[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   @@index([cityId, status, moderationStatus])
   @@index([partnerId])
 }
 
 model Amenity {
-  id     String          @id @default(cuid())
-  name   String
-  slug   String          @unique
-  icon   String?
-  venues VenueAmenity[]
-  createdAt DateTime     @default(now())
+  id        String         @id @default(cuid())
+  name      String
+  slug      String         @unique
+  icon      String?
+  venues    VenueAmenity[]
+  createdAt DateTime       @default(now())
 }
 
 model VenueAmenity {
@@ -195,24 +195,24 @@ model RefreshToken {
 }
 
 model Booking {
-  id              String         @id @default(cuid())
+  id              String                 @id @default(cuid())
   venueId         String
-  venue           Venue          @relation(fields: [venueId], references: [id])
+  venue           Venue                  @relation(fields: [venueId], references: [id])
   userId          String
-  user            User           @relation(fields: [userId], references: [id])
+  user            User                   @relation(fields: [userId], references: [id])
   startsAt        DateTime
   endsAt          DateTime
-  status          BookingStatus  @default(PENDING)
-  bookingMode     BookingMode    @default(instant)
-  allowBackToBack Boolean        @default(false)
+  status          BookingStatus          @default(PENDING)
+  bookingMode     BookingMode            @default(instant)
+  allowBackToBack Boolean                @default(false)
   services        BookingService[]
   conversation    ChatConversation?
   payment         Payment?
   review          Review?
   promoUsage      PromoCodeUsage?
   statusHistories BookingStatusHistory[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
 
   @@index([venueId, startsAt, endsAt])
   @@index([userId])
@@ -230,12 +230,12 @@ model Service {
 }
 
 model BookingService {
-  id            String  @id @default(cuid())
-  bookingId     String
-  booking       Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  serviceId     String
-  service       Service @relation(fields: [serviceId], references: [id])
-  quantity      Int     @default(1)
+  id             String  @id @default(cuid())
+  bookingId      String
+  booking        Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  serviceId      String
+  service        Service @relation(fields: [serviceId], references: [id])
+  quantity       Int     @default(1)
   priceAtBooking Int
 
   @@index([bookingId])
@@ -252,11 +252,11 @@ model ChatConversation {
 }
 
 model ChatParticipant {
-  id             String             @id @default(cuid())
+  id             String              @id @default(cuid())
   conversationId String
-  conversation   ChatConversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation   ChatConversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   userId         String
-  user           User               @relation(fields: [userId], references: [id])
+  user           User                @relation(fields: [userId], references: [id])
   role           ChatParticipantRole
 
   @@unique([conversationId, userId])
@@ -281,7 +281,7 @@ model Payment {
   booking           Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   provider          PaymentProvider @default(mock)
   providerPaymentId String?
-  amount            Int             // in kopecks (rubles * 100)
+  amount            Int // in kopecks (rubles * 100)
   status            PaymentStatus   @default(PENDING)
   paymentUrl        String?
   metadata          Json?
@@ -290,6 +290,7 @@ model Payment {
   updatedAt         DateTime        @updatedAt
   paidAt            DateTime?
   refundedAt        DateTime?
+
   @@index([bookingId])
   @@index([status])
 }
@@ -306,70 +307,74 @@ enum DiscountType {
 }
 
 model Review {
-  id        String      @id @default(cuid())
-  bookingId String      @unique
-  booking   Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id        String           @id @default(cuid())
+  bookingId String           @unique
+  booking   Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   venueId   String
-  venue     Venue       @relation(fields: [venueId], references: [id])
+  venue     Venue            @relation(fields: [venueId], references: [id])
   userId    String
-  user      User        @relation(fields: [userId], references: [id])
-  rating    Int         // 1-5
+  user      User             @relation(fields: [userId], references: [id])
+  rating    Int // 1-5
   comment   String
-  status    ReviewStatus @default(PENDING)
-  response  String?     // partner response
+  status    ReviewStatus     @default(PENDING)
+  response  String? // partner response
   responses ReviewResponse[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
   @@index([venueId])
   @@index([userId])
   @@index([status])
 }
 
 model PromoCode {
-  id             String         @id @default(cuid())
-  code           String         @unique
-  discountType   DiscountType   @default(PERCENTAGE)
-  discountValue  Int            // 10 = 10%, or 500 = 500 RUB
-  minAmount      Int?           // minimum booking amount in kopecks
-  maxUses        Int?           // total usage limit
-  maxUsesPerUser Int?           // per-user limit
-  validFrom      DateTime       @default(now())
-  validUntil     DateTime
-  applicableVenues Json?        // array of venue IDs, null = all
-  active         Boolean        @default(true)
-  usages         PromoCodeUsage[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id               String           @id @default(cuid())
+  code             String           @unique
+  discountType     DiscountType     @default(PERCENTAGE)
+  discountValue    Int // 10 = 10%, or 500 = 500 RUB
+  minAmount        Int? // minimum booking amount in kopecks
+  maxUses          Int? // total usage limit
+  maxUsesPerUser   Int? // per-user limit
+  validFrom        DateTime         @default(now())
+  validUntil       DateTime
+  applicableVenues Json? // array of venue IDs, null = all
+  active           Boolean          @default(true)
+  usages           PromoCodeUsage[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
   @@index([code])
   @@index([active])
 }
 
 model PromoCodeUsage {
-  id          String    @id @default(cuid())
-  promoCodeId String
-  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  bookingId   String    @unique
-  booking     Booking   @relation(fields: [bookingId], references: [id])
-  discountApplied Int   // discount amount in kopecks
-  createdAt   DateTime  @default(now())
+  id              String    @id @default(cuid())
+  promoCodeId     String
+  promoCode       PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  bookingId       String    @unique
+  booking         Booking   @relation(fields: [bookingId], references: [id])
+  discountApplied Int // discount amount in kopecks
+  createdAt       DateTime  @default(now())
+
   @@index([userId])
   @@index([bookingId])
 }
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // booking_confirmed, payment_confirmed, reminder, cancelled, review_request
-  channel   String   // email, sms
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // booking_confirmed, payment_confirmed, reminder, cancelled, review_request
+  channel   String // email, sms
   subject   String
-  body      String   @db.Text
-  status    String   @default("pending") // pending, sent, failed
+  body      String    @db.Text
+  status    String    @default("pending") // pending, sent, failed
   sentAt    DateTime?
   metadata  Json?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+
   @@index([userId])
   @@index([status])
 }
@@ -383,18 +388,18 @@ enum VideoStatus {
 }
 
 model VenueVideo {
-  id            String        @id @default(cuid())
-  venueId       String
-  venue         Venue         @relation(fields: [venueId], references: [id])
-  url           String
-  key           String
-  sortOrder     Int           @default(0)
-  isCover       Boolean       @default(false)
-  status        VideoStatus   @default(PENDING)
-  moderatedAt   DateTime?
-  moderatedBy   String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id          String      @id @default(cuid())
+  venueId     String
+  venue       Venue       @relation(fields: [venueId], references: [id])
+  url         String
+  key         String
+  sortOrder   Int         @default(0)
+  isCover     Boolean     @default(false)
+  status      VideoStatus @default(PENDING)
+  moderatedAt DateTime?
+  moderatedBy String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([venueId])
 }
@@ -417,26 +422,28 @@ model Refund {
   id          String   @id @default(cuid())
   paymentId   String
   payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  amount      Int      // in kopecks
+  amount      Int // in kopecks
   reason      String?
   status      String   @default("pending") // pending, approved, rejected, completed
   providerRef String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
   @@index([paymentId])
 }
 
 model Payout {
-  id          String   @id @default(cuid())
-  partnerId   String
-  partner     Partner  @relation(fields: [partnerId], references: [id])
-  amount      Int      // in kopecks
-  status      String   @default("pending") // pending, processing, completed, cancelled
-  method      String?  // bank, card, sbp
-  details     Json?
-  paidAt      DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(cuid())
+  partnerId String
+  partner   Partner   @relation(fields: [partnerId], references: [id])
+  amount    Int // in kopecks
+  status    String    @default("pending") // pending, processing, completed, cancelled
+  method    String? // bank, card, sbp
+  details   Json?
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
   @@index([partnerId])
 }
 
@@ -453,14 +460,15 @@ model Favorite {
 }
 
 model ReviewResponse {
-  id          String   @id @default(cuid())
-  reviewId    String
-  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  body        String   @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([reviewId])
 }
 
@@ -471,27 +479,28 @@ enum AdType {
 }
 
 model AdCampaign {
-  id          String   @id @default(cuid())
-  partnerId   String
-  partner     Partner  @relation(fields: [partnerId], references: [id])
-  title       String
-  type        AdType   @default(BANNER)
-  imageUrl    String?
-  targetUrl   String?
-  budget      Int      // total budget in kopecks
-  spent       Int      @default(0) // spent in kopecks
-  status      String   @default("draft") // draft, active, paused, completed
-  startsAt    DateTime
-  endsAt      DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(cuid())
+  partnerId String
+  partner   Partner   @relation(fields: [partnerId], references: [id])
+  title     String
+  type      AdType    @default(BANNER)
+  imageUrl  String?
+  targetUrl String?
+  budget    Int // total budget in kopecks
+  spent     Int       @default(0) // spent in kopecks
+  status    String    @default("draft") // draft, active, paused, completed
+  startsAt  DateTime
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
   @@index([partnerId])
 }
 
 model NotificationLog {
   id          String   @id @default(cuid())
   userId      String?
-  channel     String   // email, sms, push
+  channel     String // email, sms, push
   type        String
   subject     String?
   body        String   @db.Text
@@ -499,51 +508,55 @@ model NotificationLog {
   providerRef String?
   error       String?
   createdAt   DateTime @default(now())
+
   @@index([userId])
   @@index([status])
 }
 
 model ICalSyncJob {
-  id          String   @id @default(cuid())
-  venueId     String
-  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  sourceUrl   String   // external iCal URL
-  status      String   @default("pending") // pending, completed, failed
-  eventsImported Int   @default(0)
-  lastError   String?
-  lastSyncAt  DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String    @id @default(cuid())
+  venueId        String
+  venue          Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  sourceUrl      String // external iCal URL
+  status         String    @default("pending") // pending, completed, failed
+  eventsImported Int       @default(0)
+  lastError      String?
+  lastSyncAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
   @@index([venueId])
 }
 
 model AdminAuditLog {
-  id          String   @id @default(cuid())
-  adminId     String
-  admin       User     @relation(fields: [adminId], references: [id])
-  action      String   // create, update, delete, approve, reject
-  entityType  String   // venue, review, user, booking, payment
-  entityId    String
-  oldValues   Json?
-  newValues   Json?
-  ip          String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  adminId    String
+  admin      User     @relation(fields: [adminId], references: [id])
+  action     String // create, update, delete, approve, reject
+  entityType String // venue, review, user, booking, payment
+  entityId   String
+  oldValues  Json?
+  newValues  Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
   @@index([adminId])
   @@index([entityType, entityId])
 }
 
 model SupportTicket {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subject     String
-  body        String   @db.Text
-  status      String   @default("open") // open, in_progress, resolved, closed
-  priority    String   @default("medium") // low, medium, high, urgent
-  assignedTo  String?
-  assigned    User?    @relation("SupportTicketAssignment", fields: [assignedTo], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject    String
+  body       String   @db.Text
+  status     String   @default("open") // open, in_progress, resolved, closed
+  priority   String   @default("medium") // low, medium, high, urgent
+  assignedTo String?
+  assigned   User?    @relation("SupportTicketAssignment", fields: [assignedTo], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   @@index([userId])
   @@index([status])
 }
