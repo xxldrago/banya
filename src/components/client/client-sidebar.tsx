@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: "Профиль", href: "/profile" },
-  { name: "Мои бронирования", href: "/bookings" },
-  { name: "Чаты", href: "/chats" },
-  { name: "Избранное", href: "/favorites" },
-  { name: "Мои отзывы", href: "/reviews" },
-  { name: "Промокоды", href: "/promocodes" },
-  { name: "Уведомления", href: "/notifications" },
-  { name: "Настройки", href: "/settings" },
+  { name: "Профиль", href: "/client/profile" },
+  { name: "Мои бронирования", href: "/client/bookings" },
+  { name: "Чаты", href: "/client/chats" },
+  { name: "Избранное", href: "/client/favorites" },
+  { name: "Мои отзывы", href: "/client/reviews" },
+  { name: "Промокоды", href: "/client/promocodes" },
+  { name: "Уведомления", href: "/client/notifications" },
+  { name: "Настройки", href: "/client/settings" },
 ];
 
 export function ClientSidebar() {

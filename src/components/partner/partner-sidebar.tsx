@@ -1,0 +1,41 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+
+const navigation = [
+  { name: "Профиль", href: "/partner/profile" },
+  { name: "Мои объекты", href: "/partner/venues" },
+  { name: "Календарь", href: "/partner/calendar" },
+  { name: "Бронирования", href: "/partner/bookings" },
+  { name: "Услуги", href: "/partner/services" },
+  { name: "Отзывы", href: "/partner/reviews" },
+  { name: "Промокоды", href: "/partner/promocodes" },
+  { name: "Выплаты", href: "/partner/payouts" },
+];
+
+export function PartnerSidebar() {
+  const pathname = usePathname();
+
+  return (
+    <aside className="w-64 shrink-0">
+      <nav className="space-y-1">
+        {navigation.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "block rounded-lg px-3 py-2 text-sm transition-colors",
+              pathname === item.href
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted"
+            )}
+          >
+            {item.name}
+          </Link>
+        ))}
+      </nav>
+    </aside>
+  );
+}
