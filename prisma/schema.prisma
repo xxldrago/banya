@@ -88,6 +88,8 @@ model User {
   partner         Partner?
   refreshTokens   RefreshToken[]
   bookings        Booking[]
+  reviews         Review[]
+  promoUsages     PromoCodeUsage[]
   chatParticipants ChatParticipant[]
   chatMessages     ChatMessage[]
   createdAt       DateTime         @default(now())
@@ -130,6 +132,7 @@ model Venue {
   photos            VenuePhoto[]
   amenities         VenueAmenity[]
   bookings          Booking[]
+  reviews           Review[]
   services          Service[]
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
@@ -193,6 +196,8 @@ model Booking {
   services        BookingService[]
   conversation    ChatConversation?
   payment         Payment?
+  review          Review?
+  promoUsage      PromoCodeUsage?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
@@ -273,4 +278,67 @@ model Payment {
   refundedAt        DateTime?
   @@index([bookingId])
   @@index([status])
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model Review {
+  id        String      @id @default(cuid())
+  bookingId String      @unique
+  booking   Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  venueId   String
+  venue     Venue       @relation(fields: [venueId], references: [id])
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  rating    Int         // 1-5
+  comment   String
+  status    ReviewStatus @default(PENDING)
+  response  String?     // partner response
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  @@index([venueId])
+  @@index([userId])
+  @@index([status])
+}
+
+model PromoCode {
+  id             String         @id @default(cuid())
+  code           String         @unique
+  discountType   DiscountType   @default(PERCENTAGE)
+  discountValue  Int            // 10 = 10%, or 500 = 500 RUB
+  minAmount      Int?           // minimum booking amount in kopecks
+  maxUses        Int?           // total usage limit
+  maxUsesPerUser Int?           // per-user limit
+  validFrom      DateTime       @default(now())
+  validUntil     DateTime
+  applicableVenues Json?        // array of venue IDs, null = all
+  active         Boolean        @default(true)
+  usages         PromoCodeUsage[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  @@index([code])
+  @@index([active])
+}
+
+model PromoCodeUsage {
+  id          String    @id @default(cuid())
+  promoCodeId String
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  bookingId   String    @unique
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  discountApplied Int   // discount amount in kopecks
+  createdAt   DateTime  @default(now())
+  @@index([userId])
+  @@index([bookingId])
 }

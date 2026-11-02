@@ -159,7 +159,7 @@ describe("Payment API", () => {
     });
 
     // Now simulate payment success
-    const result = await simulatePaymentSuccess(payment.providerPaymentId);
+    const result = await simulatePaymentSuccess(payment.providerPaymentId!);
     expect(result.booking.status).toBe("CONFIRMED");
     expect(result.payment.status).toBe("SUCCESS");
   });
