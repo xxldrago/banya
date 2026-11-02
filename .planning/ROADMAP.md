@@ -10,12 +10,12 @@
 
 **Goal:** Базовая платформа, выбор города, каталог с фильтрами, карточка объекта, авторизация, роли
 **Requirements:** CAT-01, CAT-02, CAT-03, CAT-04, AUTH-01
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed — COMPLETE
 Plans:
 
 - [x] 01-01-PLAN.md — Tracer: project scaffold + full Prisma schema + cities API + catalog list + venue card (CAT-01, CAT-04)
 - [x] 01-02-PLAN.md — JWT auth (register/login/refresh/logout/me) + RBAC middleware + auth UI (AUTH-01)
-- [ ] 01-03-PLAN.md — Catalog filters + sorting + map with clusters (CAT-02, CAT-03)
+- [x] 01-03-PLAN.md — Catalog filters + sorting + map with clusters (CAT-02, CAT-03)
 
 **Success Criteria:**
 
@@ -27,11 +27,13 @@ Plans:
 
 **Goal:** Реализовать надёжное бронирование с защитой от пересечений и чат
 **Requirements:** BOOK-01, BOOK-02, BOOK-03, BOOK-04, CHAT-01
+**Status:** ✅ COMPLETE (2026-11-02)
+**Plans:** 4/4 complete
 **Success Criteria:**
 
-1. Невозможно создать два пересекающихся бронирования
-2. Проверка доступности работает для всех режимов
-3. Чат доступен после создания бронирования
+1. Невозможно создать два пересекающихся бронирования ✓
+2. Проверка доступности работает для всех режимов ✓
+3. Чат доступен после создания бронирования ✓
 
 ### Phase 3: ЛК клиента и кабинет партнёра
 

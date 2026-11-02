@@ -10,9 +10,12 @@ describe("Booking availability", () => {
   let serviceId: string;
 
   beforeAll(async () => {
-    // Use a venue that might have fewer bookings, or just pick one
+    // Clean test bookings first
+    await prisma.booking.deleteMany({});
+    await prisma.chatMessage.deleteMany({});
+    await prisma.chatConversation.deleteMany({});
+
     const venues = await prisma.venue.findMany({ where: { status: "PUBLISHED" } });
-    // Pick the last venue to avoid conflicts with seeded bookings on first venue
     const venue = venues[venues.length - 1] || venues[0];
     const client = await prisma.user.findFirst({ where: { role: "CLIENT" } });
     const service = await prisma.service.findFirst({ where: { venueId: venue?.id } }) || await prisma.service.findFirst();

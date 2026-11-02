@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
 
-export function apiSuccess<T>(data: T, meta?: Record<string, unknown>) {
-  if (meta !== undefined) {
-    return NextResponse.json({ data, meta });
+export function apiSuccess<T>(data: T, meta?: Record<string, unknown> | number, status: number = 200) {
+  let metaObj: Record<string, unknown> | undefined;
+  let statusCode = status;
+  
+  if (typeof meta === 'number') {
+    statusCode = meta;
+  } else if (meta !== undefined && meta !== null) {
+    metaObj = meta;
   }
-  return NextResponse.json({ data });
+  
+  if (metaObj !== undefined) {
+    return NextResponse.json({ data, meta: metaObj }, { status: statusCode });
+  }
+  return NextResponse.json({ data }, { status: statusCode });
 }
 
 export function apiError(
