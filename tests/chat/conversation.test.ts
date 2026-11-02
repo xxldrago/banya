@@ -22,8 +22,13 @@ describe("Chat conversations", () => {
 
   beforeAll(async () => {
     // Clean up test data from other test suites
+    await prisma.promoCodeUsage.deleteMany({});
+    await prisma.payment.deleteMany({});
+    await prisma.review.deleteMany({});
+    await prisma.bookingService.deleteMany({});
     await prisma.chatMessage.deleteMany({});
     await prisma.chatConversation.deleteMany({});
+    await prisma.booking.deleteMany({});
 
     const client = await prisma.user.findUnique({ where: { email: "client@banya.local" } });
     const partner = await prisma.user.findUnique({ where: { email: "partner@banya.local" } });

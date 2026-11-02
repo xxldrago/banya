@@ -20,7 +20,10 @@ describe("Payment API", () => {
 
   beforeAll(async () => {
     // Clean up test data
+    await prisma.promoCodeUsage.deleteMany({});
     await prisma.payment.deleteMany({});
+    await prisma.review.deleteMany({});
+    await prisma.bookingService.deleteMany({});
     await prisma.chatMessage.deleteMany({});
     await prisma.chatConversation.deleteMany({});
     await prisma.booking.deleteMany({});

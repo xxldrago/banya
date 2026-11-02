@@ -11,9 +11,13 @@ describe("Booking availability", () => {
 
   beforeAll(async () => {
     // Clean test bookings first
-    await prisma.booking.deleteMany({});
+    await prisma.promoCodeUsage.deleteMany({});
+    await prisma.payment.deleteMany({});
+    await prisma.review.deleteMany({});
+    await prisma.bookingService.deleteMany({});
     await prisma.chatMessage.deleteMany({});
     await prisma.chatConversation.deleteMany({});
+    await prisma.booking.deleteMany({});
 
     const venues = await prisma.venue.findMany({ where: { status: "PUBLISHED" } });
     const venue = venues[venues.length - 1] || venues[0];

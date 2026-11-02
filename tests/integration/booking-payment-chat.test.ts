@@ -35,9 +35,10 @@ describe("Integration: Booking → Payment → Chat", () => {
       startsAt: new Date(Date.now() + 86400000 * 60).toISOString(),
       endsAt: new Date(Date.now() + 86400000 * 60 + 7200000).toISOString(),
       bookingMode: "confirm",
+      allowBackToBack: false,
     });
-    expect(booking.status).toBe("PENDING");
-    bookingId = booking.id;
+    expect(booking!.status).toBe("PENDING");
+    bookingId = booking!.id;
   });
 
   it("initiates payment for the booking", async () => {
@@ -48,6 +49,7 @@ describe("Integration: Booking → Payment → Chat", () => {
 
   it("processes payment webhook and confirms booking", async () => {
     const payment = await prisma.payment.findUnique({ where: { bookingId } });
+    expect(payment).toBeTruthy();
     const result = await processPaymentWebhook({
       providerPaymentId: payment!.providerPaymentId!,
       status: "success",

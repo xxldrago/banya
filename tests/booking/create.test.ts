@@ -28,9 +28,13 @@ describe("Booking API", () => {
     venueId = venue.id;
 
     // Clean test data
-    await prisma.booking.deleteMany({});
+    await prisma.promoCodeUsage.deleteMany({});
+    await prisma.payment.deleteMany({});
+    await prisma.review.deleteMany({});
+    await prisma.bookingService.deleteMany({});
     await prisma.chatMessage.deleteMany({});
     await prisma.chatConversation.deleteMany({});
+    await prisma.booking.deleteMany({});
   });
 
   it("GET /api/v1/venues/[slug]/availability returns 30-min slots", async () => {
