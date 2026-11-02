@@ -56,13 +56,16 @@ describe("GET /api/v1/catalog/venues", () => {
     expect(body.meta.offset).toBe(0);
   });
 
-  it("returns 400 CITY_REQUIRED without cityId", async () => {
+  it("returns 400 VALIDATION_ERROR without cityId", async () => {
     const res = await getVenues(makeRequest("/api/v1/catalog/venues"));
     expect(res.status).toBe(400);
     const body = await res.json();
-    expect(body).toEqual({
-      error: { code: "CITY_REQUIRED", message: "cityId is required" },
-    });
+    expect(body.error.code).toBe("VALIDATION_ERROR");
+    expect(body.error.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: "cityId" }),
+      ]),
+    );
   });
 
   it("returns 404 for invalid cityId", async () => {
