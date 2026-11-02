@@ -10,11 +10,11 @@
 
 **Goal:** Базовая платформа, выбор города, каталог с фильтрами, карточка объекта, авторизация, роли
 **Requirements:** CAT-01, CAT-02, CAT-03, CAT-04, AUTH-01
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 Plans:
 
 - [x] 01-01-PLAN.md — Tracer: project scaffold + full Prisma schema + cities API + catalog list + venue card (CAT-01, CAT-04)
-- [ ] 01-02-PLAN.md — JWT auth (register/login/refresh/logout/me) + RBAC middleware + auth UI (AUTH-01)
+- [x] 01-02-PLAN.md — JWT auth (register/login/refresh/logout/me) + RBAC middleware + auth UI (AUTH-01)
 - [ ] 01-03-PLAN.md — Catalog filters + sorting + map with clusters (CAT-02, CAT-03)
 
 **Success Criteria:**

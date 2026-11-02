@@ -2,21 +2,21 @@
 gsd_state_version: 1.0
 current_phase: 01
 current_phase_name: Инфраструктура, каталог и базовая авторизация
-current_plan: 02
-current_plan_in_phase: 2
+current_plan: 03
+current_plan_in_phase: 3
 total_plans_in_phase: 3
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-11-01T22:35:30.000Z"
+stopped_at: Completed 01-02-PLAN.md (auth subsystem complete)
+last_updated: "2026-11-02T09:57:00.000Z"
 last_activity: 2026-11-02
-last_activity_desc: "Completed 01-01 tracer (scaffold + cities/catalog APIs + UI)"
-state_head: 15e68de84b8d1b842c9bc1d9952dec13f71c3157
+last_activity_desc: "Completed 01-02: JWT auth (register/login/refresh/logout/me + RBAC + rate limit) + auth UI + edge middleware. 39 tests pass, build ok."
+state_head: 0f77d77eae76bba6b06df85be1b5b237b5c07b20
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -24,9 +24,9 @@ progress:
 ## Current Position
 
 Phase: 01 (Инфраструктура, каталог и базовая авторизация) — EXECUTING
-Plan: 02 of 03 (next)
-Status: Plan 01 complete — ready for 01-02
-Last activity: 2026-11-02 — Completed 01-01 tracer (scaffold + cities/catalog APIs + UI)
+Plan: 03 of 03 (next)
+Status: Plan 02 complete — ready for 01-03 (catalog filters + map)
+Last activity: 2026-11-02 — Completed 01-02: full JWT auth + UI + middleware
 
 Progress: [███░░░░░░░] 33% (1/3 plans in phase)
 
