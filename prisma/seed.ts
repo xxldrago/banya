@@ -371,6 +371,138 @@ async function main() {
     console.log(`  ✓ Venue: ${venue.slug}`);
   }
 
+  // --- Phase 2: Services, Bookings, Chat ---
+  const testVenues = await prisma.venue.findMany({ include: { partner: { include: { user: true } } } });
+  const testClient = await prisma.user.findFirst({ where: { role: "CLIENT" } });
+
+  for (const venue of testVenues.slice(0, 2)) {
+    const services = [
+      { name: "Банщик", defaultPrice: 1000 },
+      { name: "Веник дубовый", defaultPrice: 300 },
+      { name: "Веник березовый", defaultPrice: 300 },
+      { name: "Ароматерапия", defaultPrice: 500 },
+      { name: "Чайный набор", defaultPrice: 400 },
+    ];
+
+    for (const svc of services) {
+      await prisma.service.upsert({
+        where: { id: `${venue.id}-${svc.name}` },
+        update: { defaultPrice: svc.defaultPrice },
+        create: {
+          id: `${venue.id}-${svc.name}`,
+          venueId: venue.id,
+          name: svc.name,
+          defaultPrice: svc.defaultPrice,
+        },
+      });
+    }
+    console.log(`  ✓ Services for venue: ${venue.slug}`);
+  }
+
+  if (testVenues.length > 0 && testClient) {
+    const venue = testVenues[0];
+    const partnerUser = venue.partner?.user;
+
+    // Create past confirmed booking
+    const pastBooking = await prisma.booking.upsert({
+      where: { id: "seed-past-booking" },
+      update: {},
+      create: {
+        id: "seed-past-booking",
+        venueId: venue.id,
+        userId: testClient.id,
+        startsAt: new Date(Date.now() - 48 * 60 * 60 * 1000),
+        endsAt: new Date(Date.now() - 46 * 60 * 60 * 1000),
+        status: "CONFIRMED",
+        bookingMode: "instant",
+        allowBackToBack: false,
+      },
+    });
+
+    // Create future confirmed booking
+    await prisma.booking.upsert({
+      where: { id: "seed-future-booking" },
+      update: {},
+      create: {
+        id: "seed-future-booking",
+        venueId: venue.id,
+        userId: testClient.id,
+        startsAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        endsAt: new Date(Date.now() + 26 * 60 * 60 * 1000),
+        status: "CONFIRMED",
+        bookingMode: "instant",
+        allowBackToBack: false,
+      },
+    });
+
+    // Create pending booking
+    await prisma.booking.upsert({
+      where: { id: "seed-pending-booking" },
+      update: {},
+      create: {
+        id: "seed-pending-booking",
+        venueId: venue.id,
+        userId: testClient.id,
+        startsAt: new Date(Date.now() + 72 * 60 * 60 * 1000),
+        endsAt: new Date(Date.now() + 75 * 60 * 60 * 1000),
+        status: "PENDING",
+        bookingMode: "confirm",
+        allowBackToBack: false,
+      },
+    });
+
+    // Create chat for past booking
+    if (partnerUser) {
+      const conversation = await prisma.chatConversation.upsert({
+        where: { bookingId: pastBooking.id },
+        update: {},
+        create: {
+          bookingId: pastBooking.id,
+        },
+      });
+
+      await prisma.chatParticipant.upsert({
+        where: { id: "seed-participant-client" },
+        update: {},
+        create: {
+          id: "seed-participant-client",
+          conversationId: conversation.id,
+          userId: testClient.id,
+          role: "client",
+        },
+      });
+
+      await prisma.chatParticipant.upsert({
+        where: { id: "seed-participant-partner" },
+        update: {},
+        create: {
+          id: "seed-participant-partner",
+          conversationId: conversation.id,
+          userId: partnerUser.id,
+          role: "partner",
+        },
+      });
+
+      await prisma.chatMessage.create({
+        data: {
+          conversationId: conversation.id,
+          senderId: testClient.id,
+          body: "Здравствуйте! Подскажите, нужно ли брать с собой полотенца?",
+        },
+      }).catch(() => {});
+
+      await prisma.chatMessage.create({
+        data: {
+          conversationId: conversation.id,
+          senderId: partnerUser.id,
+          body: "Добрый день! Полотенца предоставляются, но можно взять свои.",
+        },
+      }).catch(() => {});
+
+      console.log(`  ✓ Chat seeded for past booking`);
+    }
+  }
+
   console.log("✅ Seeding complete");
 }
 
