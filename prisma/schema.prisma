@@ -30,6 +30,26 @@ enum ModerationStatus {
   REJECTED
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+enum BookingMode {
+  instant
+  confirm
+  pay_on_site
+}
+
+enum ChatParticipantRole {
+  client
+  partner
+  admin
+}
+
 // --- Models ---
 
 model City {
@@ -44,17 +64,19 @@ model City {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  email         String        @unique
-  phone         String?       @unique
-  passwordHash  String
-  role          Role          @default(CLIENT)
-  status        String        @default("active")
-  partner       Partner?
-  refreshTokens RefreshToken[]
-  bookings      Booking[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              String           @id @default(cuid())
+  email           String           @unique
+  phone           String?          @unique
+  passwordHash    String
+  role            Role             @default(CLIENT)
+  status          String           @default("active")
+  partner         Partner?
+  refreshTokens   RefreshToken[]
+  bookings        Booking[]
+  chatParticipants ChatParticipant[]
+  chatMessages     ChatMessage[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model Partner {
@@ -93,6 +115,7 @@ model Venue {
   photos            VenuePhoto[]
   amenities         VenueAmenity[]
   bookings          Booking[]
+  services          Service[]
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
@@ -141,21 +164,79 @@ model RefreshToken {
   @@index([userId])
 }
 
-// Booking stub — Phase 2 preparation per CONTEXT.md
-// No business logic, just the model + index so Phase 2 can add availability
-// checks without a schema migration. Exclusion constraint deferred to Phase 2.
 model Booking {
-  id        String   @id @default(cuid())
-  venueId   String
-  venue     Venue    @relation(fields: [venueId], references: [id])
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  startsAt  DateTime
-  endsAt    DateTime
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String         @id @default(cuid())
+  venueId         String
+  venue           Venue          @relation(fields: [venueId], references: [id])
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  startsAt        DateTime
+  endsAt          DateTime
+  status          BookingStatus  @default(PENDING)
+  bookingMode     BookingMode    @default(instant)
+  allowBackToBack Boolean        @default(false)
+  services        BookingService[]
+  conversation    ChatConversation?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
   @@index([venueId, startsAt, endsAt])
   @@index([userId])
+}
+
+model Service {
+  id           String           @id @default(cuid())
+  venueId      String
+  venue        Venue            @relation(fields: [venueId], references: [id])
+  name         String
+  defaultPrice Int
+  bookings     BookingService[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model BookingService {
+  id            String  @id @default(cuid())
+  bookingId     String
+  booking       Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  serviceId     String
+  service       Service @relation(fields: [serviceId], references: [id])
+  quantity      Int     @default(1)
+  priceAtBooking Int
+
+  @@index([bookingId])
+}
+
+model ChatConversation {
+  id           String            @id @default(cuid())
+  bookingId    String            @unique
+  booking      Booking           @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  participants ChatParticipant[]
+  messages     ChatMessage[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+model ChatParticipant {
+  id             String             @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User               @relation(fields: [userId], references: [id])
+  role           ChatParticipantRole
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User             @relation(fields: [senderId], references: [id])
+  body           String           @db.Text
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId, createdAt])
 }
