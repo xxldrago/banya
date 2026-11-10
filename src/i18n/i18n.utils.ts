@@ -1,18 +1,3 @@
-"""i18n Utility Functions for Banya.Sauna Platform.
-
-This module provides comprehensive i18n utility functions for the Russian/English
-bilingual interface of the Banya.Sauna platform. It includes:
-- Language detection and switching
-- Number formatting for different locales
-- Date/time formatting for different cultures
-- Currency formatting
-- Direction handling
-- Integration with Next.js i18n
-
-The utilities are designed to work seamlessly with Next.js's built-in
-i18n configuration while providing additional functionality for cultural
-adaptation and user experience optimization.
-"""
 
 import { useParams, usePathname, useRouter } from 'next/navigation';
 
@@ -121,10 +106,9 @@ export class I18nUtils {
   formatDate(date: Date, options?: DateTimeFormatOptions): string {
     const locale = options?.locale || this.defaultLocale;
     const formatOptions: Intl.DateTimeFormatOptions = {
-      year: options?.year || '4-digit',
+      year: (options?.year || 'numeric') as '2-digit' | 'numeric',
       month: options?.month || 'long',
       day: options?.day || 'numeric',
-      locale,
     };
 
     if (options?.hour) formatOptions.hour = options.hour;
@@ -185,14 +169,14 @@ export class I18nUtils {
       numberFormat: {
         // Russian number formatting
         ru: {
-          style: 'decimal',
+          style: 'decimal' as const,
           useGrouping: true,
           minimumFractionDigits: 0,
           maximumFractionDigits: 3,
         },
         // English number formatting
         en: {
-          style: 'decimal',
+          style: 'decimal' as const,
           useGrouping: true,
           minimumFractionDigits: 0,
           maximumFractionDigits: 2,
@@ -206,13 +190,13 @@ export class I18nUtils {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
-        },
+        } as const,
         // English date formatting
         en: {
           month: 'long',
           day: 'numeric',
           year: 'numeric',
-        },
+        } as const,
       }[locale],
 
       currencyFormat: {
@@ -221,13 +205,13 @@ export class I18nUtils {
           style: 'currency',
           currency: 'RUB',
           currencyDisplay: 'symbol',
-        },
+        } as const,
         // English currency formatting
         en: {
           style: 'currency',
           currency: 'USD',
           currencyDisplay: 'symbol',
-        },
+        } as const,
       }[locale],
     };
   }
@@ -255,7 +239,7 @@ export class I18nUtils {
   // Translation key utilities
   getTranslationKey(path: string, locale: Locale): string {
     // Normalize path for translation key generation
-    const normalizedPath = path.replace(/^/+|/+$/g, '');
+    const normalizedPath = path.replace(/^\/+/, '').replace(/\/+$/, '');
     const key = normalizedPath.replace(/[/]/g, '.');
     return `pages.${key}`;
   }
@@ -316,6 +300,3 @@ export class I18nUtils {
 
 // Export default instance
 export const i18nUtils = I18nUtils.getInstance();
-
-// Type exports
-export type { Locale, I18nConfig, NumberFormatOptions, DateTimeFormatOptions, CurrencyFormatOptions };

@@ -1,23 +1,3 @@
-"""Security Audit Logger for Banya.Sauna Platform.
-
-This module implements comprehensive security audit logging to track all
-security-related events, including authentication attempts, authorization
-checks, fraud detection, and other security-relevant activities.
-
-The audit log provides:
-1. Immutable, append-only log entries
-2. Real-time monitoring capabilities
-3. Compliance reporting
-4. Forensic analysis support
-5. Alert generation
-
-All security events are logged with:
-- Timestamp
-- User information (ID, role, IP)
-- Event type and details
-- Request metadata
-- System context
-"""
 
 import { redis } from "@/shared/lib/redis";
 import { getSession } from "@/shared/middlewares/get-session";
@@ -298,7 +278,8 @@ export class SecurityAuditLogger {
 
     // Apply filters
     if (query.eventTypes?.length) {
-      events = events.filter(event => query.eventTypes.includes(event.eventType));
+      const types = query.eventTypes;
+      events = events.filter((event) => types.includes(event.eventType));
     }
 
     if (query.severity) {
@@ -326,11 +307,13 @@ export class SecurityAuditLogger {
     }
 
     if (query.startTime) {
-      events = events.filter(event => event.timestamp >= query.startTime);
+      const startTime = query.startTime;
+      events = events.filter((event) => event.timestamp >= startTime);
     }
 
     if (query.endTime) {
-      events = events.filter(event => event.timestamp <= query.endTime);
+      const endTime = query.endTime;
+      events = events.filter((event) => event.timestamp <= endTime);
     }
 
     // Apply pagination
@@ -553,7 +536,7 @@ export class SecurityAuditLogger {
     const events = [...this.pendingEvents];
     this.pendingEvents = [];
 
-    const pipeline = redis.pipeline();
+    const pipeline = await redis.pipeline();
 
     for (const event of events) {
       const key = `security:logs`;
@@ -573,12 +556,3 @@ export class SecurityAuditLogger {
 
 // Export default instance
 export const securityAuditLogger = SecurityAuditLogger.getInstance();
-
-// Type exports
-export type {
-  SecurityEvent,
-  SecurityLogQuery,
-  SecurityStatistics,
-  SecurityEventType,
-  SecurityEventSeverity,
-};

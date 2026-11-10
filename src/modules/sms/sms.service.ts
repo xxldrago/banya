@@ -35,7 +35,7 @@ export class SMSService {
         success: true,
         sid: response.sid,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to send SMS:", error);
       return {
         success: false,

@@ -1,25 +1,8 @@
-"""Anti-Fraud Module for Banya.Sauna Platform.
 
-This module implements comprehensive fraud detection and prevention mechanisms
-to protect the Banya.Sauna platform from malicious activities, including:
-- Automated booking bots
-- Payment fraud
-- Account takeover attempts
-- Money laundering schemes
-- Abusive user behavior
-
-The module uses multiple detection layers:
-1. Rate limiting and request throttling
-2. IP and geolocation blocking
-3. Behavioral analysis
-4. Machine learning-based fraud detection
-5. Real-time monitoring and alerting
-"""
-
+import { createHash } from "crypto";
 import { redis } from "@/shared/lib/redis";
 import { getSession } from "@/shared/middlewares/get-session";
 import { NextRequest } from "next/server";
-import { SuspiciousActivity } from "@/modules/audit/schemas/audit.schema";
 
 export interface FraudCheckResult {
   allowed: boolean;
@@ -269,7 +252,7 @@ export class AntiFraudModule {
     };
   }
 
-  private async checkAccountAge(context: FraudContext): Promise<FraudContext | FraudCheckResult> {
+  private async checkAccountAge(context: FraudContext): Promise<FraudCheckResult> {
     if (!context.userId) {
       return {
         allowed: true,
@@ -303,7 +286,7 @@ export class AntiFraudModule {
         riskScore: 60,
         reasons: [
           "New account detected",
-          `Account age: ${Math.floor(accountAgeDays)} days",
+          `Account age: ${Math.floor(accountAgeDays)} days`,
         ],
         action: "require_mfa",
       };
@@ -374,7 +357,7 @@ export class AntiFraudModule {
           riskScore: 75,
           reasons: [
             "Multiple rapid payments detected",
-            `Payment count: ${paymentCount}",
+            `Payment count: ${paymentCount}`,
           ],
           action: "deny",
         };
@@ -560,7 +543,7 @@ export class AntiFraudModule {
       // Add other device-specific identifiers
     ];
     
-    const hash = crypto.createHash("sha256");
+    const hash = createHash("sha256");
     components.forEach(comp => hash.update(comp));
     
     return hash.digest("hex");
@@ -598,6 +581,3 @@ export class AntiFraudModule {
 
 // Export default instance
 export const antiFraudModule = new AntiFraudModule();
-
-// Type exports
-export type { FraudContext, FraudCheckResult, FraudRule };

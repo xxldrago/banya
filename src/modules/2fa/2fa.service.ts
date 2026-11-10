@@ -1,19 +1,9 @@
-"""Two-Factor Authentication (2FA) Service.
-
-This module implements TOTP (Time-Based One-Time Password) authentication
-for the Banya.Sauna platform, supporting both client and admin accounts.
-
-Features:
-- TOTP code generation and validation
-- QR code generation for setup
-- Recovery code management
-- Rate limiting for 2FA attempts
-"""
 
 import crypto from "crypto";
 import QRCode from "qrcode";
-import { User } from "@/modules/auth/auth.schema";
+import { User } from "@prisma/client";
 import { redis } from "@/shared/lib/redis";
+import { getSession } from "@/shared/middlewares/get-session";
 
 export interface TOTPConfig {
   issuer: string;
@@ -87,7 +77,7 @@ export class TOTPService {
         return {
           success: false,
           isLocked: true,
-          error: `Account temporarily locked. Try again after ${new Date(until).toLocaleString()}.",
+          error: `Account temporarily locked. Try again after ${new Date(until).toLocaleString()}.`,
         };
       } else {
         // Lock expired, clear it
@@ -156,7 +146,7 @@ export class TOTPService {
   generateBackupCodes(count: number = 8): string[] {
     const codes: string[] = [];
     for (let i = 0; i < count; i++) {
-      codes.push(crypto.randomBytes(32).toString("base32").substring(0, 8));
+      codes.push(crypto.randomBytes(32).toString("hex").substring(0, 8));
     }
     return codes;
   }
@@ -279,6 +269,3 @@ export const totpService = new TOTPService({
   algorithm: "SHA1",
   window: 1,
 });
-
-// Type exports
-export type { SessionUser } from "./get-session";

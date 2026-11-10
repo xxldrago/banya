@@ -1,20 +1,3 @@
-"""IDOR (Insecure Direct Object Reference) Protection Guard.
-
-This module implements comprehensive IDOR protection for the Banya.Sauna platform.
-It prevents unauthorized access to resources by enforcing proper ownership
-checks and access control policies.
-
-IDOR vulnerabilities occur when an application exposes a reference to an
-internal object (like a database record or file) without proper authorization
-checks, allowing users to access or modify resources they shouldn't have access to.
-
-This guard implements multiple layers of protection:
-1. Resource ownership verification
-2. Role-based access control
-3. Policy-based access control
-4. Admin bypass rules
-5. Audit logging
-"""
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/shared/middlewares/get-session";
@@ -476,6 +459,3 @@ export class IDORGuard {
 
 // Export default instance
 export const idorGuard = new IDORGuard();
-
-// Type exports
-export type { IDORResource, IDORPolicy, IDORCheckResult };

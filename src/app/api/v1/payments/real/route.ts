@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { PaymentStatus } from "@prisma/client";
 import { createIntegrationService } from "@/modules/integrations/integration.service";
 import { getEnvironmentConfig } from "@/shared/lib/env";
 
@@ -33,13 +34,11 @@ export async function POST(req: NextRequest) {
           data: {
             id: payment.id,
             bookingId: data.bookingId,
-            userId: data.userId,
             amount: data.amount,
-            currency: data.currency || "RUB",
             status: "PENDING",
+            provider: "cloudpayments",
             paymentUrl: payment.paymentUrl,
             metadata: {
-              provider: "cloudpayments",
               providerPaymentId: payment.id,
               webhookData: data,
             },
@@ -72,13 +71,10 @@ export async function POST(req: NextRequest) {
         const updatedPayment = await prisma.payment.update({
           where: { id: data.paymentId },
           data: {
-            status: paymentStatus.status || "COMPLETED",
+            status: (paymentStatus.status || "COMPLETED") as PaymentStatus,
             providerPaymentId: paymentStatus.id,
             paidAt: paymentStatus.status === "SUCCESS" ? new Date() : null,
-            metadata: {
-              ...(paymentStatus.metadata || {}),
-              lastCheck: new Date(),
-            },
+            metadata: { lastCheck: new Date() },
           },
         });
 
@@ -159,7 +155,7 @@ export async function GET(req: NextRequest) {
         // Get payment from database
         const payment = await prisma.payment.findUnique({
           where: { id: paymentId },
-          include: { booking: true, user: true },
+          include: { booking: true },
         });
 
         if (!payment) {

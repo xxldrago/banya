@@ -1,20 +1,3 @@
-"""Language Switcher Component for Banya.Sauna Platform.
-
-This component provides a user-friendly interface for switching between
-Russian and English languages on the Banya.Sauna platform. It integrates
-seamlessly with Next.js's i18n system and provides:
-
-- Visual language selection buttons
-- Current language indication
-- Smooth language switching with path preservation
-- Responsive design for all screen sizes
-- Accessibility support
-- Cultural localization of language names
-
-The component is designed to be placed in the navigation bar or header
-where users can easily switch between Russian and English interfaces.
-"""
-
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Locale } from '@/i18n/i18n.types';

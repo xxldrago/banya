@@ -1,9 +1,3 @@
-"""2FA (Two-Factor Authentication) Middleware.
-
-This middleware enforces 2FA requirements for protected API routes.
-It checks if the user has enabled 2FA and requires additional
-authentication when necessary.
-"""
 
 import { NextRequest, NextResponse } from "next/server";
 import { SessionUser, getSession } from "./get-session";
@@ -323,6 +317,3 @@ async function getUser2FAStatus(userId: string): Promise<any> {
   // Placeholder implementation
   return null;
 }
-
-// Type exports
-export type { Require2FAOptions, SessionUserWith2FA };

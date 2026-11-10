@@ -101,6 +101,10 @@ model User {
   assignedTickets  SupportTicket[]        @relation("SupportTicketAssignment")
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
+  twoFAEnabled     Boolean                @default(false)
+  twoFASecret      String?
+  twoFAActivatedAt DateTime?
+  backupCodes      String?
 }
 
 model Partner {

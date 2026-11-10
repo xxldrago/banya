@@ -1,16 +1,3 @@
-"""TypeScript type definitions for i18n system.
-
-This module contains all TypeScript type definitions for the internationalization
-(i18n) system of the Banya.Sauna platform. It includes:
-- Locale type definitions
-- Translation key structures
-- Configuration interfaces
-- Formatters and utilities types
-- Component prop types
-
-The type system is designed to provide full type safety for all i18n operations
-while maintaining flexibility for different localization scenarios.
-"""
 
 export type Locale = 'ru' | 'en';
 
@@ -179,7 +166,7 @@ export interface I18nSettings {
   prefix: string;
   suffix: string;
   formatSeparator: string;
-  };'
+  };
   backend: {
     loadPath: string;
     addPath: string;
