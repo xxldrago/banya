@@ -20,10 +20,11 @@ describe("Integration: Promo → Booking", () => {
       console.log("No booking or promo found, skipping");
       return;
     }
+    await prisma.promoCodeUsage.deleteMany({ where: { bookingId: booking.id } });
     const usage = await prisma.promoCodeUsage.create({
       data: {
-        promoCodeId: promo.code,
-        userId: booking.userId,
+        promoCodeId: promo.id,
+        userId: booking.userId!,
         bookingId: booking.id,
         discountApplied: 100,
       },
