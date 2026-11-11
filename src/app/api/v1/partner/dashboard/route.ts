@@ -12,12 +12,23 @@ export async function GET(req: NextRequest) {
   const venues = await prisma.venue.findMany({ where: { partnerId: partner.id } });
   const venueIds = venues.map((v) => v.id);
 
-  const bookings = await prisma.booking.findMany({ where: { venueId: { in: venueIds } } });
+  const bookings = await prisma.booking.findMany({
+    where: { venueId: { in: venueIds } },
+    include: { payment: true },
+  });
   const pending = bookings.filter((b) => b.status === "PENDING").length;
   const confirmed = bookings.filter((b) => b.status === "CONFIRMED").length;
-  const completed = bookings.filter((b) => b.status === "COMPLETED").length;
+  const completedBookings = bookings.filter((b) => b.status === "COMPLETED");
+  const completed = completedBookings.length;
 
-  const revenue = 0; // placeholder until payments aggregation
+  const revenue = completedBookings.reduce((sum, b) => sum + (b.payment ? Math.round(b.payment.amount / 100) : 0), 0);
+
+  const approvedReviews = await prisma.review.findMany({
+    where: { venueId: { in: venueIds }, status: "APPROVED" },
+  });
+  const rating = approvedReviews.length
+    ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length
+    : 0;
 
   return NextResponse.json({
     data: {
@@ -27,7 +38,7 @@ export async function GET(req: NextRequest) {
       confirmed,
       completed,
       revenue,
-      rating: 0,
+      rating: Math.round(rating * 10) / 10,
       occupancy: venues.length > 0 ? Math.round((bookings.length / (venues.length * 10)) * 100) : 0,
     },
   });
