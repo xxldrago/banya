@@ -99,6 +99,7 @@ model User {
   adminAuditLogs   AdminAuditLog[]
   supportTickets   SupportTicket[]
   assignedTickets  SupportTicket[]        @relation("SupportTicketAssignment")
+  waitlistEntries  WaitlistEntry[]
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
   twoFAEnabled     Boolean                @default(false)
@@ -117,6 +118,8 @@ model Partner {
   venues      Venue[]
   payouts     Payout[]
   adCampaigns AdCampaign[]
+  certificates Certificate[]
+  staffMembers StaffMember[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -150,6 +153,7 @@ model Venue {
   favorites        Favorite[]
   services         Service[]
   icalSyncJobs     ICalSyncJob[]
+  waitlistEntries  WaitlistEntry[]
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -567,3 +571,46 @@ model SupportTicket {
 
 // Add favorites relation to User
 // Add favorites relation to Venue
+
+model WaitlistEntry {
+  id          String   @id @default(cuid())
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  desiredDate DateTime
+  notified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([venueId])
+  @@index([userId])
+}
+
+model Certificate {
+  id         String    @id @default(cuid())
+  partnerId  String
+  partner    Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  code       String    @unique
+  amount     Int
+  expiresAt  DateTime
+  usedAt     DateTime?
+  usedById   String?
+  createdAt  DateTime  @default(now())
+
+  @@index([partnerId])
+}
+
+model StaffMember {
+  id        String   @id @default(cuid())
+  partnerId String
+  partner   Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  role      String   @default("manager")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([partnerId])
+}
+
+// Add waitlist relation to User

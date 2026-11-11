@@ -9,8 +9,12 @@ export async function GET(req: NextRequest) {
   const partner = await prisma.partner.findFirst({ where: { userId: user.sub } });
   if (!partner) return NextResponse.json({ error: "Partner not found" }, { status: 404 });
 
-  // TODO: implement real data fetch from dedicated model once schema is extended.
-  return NextResponse.json({ data: [] });
+  const certs = await prisma.certificate.findMany({
+    where: { partnerId: partner.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json({ data: certs });
 }
 
 export async function POST(req: NextRequest) {
@@ -20,6 +24,14 @@ export async function POST(req: NextRequest) {
   const partner = await prisma.partner.findFirst({ where: { userId: user.sub } });
   if (!partner) return NextResponse.json({ error: "Partner not found" }, { status: 404 });
 
-  // TODO: implement create logic once schema is extended.
-  return NextResponse.json({ data: null }, { status: 501 });
+  const body = await req.json();
+  const { amount, expiresAt } = body;
+  if (!amount || !expiresAt) return NextResponse.json({ error: "amount and expiresAt required" }, { status: 400 });
+
+  const code = "CERT-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+  const cert = await prisma.certificate.create({
+    data: { partnerId: partner.id, code, amount, expiresAt: new Date(expiresAt) },
+  });
+
+  return NextResponse.json({ data: cert }, { status: 201 });
 }

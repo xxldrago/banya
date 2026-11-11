@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 export default function PartnerTariffsPage() {
-  const [tariffs, setTariffs] = useState<any[]>([]);
+  const [venues, setVenues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/v1/partner/tariffs", { credentials: "include" })
+    fetch("/api/v1/partner/venues", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : { data: [] }))
-      .then((data) => setTariffs(data.data || []))
+      .then((data) => setVenues(data.data || []))
       .finally(() => setLoading(false));
   }, []);
 
@@ -19,27 +18,38 @@ export default function PartnerTariffsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Тарифы</h1>
-        <Button>Добавить тариф</Button>
-      </div>
-      {tariffs.length === 0 ? (
+      <h1 className="text-2xl font-bold">Тарифы</h1>
+      {venues.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            Тарифов пока нет
-          </CardContent>
+          <CardContent className="py-8 text-center text-muted-foreground">Объектов пока нет</CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
-          {tariffs.map((t) => (
-            <Card key={t.id}>
-              <CardContent className="py-3">
-                <div className="font-medium">{t.name}</div>
-                <div className="text-sm text-muted-foreground">{t.price} ₽ / {t.duration} мин</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        venues.map((v) => (
+          <Card key={v.id}>
+            <CardHeader><CardTitle className="text-base">{v.title}</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              <div className="text-sm">
+                <span className="text-muted-foreground">Цена от:</span> {v.priceFrom} ₽
+              </div>
+              <div className="text-sm">
+                <span className="text-muted-foreground">Мин. гостей:</span> {v.minGuests} · <span className="text-muted-foreground">Макс:</span> {v.maxGuests}
+              </div>
+              <div className="text-sm">
+                <span className="text-muted-foreground">Мин. длительность:</span> {v.minDuration} мин
+              </div>
+              {v.services?.length > 0 && (
+                <div className="mt-2">
+                  <div className="text-sm font-medium">Услуги:</div>
+                  {v.services.map((s: any) => (
+                    <div key={s.id} className="text-sm text-muted-foreground">
+                      {s.name} — {s.defaultPrice} ₽
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))
       )}
     </div>
   );
