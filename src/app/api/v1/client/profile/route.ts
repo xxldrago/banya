@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/shared/lib/auth";
+import { getSession } from "@/shared/middlewares/get-session";
 
 export async function GET(req: NextRequest) {
-  const user = await requireAuth(req);
+  const user = await getSession(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const u = await prisma.user.findUnique({ where: { id: user.sub } });
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const user = await requireAuth(req);
+  const user = await getSession(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
