@@ -1,0 +1,44 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export default function PartnerAuditPage() {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/v1/audit", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : { data: [] }))
+      .then((data) => setLogs(data.data || []))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div>Загрузка...</div>;
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Аудит</h1>
+      {logs.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            Записей аудита нет
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {logs.map((l) => (
+            <Card key={l.id}>
+              <CardContent className="py-3">
+                <div className="font-medium">{l.action}</div>
+                <div className="text-sm text-muted-foreground">
+                  {new Date(l.createdAt).toLocaleString("ru-RU")} · {l.userId}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
