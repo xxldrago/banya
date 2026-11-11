@@ -30,6 +30,8 @@
 
 - [ ] **Phase 19: Полнофункциональный кабинет администратора (по прототипу admin.html)** - 16 разделов (ADMIN-FULL-01..06)
 
+- [x] **Phase 20: Полнофункциональная главная страница (по прототипу parda.html)** - Реальные данные API (cities/catalog/reviews/favorites/booking), BookingWidget на /catalog/[slug], реальные фото (HOME-FULL-01..06)
+
 ## Phase Details
 
 ### Phase 1: Инфраструктура, каталог и базовая авторизация
@@ -302,5 +304,10 @@ Plans:
 | 13 | ✅ Complete |
 | 14 | ✅ Complete |
 | 15 | ✅ Complete |
+| 16 | ✅ Complete |
+| 17 | ✅ Complete |
+| 18 | ✅ Complete |
+| 19 | ✅ Complete |
+| 20 | ✅ Complete |
 
-**Total: 15/15 phases complete (100%) - All phases successfully implemented**
+**Total: 20/20 phases complete (100%) - All phases successfully implemented**

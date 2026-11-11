@@ -1,7 +1,7 @@
 import { prisma } from "@/shared/db/client";
 
 export async function getActiveCities() {
-  return prisma.city.findMany({
+  const cities = await prisma.city.findMany({
     where: { isActive: true },
     orderBy: { name: "asc" },
     select: {
@@ -9,6 +9,18 @@ export async function getActiveCities() {
       name: true,
       slug: true,
       timezone: true,
+      _count: {
+        select: {
+          venues: {
+            where: { status: "PUBLISHED", moderationStatus: "APPROVED" },
+          },
+        },
+      },
     },
   });
+
+  return cities.map(({ _count, ...city }) => ({
+    ...city,
+    venueCount: _count.venues,
+  }));
 }

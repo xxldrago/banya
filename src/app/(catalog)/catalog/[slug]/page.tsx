@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { BookingWidget } from "@/components/catalog/booking-widget";
 
 function typeLabel(type: string): string {
   if (type === "sauna") return "Сауна";
@@ -176,9 +176,13 @@ export default async function VenueDetailPage({
                   </span>
                 </p>
               ) : null}
-              <Button className="w-full" disabled title="Бронирование — в Phase 2">
-                Забронировать (скоро)
-              </Button>
+              <BookingWidget
+                venueId={venue.id}
+                slug={venue.slug}
+                priceFrom={venue.priceFrom}
+                minDuration={venue.minDuration}
+                maxGuests={venue.maxGuests}
+              />
             </CardContent>
           </Card>
         </aside>

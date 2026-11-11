@@ -78,7 +78,34 @@ export async function getVenuesByCity(
     prisma.venue.count({ where }),
   ]);
 
-  return { venues, total };
+  const venueIds = venues.map((v) => v.id);
+  const ratingRows =
+    venueIds.length > 0
+      ? await prisma.review.groupBy({
+          by: ["venueId"],
+          where: { venueId: { in: venueIds }, status: "APPROVED" },
+          _avg: { rating: true },
+          _count: { _all: true },
+        })
+      : [];
+  const ratingMap = new Map(
+    ratingRows.map((row) => [
+      row.venueId,
+      {
+        rating: row._avg.rating ?? 0,
+        reviewsCount: row._count._all,
+      },
+    ]),
+  );
+
+  return {
+    venues: venues.map((venue) => ({
+      ...venue,
+      rating: ratingMap.get(venue.id)?.rating ?? 0,
+      reviewsCount: ratingMap.get(venue.id)?.reviewsCount ?? 0,
+    })),
+    total,
+  };
 }
 
 export async function getVenueBySlug(slug: string) {

@@ -503,6 +503,90 @@ async function main() {
     }
   }
 
+  // --- Phase 3: Reviews for the public catalog ---
+  if (testClient) {
+    const reviewVenues = await prisma.venue.findMany({
+      take: 4,
+      orderBy: { createdAt: "asc" },
+    });
+    const reviewSamples = [
+      {
+        rating: 5,
+        comment:
+          "Отличная баня! Пар мягкий, купель ледяная — то, что нужно после парной. Персонал внимательный, всё чисто.",
+      },
+      {
+        rating: 5,
+        comment:
+          "Бронировали на день рождения, остались в восторге. Просторная комната отдыха, мангал, всё продумано до мелочей.",
+      },
+      {
+        rating: 4,
+        comment:
+          "Хорошее место, удобная парковка. В выходные немного шумно от соседних компаний, но в целом рекомендую.",
+      },
+      {
+        rating: 5,
+        comment:
+          "Панорамные окна и вид на город — отдельный восторг. Сауна прогревается быстро, температура ровная.",
+      },
+      {
+        rating: 4,
+        comment:
+          "Чисто, уютно, есть всё необходимое. Немного не хватило веников, но принесли по первой просьбе.",
+      },
+      {
+        rating: 5,
+        comment:
+          "Лучшая баня, в которую ходили за последний год. Обязательно вернёмся всей компанией.",
+      },
+    ];
+
+    let reviewIndex = 0;
+    for (const venue of reviewVenues) {
+      for (let j = 0; j < 2; j++) {
+        const bookingId = `seed-review-booking-${venue.id}-${j}`;
+        const startsAt = new Date(
+          Date.now() - (12 + reviewIndex) * 24 * 60 * 60 * 1000,
+        );
+        await prisma.booking.upsert({
+          where: { id: bookingId },
+          update: {},
+          create: {
+            id: bookingId,
+            venueId: venue.id,
+            userId: testClient.id,
+            startsAt,
+            endsAt: new Date(startsAt.getTime() + 3 * 60 * 60 * 1000),
+            status: "CONFIRMED",
+            bookingMode: "instant",
+            allowBackToBack: false,
+          },
+        });
+
+        const sample = reviewSamples[reviewIndex % reviewSamples.length];
+        await prisma.review.upsert({
+          where: { bookingId },
+          update: {
+            rating: sample.rating,
+            comment: sample.comment,
+            status: "APPROVED",
+          },
+          create: {
+            bookingId,
+            venueId: venue.id,
+            userId: testClient.id,
+            rating: sample.rating,
+            comment: sample.comment,
+            status: "APPROVED",
+          },
+        });
+        reviewIndex++;
+      }
+    }
+    console.log(`  ✓ Reviews seeded: ${reviewIndex}`);
+  }
+
   console.log("✅ Seeding complete");
 }
 
