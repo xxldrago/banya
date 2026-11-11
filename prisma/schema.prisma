@@ -170,6 +170,17 @@ model Amenity {
   createdAt DateTime       @default(now())
 }
 
+model Content {
+  id        String   @id @default(cuid())
+  slug     String   @unique
+  title    String
+  body     String   @db.Text
+  status   String   @default("draft") // draft | published
+  locale   String   @default("ru")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model VenueAmenity {
   venueId   String
   amenityId String
