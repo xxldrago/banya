@@ -84,7 +84,7 @@ export function ChatWindow({ conversationId, currentUserId, token }: ChatWindowP
     <div className="flex h-[600px] flex-col rounded-lg border">
       <div className="flex items-center justify-between border-b p-4">
         <h2 className="font-semibold">Чат</h2>
-        <span className={`text-sm ${connected ? "text-green-600" : "text-gray-400"}`}>
+        <span className={`text-sm ${connected ? "text-[#1F7A4C]" : "text-[#7C6F65]"}`}>
           {connected ? "Подключен" : "Отключен"}
         </span>
       </div>

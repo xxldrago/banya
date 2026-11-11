@@ -61,7 +61,7 @@ export default function ClientReviewsPage() {
                   <div className="mt-2 space-y-2">
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((n) => (
-                        <button key={n} className={`text-xl ${n <= rating ? "text-yellow-500" : "text-gray-300"}`} onClick={() => setRating(n)}>★</button>
+                        <button key={n} className={`text-xl ${n <= rating ? "text-[#C9A227]" : "text-[#D9CBBB]"}`} onClick={() => setRating(n)}>★</button>
                       ))}
                     </div>
                     <textarea className="w-full rounded border px-2 py-1" placeholder="Комментарий (мин. 10 символов)" value={comment} onChange={(e) => setComment(e.target.value)} />

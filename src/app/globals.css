@@ -2,37 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "leaflet/dist/leaflet.css";
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Бренд «ПарДа» — тёплая палитра прототипа (public/parda.html) */
+    --background: 28 44% 96%; /* #F6F1EA */
+    --foreground: 24 14% 11%; /* #1A1512 */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 24 14% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --popover-foreground: 24 14% 11%;
+    --primary: 16 70% 42%; /* #D24E1E */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 28 30% 95%; /* #FBF7F2 */
+    --secondary-foreground: 24 14% 11%;
+    --muted: 28 26% 93%; /* #F1E9DF */
+    --muted-foreground: 26 12% 39%; /* #7C6F65 */
+    --accent: 16 80% 97%; /* #FDEDE4 */
+    --accent-foreground: 24 14% 11%;
+    --destructive: 4 71% 43%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 33 20% 89%; /* #E9DFD3 */
+    --input: 33 20% 89%;
+    --ring: 16 70% 42%; /* #D24E1E */
+    --radius: 0.75rem;
+    --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-display: "Unbounded", "Manrope", system-ui, sans-serif;
   }
 
   * {
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.55;
+    background-color: #f6f1ea;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  ::selection {
+    background-color: #d24e1e;
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid #d24e1e;
+    outline-offset: 2px;
+    border-radius: 6px;
   }
 }

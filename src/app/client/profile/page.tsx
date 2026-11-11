@@ -82,10 +82,10 @@ export default function ProfilePage() {
           <Card>
             <CardHeader><CardTitle>Удаление аккаунта</CardTitle></CardHeader>
             <CardContent>
-              <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <div className="rounded border border-[#F6D3C1] bg-[#FDEDE4] p-3 text-sm text-[#B33F13]">
                 Удаление аккаунта необратимо. История бронирований и платежей сохраняется.
               </div>
-              <Button variant="outline" className="mt-3 text-red-600">Запросить удаление аккаунта</Button>
+              <Button variant="outline" className="mt-3 text-[#B33F13]">Запросить удаление аккаунта</Button>
             </CardContent>
           </Card>
         </div>

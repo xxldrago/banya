@@ -128,9 +128,9 @@ export function BookingWidget({
 
   if (successId) {
     return (
-      <div className="space-y-3 rounded-lg border border-green-200 bg-green-50 p-4 text-sm">
-        <p className="font-semibold text-green-900">Бронирование создано</p>
-        <p className="text-green-800">
+      <div className="space-y-3 rounded-2xl border border-[#F6D3C1] bg-[#FDEDE4] p-4 text-sm">
+        <p className="font-semibold text-[#B33F13]">Бронирование создано</p>
+        <p className="text-[#7A5E12]">
           Номер брони: <span className="font-mono">{successId.slice(0, 12)}</span>
         </p>
         <div className="flex flex-wrap gap-2">
@@ -249,7 +249,7 @@ export function BookingWidget({
         </span>
       </div>
 
-      {error ? <p className="text-xs text-red-600">{error}</p> : null}
+      {error ? <p className="text-xs text-[#B3261E]">{error}</p> : null}
 
       <Button
         className="w-full"

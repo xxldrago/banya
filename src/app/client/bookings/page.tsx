@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const statusColors: Record<string, string> = {
-  PENDING: "bg-yellow-100 text-yellow-800",
-  CONFIRMED: "bg-green-100 text-green-800",
-  COMPLETED: "bg-blue-100 text-blue-800",
-  CANCELLED: "bg-gray-100 text-gray-800",
-  EXPIRED: "bg-red-100 text-red-800",
+  PENDING: "bg-[#FBF3DA] text-[#7A5E12]",
+  CONFIRMED: "bg-[#E6F4EC] text-[#1F7A4C]",
+  COMPLETED: "bg-[#E7F0FA] text-[#23507F]",
+  CANCELLED: "bg-[#F1E9DF] text-[#3B322C]",
+  EXPIRED: "bg-[#FDEDE4] text-[#B33F13]",
 };
 
 const statusLabels: Record<string, string> = {
