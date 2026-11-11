@@ -146,6 +146,9 @@ export default function PartnerVenuesPage() {
                   <span className="text-muted-foreground">Цена от:</span> {v.priceFrom} ₽
                 </div>
                 <div className="flex gap-2">
+                  <Link href={`/partner/venues/${v.id}`}>
+                    <Button variant="outline" size="sm">Редактировать</Button>
+                  </Link>
                   <Link href={`/catalog/${v.slug}`}>
                     <Button variant="outline" size="sm">Просмотр</Button>
                   </Link>

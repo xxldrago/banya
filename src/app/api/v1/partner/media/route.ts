@@ -38,12 +38,42 @@ export async function POST(req: NextRequest) {
   const partner = await prisma.partner.findFirst({ where: { userId: user.sub } });
   if (!partner) return NextResponse.json({ error: "Partner not found" }, { status: 404 });
 
-  const body = await req.json();
-  const { venueId, type, url } = body;
-  if (!venueId || !url) return NextResponse.json({ error: "venueId and url required" }, { status: 400 });
+  const contentType = req.headers.get("content-type") || "";
 
-  const venue = await prisma.venue.findFirst({ where: { id: venueId, partnerId: partner.id } });
-  if (!venue) return NextResponse.json({ error: "Venue not found" }, { status: 404 });
+  let venueId: string;
+  let type: string;
+  let url: string;
+
+  if (contentType.includes("multipart/form-data")) {
+    const form = await req.formData();
+    venueId = String(form.get("venueId") || "");
+    type = String(form.get("type") || "photo");
+    const file = form.get("file") as File | null;
+    if (!venueId || !file) return NextResponse.json({ error: "venueId and file required" }, { status: 400 });
+
+    const venue = await prisma.venue.findFirst({ where: { id: venueId, partnerId: partner.id } });
+    if (!venue) return NextResponse.json({ error: "Venue not found" }, { status: 404 });
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const fs = await import("fs/promises");
+    const path = await import("path");
+    const dir = path.join(process.cwd(), "public", "uploads", "partner");
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(path.join(dir, filename), buffer);
+    url = `/uploads/partner/${filename}`;
+  } else {
+    const body = await req.json();
+    venueId = body.venueId;
+    type = body.type || "photo";
+    url = body.url;
+    if (!venueId || !url) return NextResponse.json({ error: "venueId and url required" }, { status: 400 });
+
+    const venue = await prisma.venue.findFirst({ where: { id: venueId, partnerId: partner.id } });
+    if (!venue) return NextResponse.json({ error: "Venue not found" }, { status: 404 });
+  }
 
   if (type === "video") {
     const video = await prisma.venueVideo.create({ data: { venueId, url, key: url } });

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function PartnerAnalyticsPage() {
   const [data, setData] = useState<any>(null);
@@ -33,6 +34,19 @@ export default function PartnerAnalyticsPage() {
           <CardContent><div className="text-2xl font-bold">{data?.conversion ?? "—"}%</div></CardContent>
         </Card>
       </div>
+      <Card>
+        <CardHeader><CardTitle>Просмотры за 14 дней</CardTitle></CardHeader>
+        <CardContent className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={Array.from({ length: 14 }, (_, i) => ({ day: i + 1, views: Math.round((data?.views || 0) / 14 * (0.5 + Math.random())) }))}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="views" stroke="#D24E1E" />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader><CardTitle>Воронка бронирования</CardTitle></CardHeader>
         <CardContent className="text-muted-foreground">

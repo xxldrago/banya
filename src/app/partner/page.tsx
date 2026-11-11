@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function PartnerDashboardPage() {
   const [stats, setStats] = useState<any>(null);
@@ -38,6 +39,23 @@ export default function PartnerDashboardPage() {
           <CardContent><div className="text-2xl font-bold">{stats?.rating ?? "—"}</div></CardContent>
         </Card>
       </div>
+      <Card>
+        <CardHeader><CardTitle>Бронирования по статусам</CardTitle></CardHeader>
+        <CardContent className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={[
+              { name: "Ожидает", value: stats?.pending || 0 },
+              { name: "Подтверждено", value: stats?.confirmed || 0 },
+              { name: "Завершено", value: stats?.completed || 0 },
+            ]}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" fill="#D24E1E" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader><CardTitle>Ближайшие бронирования</CardTitle></CardHeader>
         <CardContent className="text-muted-foreground">
