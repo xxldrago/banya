@@ -5,13 +5,17 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: "Профиль", href: "/client/profile" },
+  { name: "Дашборд", href: "/client" },
   { name: "Мои бронирования", href: "/client/bookings" },
+  { name: "Платежи", href: "/client/payments" },
   { name: "Чаты", href: "/client/chats" },
   { name: "Избранное", href: "/client/favorites" },
   { name: "Мои отзывы", href: "/client/reviews" },
   { name: "Промокоды", href: "/client/promocodes" },
+  { name: "Бонусы", href: "/client/loyalty" },
   { name: "Уведомления", href: "/client/notifications" },
+  { name: "Поддержка", href: "/client/support" },
+  { name: "Профиль", href: "/client/profile" },
   { name: "Настройки", href: "/client/settings" },
 ];
 

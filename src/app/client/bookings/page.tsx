@@ -24,28 +24,61 @@ const statusLabels: Record<string, string> = {
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"upcoming" | "past" | "cancelled">("upcoming");
 
-  useEffect(() => {
-    fetch("/api/v1/bookings", { credentials: "include" })
-      .then((res) => res.ok ? res.json() : { data: [] })
+  const load = () => {
+    setLoading(true);
+    fetch("/api/v1/bookings?limit=50", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : { data: [] }))
       .then((data) => setBookings(data.data || []))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const cancel = async (id: string) => {
+    const res = await fetch(`/api/v1/bookings/${id}/cancel`, { method: "PATCH", credentials: "include" });
+    if (res.ok) load();
+    else {
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || err.message || "Ошибка");
+    }
+  };
 
   if (loading) return <div>Загрузка...</div>;
+
+  const now = new Date();
+  const filtered = bookings.filter((b) => {
+    if (tab === "upcoming") return new Date(b.startsAt) >= now && b.status !== "CANCELLED" && b.status !== "COMPLETED";
+    if (tab === "past") return b.status === "COMPLETED" || new Date(b.endsAt) < now;
+    return b.status === "CANCELLED" || b.status === "EXPIRED";
+  });
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Мои бронирования</h1>
-      {bookings.length === 0 ? (
+
+      <div className="flex gap-2 border-b">
+        {(["upcoming", "past", "cancelled"] as const).map((t) => (
+          <button
+            key={t}
+            className={`px-3 py-2 text-sm ${tab === t ? "border-b-2 border-primary font-medium" : "text-muted-foreground"}`}
+            onClick={() => setTab(t)}
+          >
+            {t === "upcoming" ? "Предстоящие" : t === "past" ? "Прошедшие" : "Отменённые"}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            У вас пока нет бронирований
+            Нет бронирований
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
-          {bookings.map((booking) => (
+          {filtered.map((booking) => (
             <Card key={booking.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -72,8 +105,8 @@ export default function BookingsPage() {
                   <Link href={`/bookings/${booking.id}`}>
                     <Button variant="outline" size="sm">Подробнее</Button>
                   </Link>
-                  {booking.status === "PENDING" && (
-                    <Button variant="outline" size="sm">Отменить</Button>
+                  {(booking.status === "PENDING" || booking.status === "CONFIRMED") && new Date(booking.startsAt) >= new Date() && (
+                    <Button variant="outline" size="sm" onClick={() => cancel(booking.id)}>Отменить</Button>
                   )}
                 </div>
               </CardContent>
