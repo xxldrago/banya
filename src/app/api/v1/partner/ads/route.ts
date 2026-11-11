@@ -9,8 +9,12 @@ export async function GET(req: NextRequest) {
   const partner = await prisma.partner.findFirst({ where: { userId: user.sub } });
   if (!partner) return NextResponse.json({ error: "Partner not found" }, { status: 404 });
 
-  // TODO: implement real data fetch from dedicated model once schema is extended.
-  return NextResponse.json({ data: [] });
+  const campaigns = await prisma.adCampaign.findMany({
+    where: { partnerId: partner.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json({ data: campaigns });
 }
 
 export async function POST(req: NextRequest) {
@@ -20,6 +24,24 @@ export async function POST(req: NextRequest) {
   const partner = await prisma.partner.findFirst({ where: { userId: user.sub } });
   if (!partner) return NextResponse.json({ error: "Partner not found" }, { status: 404 });
 
-  // TODO: implement create logic once schema is extended.
-  return NextResponse.json({ data: null }, { status: 501 });
+  const body = await req.json();
+  const { title, type, imageUrl, targetUrl, budget, startsAt, endsAt } = body;
+  if (!title || !startsAt) return NextResponse.json({ error: "title and startsAt required" }, { status: 400 });
+
+  const campaign = await prisma.adCampaign.create({
+    data: {
+      partnerId: partner.id,
+      title,
+      type: type || "BANNER",
+      imageUrl: imageUrl || null,
+      targetUrl: targetUrl || null,
+      budget: budget || 0,
+      spent: 0,
+      status: "draft",
+      startsAt: new Date(startsAt),
+      endsAt: endsAt ? new Date(endsAt) : null,
+    },
+  });
+
+  return NextResponse.json({ data: campaign }, { status: 201 });
 }

@@ -3,15 +3,41 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-// Textarea is native for now
 
 export default function PartnerReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [replying, setReplying] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
 
-  useEffect(() => {
-    setLoading(false);
-  }, []);
+  const load = () => {
+    setLoading(true);
+    fetch("/api/v1/partner/reviews", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : { data: [] }))
+      .then((data) => setReviews(data.data || []))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const submitReply = async (id: string) => {
+    const res = await fetch(`/api/v1/reviews/${id}/respond`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ response: replyText }),
+    });
+    if (res.ok) {
+      setReplying(null);
+      setReplyText("");
+      load();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || "Ошибка");
+    }
+  };
+
+  if (loading) return <div>Загрузка...</div>;
 
   return (
     <div className="space-y-6">
@@ -24,21 +50,38 @@ export default function PartnerReviewsPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {reviews.map((review) => (
-            <Card key={review.id}>
+          {reviews.map((r) => (
+            <Card key={r.id}>
               <CardHeader>
-                <CardTitle className="text-lg">{review.venue?.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-sm font-medium">Оценка: {review.rating}/5</div>
-                <p className="text-sm">{review.comment}</p>
-                <div className="space-y-2">
-                  <textarea
-                    className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    placeholder="Ваш ответ..."
-                  />
-                  <Button size="sm">Ответить</Button>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">{r.venue?.title}</CardTitle>
+                  <span className="text-sm">{"★".repeat(r.rating || 0)}</span>
                 </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-sm">{r.comment}</div>
+                {r.response ? (
+                  <div className="rounded bg-muted p-2 text-sm">
+                    <b>Ваш ответ:</b> {r.response}
+                  </div>
+                ) : replying === r.id ? (
+                  <div className="space-y-2">
+                    <textarea
+                      className="w-full rounded border px-2 py-1"
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      placeholder="Ваш ответ..."
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => submitReply(r.id)}>Отправить</Button>
+                      <Button size="sm" variant="outline" onClick={() => setReplying(null)}>Отмена</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={() => setReplying(r.id)}>
+                    Ответить
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}

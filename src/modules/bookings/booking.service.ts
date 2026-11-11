@@ -231,6 +231,38 @@ export async function getBookingById(id: string, userId: string, role: string) {
   return booking;
 }
 
+export async function confirmBooking(id: string, userId: string, role: string) {
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+    include: { venue: { include: { partner: true } } },
+  });
+
+  if (!booking) {
+    throw new NotFound("Booking not found");
+  }
+
+  if (role === "PARTNER") {
+    const partner = await prisma.partner.findFirst({ where: { userId } });
+    if (!partner || booking.venue.partnerId !== partner.id) {
+      throw new HttpError("FORBIDDEN", "Forbidden", 403);
+    }
+  } else if (role !== "ADMIN") {
+    throw new HttpError("FORBIDDEN", "Forbidden", 403);
+  }
+
+  if (booking.status !== "PENDING") {
+    throw new HttpError("INVALID_STATUS", "Only pending bookings can be confirmed", 400);
+  }
+
+  const updated = await prisma.booking.update({
+    where: { id },
+    data: { status: "CONFIRMED" },
+    include: { venue: true, services: true, user: true },
+  });
+
+  return updated;
+}
+
 export async function cancelBooking(id: string, userId: string, role: string) {
   const booking = await prisma.booking.findUnique({
     where: { id },

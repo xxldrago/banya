@@ -9,7 +9,7 @@ export default function PartnerDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/v1/admin/stats", { credentials: "include" })
+    fetch("/api/v1/partner/dashboard", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : { data: null }))
       .then((data) => setStats(data.data || data))
       .finally(() => setLoading(false));
