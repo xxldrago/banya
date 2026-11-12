@@ -8,17 +8,22 @@ export async function GET(req: NextRequest) {
 
   const bookings = await prisma.booking.findMany({ where: { userId: user.sub } });
   const completed = bookings.filter((b) => b.status === "COMPLETED").length;
-  const points = completed * 100; // 100 points per completed visit
+  const points = completed * 100;
   const level = completed >= 20 ? "Эксперт пара" : completed >= 5 ? "Постоянный гость" : "Новичок";
+
+  const referrals = await prisma.user.findMany({ where: { referredById: user.sub } });
+  const referralBonus = referrals.length * 500;
+  const referralLink = `/register?ref=${user.sub}`;
 
   return NextResponse.json({
     data: {
-      points,
+      points: points + referralBonus,
       level,
       visits: completed,
-      referrals: 0,
-      referralBonus: 0,
-      progress: Math.min(100, Math.round((points / 2000) * 100)),
+      referrals: referrals.length,
+      referralBonus,
+      referralLink,
+      progress: Math.min(100, Math.round(((points + referralBonus) / 2000) * 100)),
     },
   });
 }

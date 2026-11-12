@@ -85,6 +85,9 @@ model User {
   passwordHash     String
   role             Role                   @default(CLIENT)
   status           String                 @default("active")
+  referredById     String?
+  referredBy       User?                  @relation("Referral", fields: [referredById], references: [id])
+  referrals        User[]                 @relation("Referral")
   partner          Partner?
   refreshTokens    RefreshToken[]
   bookings         Booking[]
@@ -120,6 +123,7 @@ model Partner {
   adCampaigns AdCampaign[]
   certificates Certificate[]
   staffMembers StaffMember[]
+  tariffs     Tariff[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -179,6 +183,21 @@ model Content {
   locale   String   @default("ru")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Tariff {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id])
+  name        String
+  description String?  @db.Text
+  type        String   @default("promotion") // promotion / commission / addon
+  price       Int // rubles
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([partnerId])
 }
 
 model VenueAmenity {

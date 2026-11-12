@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 export default function ClientLoyaltyPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetch("/api/v1/client/loyalty", { credentials: "include" })
@@ -14,6 +15,15 @@ export default function ClientLoyaltyPage() {
       .then((d) => setData(d.data || d))
       .finally(() => setLoading(false));
   }, []);
+
+  async function copyLink() {
+    if (!data?.referralLink) return;
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${data.referralLink}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  }
 
   if (loading) return <div>Загрузка...</div>;
 
@@ -48,9 +58,16 @@ export default function ClientLoyaltyPage() {
 
       <Card>
         <CardHeader><CardTitle>Пригласить друга</CardTitle></CardHeader>
-        <CardContent className="space-y-2">
-          <div className="text-sm text-muted-foreground">За каждого приглашённого друга, который сделает бронь, вы получите 500 баллов.</div>
-          <Button>Скопировать ссылку-приглашение</Button>
+        <CardContent className="space-y-3">
+          <div className="text-sm text-muted-foreground">За каждого приглашённого друга, который сделает бронь, вы получите 500 баллов. Приглашено: {data?.referrals ?? 0}, начислено: {data?.referralBonus ?? 0} баллов.</div>
+          <div className="flex items-center gap-2">
+            <input
+              className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm"
+              readOnly
+              value={data?.referralLink ? `${window.location.origin}${data.referralLink}` : ""}
+            />
+            <Button onClick={() => void copyLink()}>{copied ? "Скопировано" : "Скопировать ссылку-приглашение"}</Button>
+          </div>
         </CardContent>
       </Card>
     </div>

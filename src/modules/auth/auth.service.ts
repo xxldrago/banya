@@ -39,16 +39,23 @@ export async function register(input: RegisterInput) {
     );
   }
 
-  const { email, password } = parsed.data;
+  const { email, password, ref } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     throw new HttpError("EMAIL_TAKEN", "Email already registered", 409);
   }
 
+  // Referral: validate referrer exists (ref is a user id)
+  let referredById: string | undefined;
+  if (ref) {
+    const referrer = await prisma.user.findUnique({ where: { id: ref } });
+    if (referrer) referredById = referrer.id;
+  }
+
   const passwordHash = await argon2.hash(password);
   const user = await prisma.user.create({
-    data: { email, passwordHash, role: "CLIENT" },
+    data: { email, passwordHash, role: "CLIENT", ...(referredById ? { referredById } : {}) },
     select: { id: true, email: true, role: true },
   });
 
