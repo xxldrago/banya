@@ -1,3 +1,4 @@
+import { invalidatePrefix } from "@/shared/lib/cache";
 import { prisma } from "@/shared/db/client";
 import { HttpError, NotFound } from "@/shared/lib/errors";
 import { createReviewSchema } from "./review.schema";
@@ -35,6 +36,7 @@ export async function createReview(bookingId: string, userId: string, input: any
     },
   });
 
+  await invalidatePrefix("catalog:");
   return review;
 }
 

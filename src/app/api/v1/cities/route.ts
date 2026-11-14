@@ -1,10 +1,11 @@
 import { getActiveCities } from "@/modules/cities/cities.service";
+import { cached } from "@/shared/lib/cache";
 import { apiError, apiSuccess } from "@/shared/lib/api-response";
 import { HttpError } from "@/shared/lib/errors";
 
 export async function GET() {
   try {
-    const cities = await getActiveCities();
+    const cities = await cached("ref:cities", 300, getActiveCities);
     return apiSuccess(cities);
   } catch (err) {
     if (err instanceof HttpError) {

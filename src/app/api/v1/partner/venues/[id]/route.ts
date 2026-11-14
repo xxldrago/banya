@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { invalidatePrefix } from "@/shared/lib/cache";
 import { getSession } from "@/shared/middlewares/get-session";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -38,6 +39,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const updated = await prisma.venue.update({ where: { id }, data });
+  await invalidatePrefix("catalog:");
   return NextResponse.json({ data: updated });
 }
 

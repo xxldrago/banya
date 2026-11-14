@@ -157,7 +157,7 @@ export class AntiFraudModule {
 
     if (!redisKey) {
       // First request
-      await redis.set(key, "1", "EX", 60); // 1 minute window
+      await redis.set(key, "1", 60); // 1 minute window
       return {
         allowed: true,
         riskScore: 0,
@@ -437,7 +437,7 @@ export class AntiFraudModule {
 
     // Store fingerprint for future comparison
     if (!storedFingerprint) {
-      await redis.set(key, fingerprint, "EX", 30 * 24 * 60 * 60); // 30 days
+      await redis.set(key, fingerprint, 30 * 24 * 60 * 60); // 30 days
     }
 
     return {

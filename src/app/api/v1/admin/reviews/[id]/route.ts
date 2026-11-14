@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { invalidatePrefix } from "@/shared/lib/cache";
 import { requireAuth } from "@/shared/lib/auth";
 
 export async function PATCH(
@@ -20,5 +21,6 @@ export async function PATCH(
     data: { status },
   });
 
+  await invalidatePrefix("catalog:");
   return NextResponse.json({ data: review });
 }

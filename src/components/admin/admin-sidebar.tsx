@@ -52,6 +52,7 @@ const navigation: NavGroup[] = [
       { name: "Аудит", href: "/admin/audit" },
       { name: "Уведомления", href: "/admin/notifications" },
       { name: "Настройки", href: "/admin/settings" },
+      { name: "Безопасность (2FA)", href: "/admin/security" },
     ],
   },
 ];

@@ -8,6 +8,7 @@ import {
   type RegisterInput,
 } from "./auth.schema";
 import { signAccess, signRefresh, verifyRefreshToken } from "./token.service";
+import { totpService } from "@/modules/2fa/2fa.service";
 
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -87,6 +88,21 @@ export async function login(input: LoginInput) {
   const valid = await argon2.verify(user.passwordHash, password);
   if (!valid) {
     throw new HttpError("INVALID_CREDENTIALS", "Invalid email or password", 401);
+  }
+
+  // 2FA: if the account has an activated TOTP secret, require a valid code.
+  if (user.twoFAEnabled && user.twoFAActivatedAt && user.twoFASecret) {
+    if (!parsed.data.totp) {
+      throw new HttpError("TOTP_REQUIRED", "2FA code required", 401);
+    }
+    const totpResult = await totpService.verifyTOTP(user.twoFASecret, parsed.data.totp, user.id, user.role === "ADMIN");
+    if (!totpResult.success) {
+      // Fall back to a backup code if present.
+      const backupOk = await totpService.verifyBackupCode(user.id, parsed.data.totp);
+      if (!backupOk) {
+        throw new HttpError(totpResult.isLocked ? "TOTP_LOCKED" : "TOTP_INVALID", totpResult.error || "Invalid 2FA code", 401);
+      }
+    }
   }
 
   const tokens = await issueTokens(user.id, user.role, (user as any).adminRole);

@@ -3,7 +3,7 @@ import crypto from "crypto";
 import QRCode from "qrcode";
 import { User } from "@prisma/client";
 import { redis } from "@/shared/lib/redis";
-import { getSession } from "@/shared/middlewares/get-session";
+import { prisma } from "@/lib/prisma";
 
 export interface TOTPConfig {
   issuer: string;
@@ -124,7 +124,6 @@ export class TOTPService {
     await redis.set(
       attemptsKey,
       JSON.stringify({ attempts, lockUntil }),
-      "EX",
       30 * 60 // 30 minutes expiry
     );
 
@@ -240,19 +239,30 @@ export class TOTPService {
   }
 
   private async getUser(userId: string): Promise<User | null> {
-    // This would be implemented using your database ORM
-    // For now, this is a placeholder
-    return null;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return null;
+    // backupCodes is stored as a JSON string in the DB; expose as array.
+    let backupCodes: unknown = user.backupCodes;
+    if (typeof backupCodes === "string") {
+      try {
+        backupCodes = JSON.parse(backupCodes);
+      } catch {
+        backupCodes = [];
+      }
+    }
+    return { ...user, backupCodes } as unknown as User;
   }
 
   private async updateUserField(userId: string, field: string, value: any): Promise<void> {
-    // This would be implemented using your database ORM
-    // For now, this is a placeholder
+    const data: Record<string, unknown> = { [field]: value };
+    if (field === "backupCodes" && Array.isArray(value)) {
+      data[field] = JSON.stringify(value);
+    }
+    await prisma.user.update({ where: { id: userId }, data });
   }
 
   private async updateBackupCodes(userId: string, codes: string[]): Promise<void> {
-    // This would be implemented using your database ORM
-    // For now, this is a placeholder
+    await prisma.user.update({ where: { id: userId }, data: { backupCodes: JSON.stringify(codes) } });
   }
 
   // Static method to create a service instance with default config

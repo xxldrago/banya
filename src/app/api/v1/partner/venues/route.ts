@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { invalidatePrefix } from "@/shared/lib/cache";
 import { getSession } from "@/shared/middlewares/get-session";
 
 export async function GET(req: NextRequest) {
@@ -52,5 +53,6 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  await invalidatePrefix("catalog:");
   return NextResponse.json({ data: venue }, { status: 201 });
 }

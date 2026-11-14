@@ -30,6 +30,7 @@
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "ioredis": "^6.0.0",
     "jose": "^5.9.0",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",

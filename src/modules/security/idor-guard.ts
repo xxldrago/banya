@@ -388,7 +388,7 @@ export class IDORGuard {
 
     if (!redisKey) {
       // First request
-      await redis.set(key, "1", "EX", 60); // 1 minute limit
+      await redis.set(key, "1", 60); // 1 minute limit
       return { allowed: true };
     }
 

@@ -8,7 +8,52 @@ const app = next({ dev });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-  const server = createServer((req, res) => handle(req, res, parse(req.url, true)));
+  // --- in-process request metrics (read by /api/v1/metrics via globalThis) ---
+  const mState = (globalThis.__pardaMetrics ||= {
+    counters: new Map(),
+    hists: new Map(),
+  });
+  const mKey = (name, labels) => {
+    const parts = Object.keys(labels)
+      .sort()
+      .map((k) => `${k}="${String(labels[k]).replace(/"/g, "'")}"`);
+    return parts.length ? `${name}{${parts.join(",")}}` : name;
+  };
+  const mInc = (name, labels, v = 1) => {
+    const k = mKey(name, labels);
+    mState.counters.set(k, (mState.counters.get(k) ?? 0) + v);
+  };
+  const mObs = (name, labels, value) => {
+    const k = mKey(name, labels);
+    const arr = mState.hists.get(k) ?? [];
+    arr.push(value);
+    if (arr.length > 5000) arr.splice(0, arr.length - 5000);
+    mState.hists.set(k, arr);
+  };
+  const normalizePath = (p) => {
+    const parts = p
+      .split("/")
+      .filter(Boolean)
+      .map((s) => (/^[0-9a-f-]{8,}$/i.test(s) || s.length > 20 ? ":id" : s));
+    return "/" + parts.slice(0, 4).join("/");
+  };
+
+  const server = createServer((req, res) => {
+    const start = Date.now();
+    const u = parse(req.url, true);
+    res.on("finish", () => {
+      try {
+        const route = normalizePath(u.pathname || "/");
+        mInc("http_requests_total", {
+          method: req.method,
+          route,
+          status: `${String(res.statusCode).charAt(0)}xx`,
+        });
+        mObs("http_request_duration_seconds", { route }, (Date.now() - start) / 1000);
+      } catch {}
+    });
+    handle(req, res, u);
+  });
   const wss = new WebSocketServer({ noServer: true });
   
   // Track connections by conversationId

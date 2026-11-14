@@ -1,8 +1,9 @@
 import { prisma } from "@/shared/db/client";
 import { NotFound } from "@/shared/lib/errors";
+import { cached, invalidatePrefix } from "@/shared/lib/cache";
 import type { CatalogQueryParams } from "./catalog.schema";
 
-export async function getVenuesByCity(
+async function getVenuesByCityUncached(
   cityId: string,
   {
     limit = 20,
@@ -123,7 +124,19 @@ export async function getVenuesByCity(
   };
 }
 
+export async function getVenuesByCity(
+  cityId: string,
+  filters: Parameters<typeof getVenuesByCityUncached>[1],
+) {
+  const key = `catalog:list:${cityId}:${JSON.stringify(filters)}`;
+  return cached(key, 60, () => getVenuesByCityUncached(cityId, filters));
+}
+
 export async function getVenueBySlug(slug: string) {
+  return cached(`catalog:slug:${slug}`, 60, () => getVenueBySlugUncached(slug));
+}
+
+async function getVenueBySlugUncached(slug: string) {
   const venue = await prisma.venue.findUnique({
     where: { slug },
     include: {
