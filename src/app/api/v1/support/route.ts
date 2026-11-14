@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/shared/lib/auth";
+import { autoAssignTicket, slaDueDate } from "@/modules/support/sla.service";
 
 export async function GET(req: NextRequest) {
   const user = await requireAuth(req);
@@ -22,7 +23,8 @@ export async function POST(req: NextRequest) {
   const { subject, body: ticketBody, priority } = body;
 
   const slaHours: Record<string, number> = { urgent: 4, high: 24, medium: 48, low: 72 };
-  const slaDueAt = new Date(Date.now() + (slaHours[priority || "medium"] || 48) * 3600000);
+  void slaHours;
+  const slaDueAt = slaDueDate(priority);
 
   const ticket = await prisma.supportTicket.create({
     data: {
@@ -35,5 +37,12 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ data: ticket });
+  // Auto-assign to the least-loaded support admin (best-effort).
+  await autoAssignTicket(ticket.id);
+  const assigned = await prisma.supportTicket.findUnique({
+    where: { id: ticket.id },
+    include: { assigned: { select: { id: true, email: true } } },
+  });
+
+  return NextResponse.json({ data: assigned ?? ticket });
 }

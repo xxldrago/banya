@@ -147,5 +147,10 @@ app.prepare().then(() => {
   server.listen(PORT, () => {
     console.log(`> Ready on http://localhost:${PORT}`);
     console.log(`> WebSocket on ws://localhost:${PORT}/ws/chat/:conversationId`);
+
+    // SLA breach alert check every 5 minutes (fire-and-forget).
+    setInterval(() => {
+      fetch(`http://localhost:${PORT}/api/v1/cron/sla`, { method: "POST" }).catch(() => {});
+    }, 5 * 60 * 1000).unref();
   });
 });
