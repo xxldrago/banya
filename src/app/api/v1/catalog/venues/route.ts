@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
       amenityIds: parsed.data.amenityId ?? [],
       district: parsed.data.district,
       metroStation: parsed.data.metroStation,
+      objectType: parsed.data.objectType,
       sort: parsed.data.sort,
     });
 

@@ -14,6 +14,7 @@ export async function getVenuesByCity(
     amenityIds = [],
     district,
     metroStation,
+    objectType,
     sort = "newest",
   }: {
     limit?: number;
@@ -25,6 +26,7 @@ export async function getVenuesByCity(
     amenityIds?: string[];
     district?: string;
     metroStation?: string;
+    objectType?: string;
     sort?: "price_asc" | "price_desc" | "newest";
   } = {},
 ) {
@@ -54,6 +56,11 @@ export async function getVenuesByCity(
   }
   if (metroStation) {
     where.metroStation = metroStation;
+  }
+  if (objectType) {
+    // resolve slug -> id
+    const ot = await prisma.objectType.findUnique({ where: { slug: objectType } });
+    if (ot) where.objectTypeId = ot.id;
   }
   if (amenityIds.length > 0) {
     // every: venue must have ALL specified amenities

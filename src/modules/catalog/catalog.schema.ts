@@ -18,6 +18,7 @@ export const catalogQuerySchema = paginationSchema.extend({
   ),
   district: z.string().optional(),
   metroStation: z.string().optional(),
+  objectType: z.string().optional(),
   sort: z.enum(["price_asc", "price_desc", "newest"]).default("newest"),
 });
 

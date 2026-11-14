@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 export default function PartnerDocumentsPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ type: "inn", url: "" });
+  const [form, setForm] = useState({ type: "inn", url: "", file: null as File | null });
 
   const load = () => {
     setLoading(true);
@@ -21,13 +21,22 @@ export default function PartnerDocumentsPage() {
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch("/api/v1/partner/documents", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) { setForm({ type: "inn", url: "" }); load(); }
+    let res: Response;
+    if (form.file) {
+      const fd = new FormData();
+      fd.append("type", form.type);
+      fd.append("file", form.file);
+      res = await fetch("/api/v1/partner/documents", { method: "POST", credentials: "include", body: fd });
+    } else {
+      if (!form.url) { alert("Укажите URL или выберите файл"); return; }
+      res = await fetch("/api/v1/partner/documents", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: form.type, url: form.url }),
+      });
+    }
+    if (res.ok) { setForm({ type: "inn", url: "", file: null }); load(); }
     else { const err = await res.json().catch(() => ({})); alert(err.error?.message || "Ошибка"); }
   };
 
@@ -39,14 +48,15 @@ export default function PartnerDocumentsPage() {
       <Card>
         <CardHeader><CardTitle>Загрузить документ</CardTitle></CardHeader>
         <CardContent>
-          <form onSubmit={add} className="flex gap-2">
+          <form onSubmit={add} className="flex flex-wrap gap-2">
             <select className="h-10 rounded-md border border-input bg-background px-3 text-sm" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
               <option value="inn">ИНН</option>
               <option value="ogrn">ОГРН/ОГРНИП</option>
               <option value="passport">Паспорт</option>
               <option value="other">Другое</option>
             </select>
-            <Input placeholder="URL документа" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} required />
+            <input type="file" className="h-10 rounded-md border border-input bg-background px-3 text-sm" onChange={(e) => setForm({ ...form, file: e.target.files?.[0] || null })} />
+            <Input placeholder="или URL документа" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} />
             <Button type="submit">Добавить</Button>
           </form>
         </CardContent>
