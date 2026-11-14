@@ -12,6 +12,7 @@ const navigation = [
   { name: "Избранное", href: "/client/favorites" },
   { name: "Мои отзывы", href: "/client/reviews" },
   { name: "Промокоды", href: "/client/promocodes" },
+  { name: "Лист ожидания", href: "/client/waitlist" },
   { name: "Бонусы", href: "/client/loyalty" },
   { name: "Уведомления", href: "/client/notifications" },
   { name: "Поддержка", href: "/client/support" },

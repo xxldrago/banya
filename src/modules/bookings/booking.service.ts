@@ -2,6 +2,7 @@ import { prisma } from "@/shared/db/client";
 import { HttpError, NotFound } from "@/shared/lib/errors";
 import { createBookingSchema, type BookingInput } from "./booking.schema";
 import { createConversationForBooking } from "@/modules/chat/chat.service";
+import { sendNotification } from "@/modules/notifications/notification.service";
 
 function hourlyPrice(venue: any, date: Date): number {
   const day = date.getDay();
@@ -425,6 +426,34 @@ export async function cancelBooking(id: string, userId: string, role: string, ca
       },
     }).catch(() => {});
   }
+
+  // Notify waitlist entries for this venue on this date that the slot freed up (best-effort)
+  try {
+    const dayStart = new Date(booking.startsAt);
+    dayStart.setUTCHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setUTCDate(dayEnd.getUTCDate() + 1);
+    const entries = await prisma.waitlistEntry.findMany({
+      where: { venueId: booking.venueId, desiredDate: { gte: dayStart, lt: dayEnd }, notified: false },
+      take: 20,
+    });
+    for (const entry of entries) {
+      await sendNotification(
+        entry.userId,
+        "waitlist_slot_freed",
+        "email",
+        `Освободилось место: ${booking.venue.title}`,
+        `Освободился слот в «${booking.venue.title}» на ${new Date(booking.startsAt).toLocaleString("ru-RU")}. Успейте забронировать!`,
+        { venueId: booking.venueId, waitlistEntryId: entry.id },
+      ).catch(() => {});
+    }
+    if (entries.length > 0) {
+      await prisma.waitlistEntry.updateMany({
+        where: { id: { in: entries.map((e) => e.id) } },
+        data: { notified: true },
+      });
+    }
+  } catch {}
 
   return { booking: updated, refundAmount };
 }
