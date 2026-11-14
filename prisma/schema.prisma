@@ -94,6 +94,7 @@ model User {
   passwordHash     String
   role             Role                   @default(CLIENT)
   status           String                 @default("active")
+  adminRole        String?                // superadmin | moderator | support | finance | marketing | content
   referredById     String?
   referredBy       User?                  @relation("Referral", fields: [referredById], references: [id])
   referrals        User[]                 @relation("Referral")
@@ -215,6 +216,50 @@ model Content {
   locale   String   @default("ru")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PlatformSetting {
+  key         String   @id
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model SeoPage {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?  @db.Text
+  content     String?  @db.Text
+  locale      String   @default("ru")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  imageUrl  String
+  linkUrl   String?
+  position  String   @default("home") // home | catalog | sidebar
+  isActive  Boolean  @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?  @db.Text
+  itemIds     Json? // array of venue ids
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Tariff {
@@ -723,6 +768,7 @@ model SupportTicket {
   priority   String   @default("medium") // low, medium, high, urgent
   assignedTo String?
   assigned   User?    @relation("SupportTicketAssignment", fields: [assignedTo], references: [id])
+  slaDueAt   DateTime?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
