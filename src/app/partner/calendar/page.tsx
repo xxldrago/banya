@@ -12,6 +12,9 @@ export default function PartnerCalendarPage() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [schedule, setSchedule] = useState<any[]>(Array.from({length:7},(_,i)=>({dayOfWeek:i,openTime:"09:00",closeTime:"22:00",isClosed:false})));
   const [scheduleMsg, setScheduleMsg] = useState<string | null>(null);
+  const [exceptions, setExceptions] = useState<any[]>([]);
+  const [excForm, setExcForm] = useState({ date: "", isClosed: true, openTime: "09:00", closeTime: "22:00", reason: "" });
+  const [excMsg, setExcMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadBookings = () => {
@@ -41,7 +44,7 @@ export default function PartnerCalendarPage() {
     fetch(`/api/v1/partner/schedules?venueId=${venueId}`, { credentials: "include" })
       .then((res) => (res.ok ? res.json() : { data: { schedules: [] } }))
       .then((data) => {
-        const scheds = data.data?.schedules || data.data || [];
+        const scheds = data.data?.schedules || [];
         if (Array.isArray(scheds) && scheds.length) {
           const merged = Array.from({length:7},(_,i)=>{
             const found = scheds.find((s:any)=>s.dayOfWeek===i);
@@ -49,6 +52,7 @@ export default function PartnerCalendarPage() {
           });
           setSchedule(merged);
         }
+        setExceptions(data.data?.exceptions || []);
       });
   };
 
@@ -61,6 +65,19 @@ export default function PartnerCalendarPage() {
       body: JSON.stringify({ venueId: selectedVenue, schedules: schedule }),
     });
     setScheduleMsg(res.ok ? "Расписание сохранено" : "Ошибка сохранения");
+  };
+
+  const addException = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedVenue || !excForm.date) return;
+    const res = await fetch("/api/v1/partner/schedules", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ venueId: selectedVenue, date: excForm.date, isClosed: excForm.isClosed, openTime: excForm.isClosed ? null : excForm.openTime, closeTime: excForm.isClosed ? null : excForm.closeTime, reason: excForm.reason || null }),
+    });
+    setExcMsg(res.ok ? "Исключение добавлено" : "Ошибка");
+    if (res.ok) { setExcForm({ date: "", isClosed: true, openTime: "09:00", closeTime: "22:00", reason: "" }); loadSchedule(selectedVenue); }
   };
 
   useEffect(() => {
@@ -147,6 +164,33 @@ export default function PartnerCalendarPage() {
             <Button size="sm" onClick={saveSchedule} disabled={!selectedVenue}>Сохранить расписание</Button>
             {scheduleMsg && <span className="text-sm text-muted-foreground">{scheduleMsg}</span>}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Исключения (выходные/спец. даты)</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <form onSubmit={addException} className="grid gap-2 md:grid-cols-4">
+            <input type="date" className="h-9 rounded border px-2 py-1 text-sm" value={excForm.date} onChange={(e) => setExcForm({ ...excForm, date: e.target.value })} required />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={excForm.isClosed} onChange={(e) => setExcForm({ ...excForm, isClosed: e.target.checked })} />
+              Закрыто
+            </label>
+            <input type="text" className="h-9 rounded border px-2 py-1 text-sm" placeholder="Причина" value={excForm.reason} onChange={(e) => setExcForm({ ...excForm, reason: e.target.value })} />
+            <Button size="sm" type="submit" disabled={!selectedVenue}>Добавить</Button>
+          </form>
+          {excMsg && <div className="text-sm text-muted-foreground">{excMsg}</div>}
+          {exceptions.length > 0 && (
+            <div className="space-y-1">
+              {exceptions.map((e: any) => (
+                <div key={e.id} className="flex items-center justify-between border-b py-1 text-sm">
+                  <span>{new Date(e.date).toLocaleDateString("ru-RU")}</span>
+                  <span>{e.isClosed ? "Закрыто" : `${e.openTime}–${e.closeTime}`}</span>
+                  <span className="text-muted-foreground">{e.reason || ""}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

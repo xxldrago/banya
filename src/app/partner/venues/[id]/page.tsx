@@ -93,6 +93,15 @@ export default function PartnerVenueEditPage() {
       </Card>
 
       <Card>
+        <CardHeader><CardTitle>Виджет для сайта</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          <div className="text-sm text-muted-foreground">Вставьте код на свой сайт, чтобы принимать бронирования напрямую:</div>
+          <textarea readOnly className="w-full rounded border px-2 py-1 font-mono text-xs" rows={3} value={`<iframe src="${typeof window !== "undefined" ? window.location.origin : ""}/catalog/${venue.slug}?embed=1" width="100%" height="600" frameborder="0"></iframe>`} />
+          <Button size="sm" variant="outline" onClick={() => { try { navigator.clipboard.writeText(`<iframe src="${window.location.origin}/catalog/${venue.slug}?embed=1" width="100%" height="600" frameborder="0"></iframe>`); alert("Скопировано"); } catch {} }}>Скопировать код</Button>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader><CardTitle>Правила бронирования</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
