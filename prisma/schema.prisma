@@ -147,6 +147,8 @@ model Venue {
   slug             String           @unique
   description      String           @db.Text
   address          String
+  district         String?
+  metroStation     String?
   phone            String?
   email            String?
   website          String?

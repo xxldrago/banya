@@ -293,6 +293,14 @@ async function main() {
   const amenityRecords = await prisma.amenity.findMany();
   const amenityBySlug = new Map(amenityRecords.map((a) => [a.slug, a]));
 
+  const districts: Record<string, string> = {
+    "banya-u-ivana": "Истра",
+    "sauna-loft-arbat": "Центр",
+    "bannyi-kompleks-sever": "Приморский",
+    "finskaya-sauna-neva": "Центральный",
+    "gornaya-banya-ahun": "Хоста",
+  };
+
   // --- Venues with photos + amenities ---
   for (const v of venues) {
     const city = await prisma.city.findUnique({ where: { slug: v.citySlug } });
@@ -306,6 +314,7 @@ async function main() {
         title: v.title,
         description: v.description,
         address: v.address,
+        district: districts[v.slug] || null,
         cityId: city.id,
         partnerId: partner.id,
         lat: v.lat,
@@ -327,6 +336,7 @@ async function main() {
         slug: v.slug,
         description: v.description,
         address: v.address,
+        district: districts[v.slug] || null,
         lat: v.lat,
         lng: v.lng,
         type: v.type,

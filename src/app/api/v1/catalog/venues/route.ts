@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
       maxPrice: parsed.data.maxPrice,
       amenityIds: parsed.data.amenityId ?? [],
       district: parsed.data.district,
+      metroStation: parsed.data.metroStation,
       sort: parsed.data.sort,
     });
 

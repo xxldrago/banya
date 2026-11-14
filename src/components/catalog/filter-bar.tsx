@@ -14,6 +14,7 @@ export function FilterBar() {
   const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") ?? "");
   const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") ?? "");
   const [district, setDistrict] = useState(searchParams.get("district") ?? "");
+  const [metroStation, setMetroStation] = useState(searchParams.get("metroStation") ?? "");
   const [amenityIds, setAmenityIds] = useState<Set<string>>(
     new Set(searchParams.getAll("amenityId")),
   );
@@ -25,6 +26,7 @@ export function FilterBar() {
     setMinPrice(searchParams.get("minPrice") ?? "");
     setMaxPrice(searchParams.get("maxPrice") ?? "");
     setDistrict(searchParams.get("district") ?? "");
+    setMetroStation(searchParams.get("metroStation") ?? "");
     setAmenityIds(new Set(searchParams.getAll("amenityId")));
   }, [searchParams]);
 
@@ -41,6 +43,8 @@ export function FilterBar() {
     else params.delete("maxPrice");
     if (district) params.set("district", district);
     else params.delete("district");
+    if (metroStation) params.set("metroStation", metroStation);
+    else params.delete("metroStation");
     params.delete("amenityId");
     for (const id of amenityIds) params.append("amenityId", id);
     params.delete("offset"); // reset pagination on filter change
@@ -54,6 +58,7 @@ export function FilterBar() {
     params.delete("minPrice");
     params.delete("maxPrice");
     params.delete("district");
+    params.delete("metroStation");
     params.delete("amenityId");
     params.delete("offset");
     setType("");
@@ -61,13 +66,14 @@ export function FilterBar() {
     setMinPrice("");
     setMaxPrice("");
     setDistrict("");
+    setMetroStation("");
     setAmenityIds(new Set());
     router.replace(`${pathname}?${params.toString()}`);
   }
 
   const hasFilters = useMemo(
-    () => type || minGuests || minPrice || maxPrice || district || amenityIds.size > 0,
-    [type, minGuests, minPrice, maxPrice, district, amenityIds],
+    () => type || minGuests || minPrice || maxPrice || district || metroStation || amenityIds.size > 0,
+    [type, minGuests, minPrice, maxPrice, district, metroStation, amenityIds],
   );
 
   function toggleAmenity(id: string) {
@@ -81,7 +87,7 @@ export function FilterBar() {
 
   return (
     <div className="space-y-4 rounded-lg border bg-card p-4">
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-6">
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Тип</label>
           <select
@@ -141,11 +147,38 @@ export function FilterBar() {
             placeholder="Напр. центр"
           />
         </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Метро</label>
+          <input
+            type="text"
+            value={metroStation}
+            onChange={(e) => setMetroStation(e.target.value)}
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+            placeholder="Напр. Арбатская"
+          />
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <Button size="sm" onClick={applyFilters}>
           Применить
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition((pos) => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("nearMe", "1");
+              params.set("userLat", String(pos.coords.latitude));
+              params.set("userLng", String(pos.coords.longitude));
+              router.replace(`${pathname}?${params.toString()}`);
+            });
+          }}
+        >
+          Рядом со мной
         </Button>
         {hasFilters && (
           <Button size="sm" variant="ghost" onClick={clearFilters}>

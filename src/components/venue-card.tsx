@@ -16,6 +16,8 @@ export type VenueCardData = {
   type: string;
   coverUrl?: string | null;
   cityName?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 function typeLabel(type: string): string {

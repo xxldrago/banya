@@ -13,6 +13,7 @@ export async function getVenuesByCity(
     maxPrice,
     amenityIds = [],
     district,
+    metroStation,
     sort = "newest",
   }: {
     limit?: number;
@@ -23,6 +24,7 @@ export async function getVenuesByCity(
     maxPrice?: number;
     amenityIds?: string[];
     district?: string;
+    metroStation?: string;
     sort?: "price_asc" | "price_desc" | "newest";
   } = {},
 ) {
@@ -46,6 +48,12 @@ export async function getVenuesByCity(
     if (maxPrice !== undefined && maxPrice !== null) {
       (where.priceFrom as Record<string, number>).lte = maxPrice;
     }
+  }
+  if (district) {
+    where.district = district;
+  }
+  if (metroStation) {
+    where.metroStation = metroStation;
   }
   if (amenityIds.length > 0) {
     // every: venue must have ALL specified amenities

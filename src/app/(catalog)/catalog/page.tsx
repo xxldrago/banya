@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { getVenuesByCity } from "@/modules/catalog/catalog.service";
 import { FilterBar } from "@/components/catalog/filter-bar";
+import { SearchBar } from "@/components/catalog/search-bar";
 import { SortDropdown } from "@/components/catalog/sort-dropdown";
 import { VenueList } from "@/components/venue-list";
 import { VenueMap } from "@/components/catalog/venue-map";
@@ -27,6 +28,10 @@ export default async function CatalogPage({
   const minPrice = params.minPrice as string | undefined;
   const maxPrice = params.maxPrice as string | undefined;
   const district = params.district as string | undefined;
+  const metroStation = params.metroStation as string | undefined;
+  const nearMe = params.nearMe === "1";
+  const userLat = params.userLat ? Number(params.userLat) : null;
+  const userLng = params.userLng ? Number(params.userLng) : null;
   const amenityIdsRaw = params.amenityId;
   const amenityIds = Array.isArray(amenityIdsRaw)
     ? amenityIdsRaw
@@ -45,6 +50,7 @@ export default async function CatalogPage({
     maxPrice: maxPrice ? Number(maxPrice) : undefined,
     amenityIds,
     district,
+    metroStation,
     sort: sort as "price_asc" | "price_desc" | "newest",
   });
 
@@ -57,7 +63,25 @@ export default async function CatalogPage({
     type: v.type,
     coverUrl: v.photos[0]?.url ?? null,
     cityName: v.city?.name ?? null,
+    lat: v.lat ?? null,
+    lng: v.lng ?? null,
   }));
+
+  // Near-me: sort by distance if coords provided
+  if (nearMe && userLat !== null && userLng !== null) {
+    const haversine = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+      const R = 6371;
+      const dLat = ((lat2 - lat1) * Math.PI) / 180;
+      const dLng = ((lng2 - lng1) * Math.PI) / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    };
+    cards.sort((a, b) => {
+      const da = a.lat != null && a.lng != null ? haversine(userLat, userLng, a.lat, a.lng) : Infinity;
+      const db = b.lat != null && b.lng != null ? haversine(userLat, userLng, b.lat, b.lng) : Infinity;
+      return da - db;
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -75,6 +99,10 @@ export default async function CatalogPage({
           </Suspense>
         </div>
       </div>
+
+      <Suspense>
+        <SearchBar />
+      </Suspense>
 
       <Suspense>
         <FilterBar />
