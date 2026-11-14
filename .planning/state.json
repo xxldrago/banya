@@ -1,0 +1,178 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": null,
+  "phases": [
+    {
+      "number": "1",
+      "name": "\u0418\u043d\u0444\u0440\u0430\u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u0430, \u043a\u0430\u0442\u0430\u043b\u043e\u0433 \u0438 \u0431\u0430\u0437\u043e\u0432\u0430\u044f \u0430\u0432\u0442\u043e\u0440\u0438\u0437\u0430\u0446\u0438\u044f",
+      "status": "complete"
+    },
+    {
+      "number": "2",
+      "name": "\u0411\u0440\u043e\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435, \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u043e\u0441\u0442\u044c, \u0447\u0430\u0442",
+      "status": "complete"
+    },
+    {
+      "number": "3",
+      "name": "\u041f\u043b\u0430\u0442\u0435\u0436\u0438 (mock)",
+      "status": "complete"
+    },
+    {
+      "number": "4",
+      "name": "\u041e\u0442\u0437\u044b\u0432\u044b, \u043f\u0440\u043e\u043c\u043e\u043a\u043e\u0434\u044b, \u043f\u0440\u043e\u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435",
+      "status": "complete"
+    },
+    {
+      "number": "5",
+      "name": "\u041f\u043b\u0430\u0442\u0435\u0436\u0438, \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f, \u0430\u0434\u043c\u0438\u043d\u043a\u0430, \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u044c",
+      "status": "complete"
+    },
+    {
+      "number": "6",
+      "name": "\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e \u0438 \u0442\u0435\u0441\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435",
+      "status": "complete"
+    },
+    {
+      "number": "7",
+      "name": "Production DevOps",
+      "status": "complete"
+    },
+    {
+      "number": "8",
+      "name": "\u041b\u0438\u0447\u043d\u044b\u0439 \u043a\u0430\u0431\u0438\u043d\u0435\u0442 \u043a\u043b\u0438\u0435\u043d\u0442\u0430",
+      "status": "complete"
+    },
+    {
+      "number": "9",
+      "name": "\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u043f\u0430\u0440\u0442\u043d\u0451\u0440\u0430",
+      "status": "complete"
+    },
+    {
+      "number": "10",
+      "name": "\u0410\u0434\u043c\u0438\u043d-\u043f\u0430\u043d\u0435\u043b\u044c UI",
+      "status": "complete"
+    },
+    {
+      "number": "11",
+      "name": "\u0420\u0430\u0441\u0448\u0438\u0440\u0435\u043d\u043d\u0430\u044f \u043c\u043e\u0434\u0435\u043b\u044c \u0434\u0430\u043d\u043d\u044b\u0445",
+      "status": "complete"
+    },
+    {
+      "number": "12",
+      "name": "\u0420\u0430\u0441\u0448\u0438\u0440\u0435\u043d\u043d\u044b\u0435 \u0444\u0443\u043d\u043a\u0446\u0438\u0438",
+      "status": "complete"
+    },
+    {
+      "number": "13",
+      "name": "\u0420\u0435\u0430\u043b\u044c\u043d\u044b\u0435 \u0438\u043d\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u0438",
+      "status": "complete"
+    },
+    {
+      "number": "14",
+      "name": "\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u044c \u0438 2FA",
+      "status": "complete"
+    },
+    {
+      "number": "15",
+      "name": "i18n \u0438 \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u0430\u044f \u043f\u043e\u043b\u0438\u0440\u043e\u0432\u043a\u0430",
+      "status": "complete"
+    },
+    {
+      "number": "16",
+      "name": "\u041f\u043e\u043b\u043d\u043e\u0444\u0443\u043d\u043a\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u0430\u0431\u0438\u043d\u0435\u0442 \u0432\u043b\u0430\u0434\u0435\u043b\u044c\u0446\u0430 (\u043f\u043e \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0443 dashboard.html)",
+      "status": "complete"
+    },
+    {
+      "number": "17",
+      "name": "\u041f\u043e\u043b\u043d\u043e\u0444\u0443\u043d\u043a\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u0430\u0431\u0438\u043d\u0435\u0442 \u043a\u043b\u0438\u0435\u043d\u0442\u0430 (\u043f\u043e \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0443 dashboard-client.html)",
+      "status": "complete"
+    },
+    {
+      "number": "18",
+      "name": "\u041f\u043e\u043b\u043d\u043e\u0444\u0443\u043d\u043a\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u0430\u0431\u0438\u043d\u0435\u0442 \u043a\u043b\u0438\u0435\u043d\u0442\u0430 (\u043f\u043e \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0443 dashboard-client.html)",
+      "status": "complete"
+    },
+    {
+      "number": "19",
+      "name": "\u041f\u043e\u043b\u043d\u043e\u0444\u0443\u043d\u043a\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u0430\u0431\u0438\u043d\u0435\u0442 \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u0430 (\u043f\u043e \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0443 admin.html)",
+      "status": "complete"
+    },
+    {
+      "number": "20",
+      "name": "\u041f\u043e\u043b\u043d\u043e\u0444\u0443\u043d\u043a\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f \u0433\u043b\u0430\u0432\u043d\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 (\u043f\u043e \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0443 parda.html)",
+      "status": "complete"
+    },
+    {
+      "number": "21",
+      "name": "Payments integration: real provider, webhook signature verification, receipts",
+      "status": "pending"
+    },
+    {
+      "number": "22",
+      "name": "Notifications: real channels (email/SMS/Telegram/WhatsApp), templates with variables, delivery logging",
+      "status": "pending"
+    },
+    {
+      "number": "23",
+      "name": "Booking lifecycle: extended statuses, cancellation policy with refund calc, pay-on-site, buffer/min-max duration, manual booking UI",
+      "status": "pending"
+    },
+    {
+      "number": "24",
+      "name": "Contact visibility and venue media: hide phone until booking, photo categories, video upload, full-screen gallery",
+      "status": "pending"
+    },
+    {
+      "number": "25",
+      "name": "Search and ranking: Meilisearch integration, autocomplete, saved searches, near-me, district/metro filters, search hints",
+      "status": "pending"
+    },
+    {
+      "number": "26",
+      "name": "Pricing and tariffs: weekday/weekend/night tariffs, special offers, dynamic pricing, tariffs by day/hour",
+      "status": "pending"
+    },
+    {
+      "number": "27",
+      "name": "Chat enhancements: attachments (image/doc), read receipts, quick replies, templates, antispam",
+      "status": "pending"
+    },
+    {
+      "number": "28",
+      "name": "Reviews and ratings: review photos, criteria storage, weighted rating, complaint flow",
+      "status": "pending"
+    },
+    {
+      "number": "29",
+      "name": "Owner cabinet completion: deep analytics, schedules/exceptions, manual bookings UI, CSV/Excel export, templates, widgets, tariffs UI",
+      "status": "pending"
+    },
+    {
+      "number": "30",
+      "name": "Admin platform: role-based admin roles, configurable platform settings, SLA support, antifraud, SEO/banners/collections, audit deep",
+      "status": "pending"
+    },
+    {
+      "number": "31",
+      "name": "Data model extensions: districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles",
+      "status": "pending"
+    },
+    {
+      "number": "32",
+      "name": "Extra features: waitlist, gift certificates, packages, loyalty deep, comparison, route to venue, AI picker",
+      "status": "pending"
+    },
+    {
+      "number": "33",
+      "name": "NFR and monitoring: performance targets, logging, monitoring, backups, caching, search engine",
+      "status": "pending"
+    }
+  ],
+  "next": {
+    "command": "/gsd-progress",
+    "label": "Show progress",
+    "reason": "Unsure of state \u2014 showing progress"
+  },
+  "updated_at": "2026-11-14T00:44:15.910Z"
+}

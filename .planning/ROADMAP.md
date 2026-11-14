@@ -32,6 +32,33 @@
 
 - [x] **Phase 20: Полнофункциональная главная страница (по прототипу parda.html)** - Реальные данные API (cities/catalog/reviews/favorites/booking), BookingWidget на /catalog/[slug], реальные фото (HOME-FULL-01..06)
 
+- [ ] **Phase 21: Payments integration** - Real provider, webhook signature, receipts
+- [ ] **Phase 22: Notifications** - Real channels (email/SMS/Telegram/WhatsApp), templates, delivery logging
+- [ ] **Phase 23: Booking lifecycle** - Extended statuses, cancellation policy, refund calc, pay-on-site, buffer, manual booking UI
+- [ ] **Phase 24: Contact visibility and venue media** - Hide phone until booking, photo categories, video upload, full-screen gallery
+- [ ] **Phase 25: Search and ranking** - Meilisearch, autocomplete, saved searches, near-me, district/metro filters
+- [ ] **Phase 26: Pricing and tariffs** - Weekday/weekend/night, special offers, dynamic pricing, tariffs by day/hour
+- [ ] **Phase 27: Chat enhancements** - Attachments, read receipts, quick replies, templates, antispam
+- [ ] **Phase 28: Reviews and ratings** - Review photos, criteria storage, weighted rating, complaint flow
+- [ ] **Phase 29: Owner cabinet completion** - Deep analytics, schedules/exceptions, manual bookings UI, exports, templates, widgets, tariffs UI
+- [ ] **Phase 30: Admin platform** - Roles, configurable settings, SLA support, antifraud, SEO/banners/collections, audit deep
+- [ ] **Phase 31: Data model extensions** - districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles
+- [ ] **Phase 32: Extra features** - Waitlist, gift certs, packages, loyalty deep, comparison, route, AI picker
+- [ ] **Phase 33: NFR and monitoring** - Performance targets, logging, monitoring, backups, caching, search engine
+- [ ] **Phase 21: Payments integration: real provider, webhook signature verification, receipts**
+- [ ] **Phase 22: Notifications: real channels (email/SMS/Telegram/WhatsApp), templates with variables, delivery logging**
+- [ ] **Phase 23: Booking lifecycle: extended statuses, cancellation policy with refund calc, pay-on-site, buffer/min-max duration, manual booking UI**
+- [ ] **Phase 24: Contact visibility and venue media: hide phone until booking, photo categories, video upload, full-screen gallery**
+- [ ] **Phase 25: Search and ranking: Meilisearch integration, autocomplete, saved searches, near-me, district/metro filters, search hints**
+- [ ] **Phase 26: Pricing and tariffs: weekday/weekend/night tariffs, special offers, dynamic pricing, tariffs by day/hour**
+- [ ] **Phase 27: Chat enhancements: attachments (image/doc), read receipts, quick replies, templates, antispam**
+- [ ] **Phase 28: Reviews and ratings: review photos, criteria storage, weighted rating, complaint flow**
+- [ ] **Phase 29: Owner cabinet completion: deep analytics, schedules/exceptions, manual bookings UI, CSV/Excel export, templates, widgets, tariffs UI**
+- [ ] **Phase 30: Admin platform: role-based admin roles, configurable platform settings, SLA support, antifraud, SEO/banners/collections, audit deep**
+- [ ] **Phase 31: Data model extensions: districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles**
+- [ ] **Phase 32: Extra features: waitlist, gift certificates, packages, loyalty deep, comparison, route to venue, AI picker**
+- [ ] **Phase 33: NFR and monitoring: performance targets, logging, monitoring, backups, caching, search engine**
+
 ## Phase Details
 
 ### Phase 1: Инфраструктура, каталог и базовая авторизация
@@ -309,5 +336,148 @@ Plans:
 | 18 | ✅ Complete |
 | 19 | ✅ Complete |
 | 20 | ✅ Complete |
+| 21 | ⏳ Planned |
+| 22 | ⏳ Planned |
+| 23 | ⏳ Planned |
+| 24 | ⏳ Planned |
+| 25 | ⏳ Planned |
+| 26 | ⏳ Planned |
+| 27 | ⏳ Planned |
+| 28 | ⏳ Planned |
+| 29 | ⏳ Planned |
+| 30 | ⏳ Planned |
+| 31 | ⏳ Planned |
+| 32 | ⏳ Planned |
+| 33 | ⏳ Planned |
 
-**Total: 20/20 phases complete (100%) - All phases successfully implemented**
+**Total: 20/33 phases complete (61%) — 13 phases planned for remaining functionality**
+
+### Phase 21: Payments integration: real provider, webhook signature verification, receipts
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 21
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 21 to break down)
+
+### Phase 22: Notifications: real channels (email/SMS/Telegram/WhatsApp), templates with variables, delivery logging
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 21
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 22 to break down)
+
+### Phase 23: Booking lifecycle: extended statuses, cancellation policy with refund calc, pay-on-site, buffer/min-max duration, manual booking UI
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 22
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 23 to break down)
+
+### Phase 24: Contact visibility and venue media: hide phone until booking, photo categories, video upload, full-screen gallery
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 23
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 24 to break down)
+
+### Phase 25: Search and ranking: Meilisearch integration, autocomplete, saved searches, near-me, district/metro filters, search hints
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 24
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 25 to break down)
+
+### Phase 26: Pricing and tariffs: weekday/weekend/night tariffs, special offers, dynamic pricing, tariffs by day/hour
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 25
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 26 to break down)
+
+### Phase 27: Chat enhancements: attachments (image/doc), read receipts, quick replies, templates, antispam
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 26
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 27 to break down)
+
+### Phase 28: Reviews and ratings: review photos, criteria storage, weighted rating, complaint flow
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 27
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 28 to break down)
+
+### Phase 29: Owner cabinet completion: deep analytics, schedules/exceptions, manual bookings UI, CSV/Excel export, templates, widgets, tariffs UI
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 28
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 29 to break down)
+
+### Phase 30: Admin platform: role-based admin roles, configurable platform settings, SLA support, antifraud, SEO/banners/collections, audit deep
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 29
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 30 to break down)
+
+### Phase 31: Data model extensions: districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 30
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 31 to break down)
+
+### Phase 32: Extra features: waitlist, gift certificates, packages, loyalty deep, comparison, route to venue, AI picker
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 31
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 32 to break down)
+
+### Phase 33: NFR and monitoring: performance targets, logging, monitoring, backups, caching, search engine
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 32
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 33 to break down)
