@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/shared/lib/auth";
+import { getSession } from "@/shared/middlewares/get-session";
 import { autoAssignTicket, slaDueDate } from "@/modules/support/sla.service";
 
 export async function GET(req: NextRequest) {
-  const user = await requireAuth(req);
+  const user = await getSession(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const tickets = await prisma.supportTicket.findMany({
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await requireAuth(req);
+  const user = await getSession(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
