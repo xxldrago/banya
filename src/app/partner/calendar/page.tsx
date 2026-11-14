@@ -10,6 +10,8 @@ export default function PartnerCalendarPage() {
   const [selectedVenue, setSelectedVenue] = useState("");
   const [sourceUrl, setSourceUrl] = useState("");
   const [jobs, setJobs] = useState<any[]>([]);
+  const [schedule, setSchedule] = useState<any[]>(Array.from({length:7},(_,i)=>({dayOfWeek:i,openTime:"09:00",closeTime:"22:00",isClosed:false})));
+  const [scheduleMsg, setScheduleMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadBookings = () => {
@@ -34,12 +36,39 @@ export default function PartnerCalendarPage() {
       .then((data) => setJobs(data.data || []));
   };
 
+  const loadSchedule = (venueId: string) => {
+    if (!venueId) return;
+    fetch(`/api/v1/partner/schedules?venueId=${venueId}`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : { data: { schedules: [] } }))
+      .then((data) => {
+        const scheds = data.data?.schedules || data.data || [];
+        if (Array.isArray(scheds) && scheds.length) {
+          const merged = Array.from({length:7},(_,i)=>{
+            const found = scheds.find((s:any)=>s.dayOfWeek===i);
+            return found ? {dayOfWeek:i, openTime:found.openTime, closeTime:found.closeTime, isClosed:found.isClosed} : {dayOfWeek:i, openTime:"09:00", closeTime:"22:00", isClosed:false};
+          });
+          setSchedule(merged);
+        }
+      });
+  };
+
+  const saveSchedule = async () => {
+    if (!selectedVenue) return;
+    const res = await fetch("/api/v1/partner/schedules", {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ venueId: selectedVenue, schedules: schedule }),
+    });
+    setScheduleMsg(res.ok ? "Расписание сохранено" : "Ошибка сохранения");
+  };
+
   useEffect(() => {
     setLoading(true);
     Promise.all([loadBookings(), loadVenues()]).finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadJobs(selectedVenue); }, [selectedVenue]);
+  useEffect(() => { loadJobs(selectedVenue); loadSchedule(selectedVenue); }, [selectedVenue]);
 
   const sync = async () => {
     if (!selectedVenue || !sourceUrl) return;
@@ -94,6 +123,30 @@ export default function PartnerCalendarPage() {
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Расписание работы</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-2">
+            {["Вс","Пн","Вт","Ср","Чт","Пт","Сб"].map((label, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                <span className="w-8 font-medium">{label}</span>
+                <input type="checkbox" checked={!schedule[i].isClosed} onChange={(e) => {
+                  const next = [...schedule]; next[i] = { ...next[i], isClosed: !e.target.checked }; setSchedule(next);
+                }} />
+                <input type="time" className="rounded border px-2 py-1" value={schedule[i].openTime} disabled={schedule[i].isClosed} onChange={(e) => { const next=[...schedule]; next[i]={...next[i],openTime:e.target.value}; setSchedule(next); }} />
+                <span>—</span>
+                <input type="time" className="rounded border px-2 py-1" value={schedule[i].closeTime} disabled={schedule[i].isClosed} onChange={(e) => { const next=[...schedule]; next[i]={...next[i],closeTime:e.target.value}; setSchedule(next); }} />
+                {schedule[i].isClosed && <span className="text-muted-foreground">выходной</span>}
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <Button size="sm" onClick={saveSchedule} disabled={!selectedVenue}>Сохранить расписание</Button>
+            {scheduleMsg && <span className="text-sm text-muted-foreground">{scheduleMsg}</span>}
+          </div>
         </CardContent>
       </Card>
 

@@ -60,6 +60,21 @@ export default function PartnerBookingsPage() {
       });
   }, []);
 
+  const exportCsv = () => {
+    const rows = [
+      ["ID", "Объект", "Клиент", "Начало", "Конец", "Статус", "Сумма"].join(";"),
+      ...bookings.map((b) =>
+        [b.id, b.venue?.title || "", b.user?.email || "", new Date(b.startsAt).toISOString(), new Date(b.endsAt).toISOString(), b.status, b.totalPrice ?? ""].join(";"),
+      ),
+    ].join("\n");
+    const blob = new Blob([rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "bookings.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   const act = async (id: string, action: "confirm" | "cancel") => {
     const res = await fetch(`/api/v1/bookings/${id}/${action}`, {
       method: "PATCH",
@@ -108,6 +123,9 @@ export default function PartnerBookingsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Бронирования</h1>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={exportCsv} disabled={bookings.length === 0}>
+            Экспорт CSV
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setShowManual((v) => !v)}>
             {showManual ? "Скрыть форму" : "Ручное бронирование"}
           </Button>
