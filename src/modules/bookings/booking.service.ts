@@ -271,6 +271,7 @@ export async function getBookingById(id: string, userId: string, role: string) {
       services: { include: { service: true } },
       payment: true,
       conversation: { include: { participants: true, messages: { take: 10, orderBy: { createdAt: "desc" } } } },
+      statusHistories: { orderBy: { createdAt: "asc" } },
     },
   });
 

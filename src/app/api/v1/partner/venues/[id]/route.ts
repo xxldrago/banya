@@ -31,7 +31,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!venue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const body = await req.json();
-  const allowed = ["title", "description", "address", "type", "minGuests", "maxGuests", "minDuration", "priceFrom", "rules", "status"];
+  const allowed = ["title", "description", "address", "type", "minGuests", "maxGuests", "minDuration", "priceFrom", "rules", "status", "bufferMinutes", "minDurationMinutes", "maxDurationMinutes", "bookingStepMinutes", "leadTimeMinutes", "maxHorizonDays", "cancellationPolicy"];
   const data: any = {};
   for (const k of allowed) {
     if (body[k] !== undefined) data[k] = body[k];

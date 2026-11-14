@@ -67,13 +67,29 @@ export default function PartnerVenueEditPage() {
           <div className="grid grid-cols-3 gap-2">
             <Input type="number" placeholder="Макс гостей" value={form.maxGuests || 0} onChange={(e) => setForm({ ...form, maxGuests: Number(e.target.value) })} />
             <Input type="number" placeholder="Цена от" value={form.priceFrom || 0} onChange={(e) => setForm({ ...form, priceFrom: Number(e.target.value) })} />
-            <Input type="number" placeholder="Мин. длительность" value={form.minDuration || 0} onChange={(e) => setForm({ ...form, minDuration: Number(e.target.value) })} />
+            <Input type="number" placeholder="Мин. длительность (мин)" value={form.minDuration || 0} onChange={(e) => setForm({ ...form, minDuration: Number(e.target.value) })} />
           </div>
           <select className="w-full rounded border px-2 py-1" value={form.status || "DRAFT"} onChange={(e) => setForm({ ...form, status: e.target.value })}>
             <option value="DRAFT">Черновик</option>
             <option value="PUBLISHED">Опубликован</option>
             <option value="HIDDEN">Скрыт</option>
           </select>
+          <Button onClick={save} disabled={saving}>{saving ? "Сохранение..." : "Сохранить"}</Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Правила бронирования</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+            <Input type="number" placeholder="Буфер (мин)" value={form.bufferMinutes ?? 0} onChange={(e) => setForm({ ...form, bufferMinutes: Number(e.target.value) })} />
+            <Input type="number" placeholder="Мин. длительность (мин)" value={form.minDurationMinutes ?? 60} onChange={(e) => setForm({ ...form, minDurationMinutes: Number(e.target.value) })} />
+            <Input type="number" placeholder="Макс. длительность (мин)" value={form.maxDurationMinutes ?? 480} onChange={(e) => setForm({ ...form, maxDurationMinutes: Number(e.target.value) })} />
+            <Input type="number" placeholder="Шаг (мин)" value={form.bookingStepMinutes ?? 30} onChange={(e) => setForm({ ...form, bookingStepMinutes: Number(e.target.value) })} />
+            <Input type="number" placeholder="Опережение (мин)" value={form.leadTimeMinutes ?? 120} onChange={(e) => setForm({ ...form, leadTimeMinutes: Number(e.target.value) })} />
+            <Input type="number" placeholder="Горизонт (дней)" value={form.maxHorizonDays ?? 365} onChange={(e) => setForm({ ...form, maxHorizonDays: Number(e.target.value) })} />
+          </div>
+          <textarea className="w-full rounded border px-2 py-1" placeholder='Политика отмены (JSON): {"freeHours":72,"partialPercent":50,"partialHours":24}' value={form.cancellationPolicy || ""} onChange={(e) => setForm({ ...form, cancellationPolicy: e.target.value })} />
           <Button onClick={save} disabled={saving}>{saving ? "Сохранение..." : "Сохранить"}</Button>
         </CardContent>
       </Card>
