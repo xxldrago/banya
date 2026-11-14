@@ -41,14 +41,19 @@ export class TOTPService {
   }
 
   async generateSecret(): Promise<string> {
-    return crypto.randomBytes(32).toString("hex");
+    // RFC 4648 base32-encoded 20 random bytes (standard for TOTP secrets)
+    return base32Encode(crypto.randomBytes(20));
   }
 
   generateTOTP(secret: string, timestamp?: number): string {
+    // RFC 6238: HMAC(key, 8-byte big-endian counter)
     const time = Math.floor((timestamp || Date.now()) / (this.config.period * 1000));
-    const hmac = crypto.createHmac(this.config.algorithm, Buffer.from(secret, "hex"));
-    hmac.update(Buffer.from(time.toString()));
-    
+    const counterBuf = Buffer.alloc(8);
+    counterBuf.writeUInt32BE(Math.floor(time / 0x100000000), 0);
+    counterBuf.writeUInt32BE(time % 0x100000000, 4);
+    const hmac = crypto.createHmac(this.config.algorithm, base32Decode(secret));
+    hmac.update(counterBuf);
+
     const digest = hmac.digest();
     let offset = digest[digest.length - 1] & 0x0f;
     let code = (
@@ -119,6 +124,12 @@ export class TOTPService {
     // Lock account after 5 failed attempts
     if (attempts >= 5) {
       lockUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      // Set the lock key that verifyTOTP checks on every attempt
+      await redis.set(
+        lockKey,
+        JSON.stringify({ until: lockUntil, attempts }),
+        15 * 60 // 15 minutes expiry
+      );
     }
 
     await redis.set(
@@ -279,3 +290,42 @@ export const totpService = new TOTPService({
   algorithm: "SHA1",
   window: 1,
 });
+
+// ---- RFC 4648 base32 (A-Z, 2-7) helpers ----
+const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+function base32Encode(buf: Buffer): string {
+  let bits = 0;
+  let value = 0;
+  let output = "";
+  for (const byte of buf) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      output += BASE32_ALPHABET[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) {
+    output += BASE32_ALPHABET[(value << (5 - bits)) & 31];
+  }
+  return output;
+}
+
+function base32Decode(input: string): Buffer {
+  const clean = input.toUpperCase().replace(/=+$/, "").replace(/\s/g, "");
+  let bits = 0;
+  let value = 0;
+  const bytes: number[] = [];
+  for (const ch of clean) {
+    const idx = BASE32_ALPHABET.indexOf(ch);
+    if (idx === -1) continue;
+    value = (value << 5) | idx;
+    bits += 5;
+    if (bits >= 8) {
+      bytes.push((value >>> (bits - 8)) & 0xff);
+      bits -= 8;
+    }
+  }
+  return Buffer.from(bytes);
+}
