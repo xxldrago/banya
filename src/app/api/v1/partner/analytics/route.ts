@@ -70,6 +70,11 @@ export async function GET(req: NextRequest) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
+    // Persist quality scores
+    await Promise.all(perVenue.map((v) =>
+      prisma.venue.update({ where: { id: v.id }, data: { qualityScore: v.qualityScore } }).catch(() => {})
+    ));
+
     return NextResponse.json({
       data: {
         views,

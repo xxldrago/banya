@@ -189,6 +189,7 @@ model Venue {
   exceptions       AvailabilityException[]
   icalSyncJobs     ICalSyncJob[]
   waitlistEntries  WaitlistEntry[]
+  qualityScore     Int              @default(0)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
