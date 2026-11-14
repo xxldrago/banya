@@ -21,6 +21,9 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { subject, body: ticketBody, priority } = body;
 
+  const slaHours: Record<string, number> = { urgent: 4, high: 24, medium: 48, low: 72 };
+  const slaDueAt = new Date(Date.now() + (slaHours[priority || "medium"] || 48) * 3600000);
+
   const ticket = await prisma.supportTicket.create({
     data: {
       userId: user.sub,
@@ -28,6 +31,7 @@ export async function POST(req: NextRequest) {
       body: ticketBody,
       priority: priority || "medium",
       status: "open",
+      slaDueAt,
     },
   });
 
