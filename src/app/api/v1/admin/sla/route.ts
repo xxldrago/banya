@@ -8,6 +8,8 @@ export async function GET(req: NextRequest) {
   if (!user || user.role !== "ADMIN") {
     return NextResponse.json({ error: "Admin required" }, { status: 403 });
   }
+  const _ar = user.adminRole ?? "superadmin";
+  if (!["superadmin","support"].includes(_ar)) return NextResponse.json({ error: "Insufficient admin role" }, { status: 403 });
 
   const now = new Date();
   const overdue = await prisma.supportTicket.findMany({

@@ -13,8 +13,8 @@ const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 type PublicUser = { id: string; email: string; role: string };
 
-async function issueTokens(userId: string, role: string) {
-  const accessToken = await signAccess(userId, role);
+async function issueTokens(userId: string, role: string, adminRole?: string | null) {
+  const accessToken = await signAccess(userId, role, adminRole);
   const { token: refreshToken, jti } = await signRefresh(userId);
   await prisma.refreshToken.create({
     data: {
@@ -56,10 +56,10 @@ export async function register(input: RegisterInput) {
   const passwordHash = await argon2.hash(password);
   const user = await prisma.user.create({
     data: { email, passwordHash, role: "CLIENT", ...(referredById ? { referredById } : {}) },
-    select: { id: true, email: true, role: true },
+    select: { id: true, email: true, role: true, adminRole: true },
   });
 
-  const tokens = await issueTokens(user.id, user.role);
+  const tokens = await issueTokens(user.id, user.role, user.adminRole);
   return { user: user as PublicUser, ...tokens };
 }
 
@@ -89,7 +89,7 @@ export async function login(input: LoginInput) {
     throw new HttpError("INVALID_CREDENTIALS", "Invalid email or password", 401);
   }
 
-  const tokens = await issueTokens(user.id, user.role);
+  const tokens = await issueTokens(user.id, user.role, (user as any).adminRole);
   return {
     user: { id: user.id, email: user.email, role: user.role } as PublicUser,
     ...tokens,
@@ -126,7 +126,7 @@ export async function refresh(refreshToken: string) {
 
   const user = await prisma.user.findUnique({
     where: { id: stored.userId },
-    select: { id: true, email: true, role: true, status: true },
+    select: { id: true, email: true, role: true, status: true, adminRole: true },
   });
   if (!user || user.status !== "active") {
     throw new HttpError("TOKEN_REVOKED", "Refresh token revoked", 401);
@@ -137,7 +137,7 @@ export async function refresh(refreshToken: string) {
       where: { jti: payload.jti },
       data: { revokedAt: new Date() },
     });
-    const accessToken = await signAccess(user.id, user.role);
+    const accessToken = await signAccess(user.id, user.role, user.adminRole);
     const { token: newRefreshToken, jti: newJti } = await signRefresh(user.id);
     await tx.refreshToken.create({
       data: {

@@ -14,6 +14,8 @@ export async function PUT(
     if (!user || user.role !== "ADMIN") {
       return apiError("FORBIDDEN", "Admin required", 403);
     }
+    const _ar = user.adminRole ?? "superadmin";
+    if (!["superadmin", "content"].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
 
     const body = await req.json();
     const { title, body: contentBody, status, locale } = body;
@@ -43,6 +45,8 @@ export async function DELETE(
     if (!user || user.role !== "ADMIN") {
       return apiError("FORBIDDEN", "Admin required", 403);
     }
+    const _ar = user.adminRole ?? "superadmin";
+    if (!["superadmin", "content"].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
 
     const item = await prisma.content.delete({ where: { id } });
 
@@ -66,6 +70,8 @@ export async function GET(
     if (!user || user.role !== "ADMIN") {
       return apiError("FORBIDDEN", "Admin required", 403);
     }
+    const _ar = user.adminRole ?? "superadmin";
+    if (!["superadmin", "content"].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
 
     const item = await prisma.content.findUnique({ where: { id } });
 

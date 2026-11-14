@@ -12,6 +12,8 @@ async function requireAdmin(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const user = await requireAdmin(req);
   if (!user) return apiError("FORBIDDEN", "Admin required", 403);
+  const _ar = user.adminRole ?? "superadmin";
+  if (!['superadmin', 'marketing'].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
   const items = await prisma.banner.findMany({ orderBy: { sortOrder: "asc" } });
   return apiSuccess(items);
 }
@@ -19,6 +21,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const user = await requireAdmin(req);
   if (!user) return apiError("FORBIDDEN", "Admin required", 403);
+  const _ar = user.adminRole ?? "superadmin";
+  if (!['superadmin', 'marketing'].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
   const body = await req.json();
   const { title, imageUrl, linkUrl, position = "home", label = "Реклама", isActive = true, startsAt, endsAt, sortOrder = 0 } = body;
   if (!title || !imageUrl) return apiError("VALIDATION_ERROR", "title and imageUrl required", 400);

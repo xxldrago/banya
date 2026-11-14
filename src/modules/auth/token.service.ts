@@ -24,9 +24,9 @@ export const REFRESH_COOKIE_OPTIONS = {
 /**
  * Sign an access token (15min expiry)
  */
-export async function signAccess(userId: string, role: string): Promise<string> {
+export async function signAccess(userId: string, role: string, adminRole?: string | null): Promise<string> {
   const secret = new TextEncoder().encode(getEnv().JWT_SECRET);
-  return new SignJWT({ sub: userId, role })
+  return new SignJWT({ sub: userId, role, adminRole: adminRole ?? null })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("15m")
@@ -50,7 +50,7 @@ export async function signRefresh(userId: string): Promise<{ token: string; jti:
 /**
  * Verify an access token and return the full payload
  */
-export type AccessPayload = { sub: string; role: string; iat: number; exp: number };
+export type AccessPayload = { sub: string; role: string; adminRole: string | null; iat: number; exp: number };
 
 export async function verifyAccessToken(token: string): Promise<AccessPayload> {
   const secret = new TextEncoder().encode(getEnv().JWT_SECRET);

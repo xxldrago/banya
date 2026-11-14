@@ -12,6 +12,8 @@ async function requireAdmin(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const user = await requireAdmin(req);
   if (!user) return apiError("FORBIDDEN", "Admin required", 403);
+  const _ar = user.adminRole ?? "superadmin";
+  if (!['superadmin'].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
 
   const settings = await prisma.platformSetting.findMany({ orderBy: { key: "asc" } });
   return apiSuccess(settings);
@@ -20,6 +22,8 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const user = await requireAdmin(req);
   if (!user) return apiError("FORBIDDEN", "Admin required", 403);
+  const _ar = user.adminRole ?? "superadmin";
+  if (!['superadmin'].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
 
   const body = await req.json();
   const { key, value, description } = body;

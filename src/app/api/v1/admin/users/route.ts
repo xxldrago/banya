@@ -8,6 +8,8 @@ export async function GET(req: NextRequest) {
   if (!user || user.role !== "ADMIN") {
     return NextResponse.json({ error: "Admin required" }, { status: 403 });
   }
+  const _ar = user.adminRole ?? "superadmin";
+  if (!["superadmin"].includes(_ar)) return NextResponse.json({ error: "Insufficient admin role" }, { status: 403 });
 
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q") || "";

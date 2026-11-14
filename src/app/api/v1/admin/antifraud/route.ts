@@ -12,6 +12,8 @@ async function requireAdmin(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const user = await requireAdmin(req);
   if (!user) return apiError("FORBIDDEN", "Admin required", 403);
+  const _ar = user.adminRole ?? "superadmin";
+  if (!['superadmin', 'moderator'].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
 
   // Mass cancellations: users with >3 cancelled bookings
   const cancelledByUser = await prisma.booking.groupBy({

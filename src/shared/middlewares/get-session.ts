@@ -5,6 +5,7 @@ import { ACCESS_COOKIE_NAME } from "@/modules/auth/token.service";
 export type SessionUser = {
   sub: string;
   role: string;
+  adminRole: string | null;
 };
 
 function parseCookies(req: Request): Record<string, string> {

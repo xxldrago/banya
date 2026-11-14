@@ -9,6 +9,8 @@ export async function GET(req: NextRequest) {
     if (!user || user.role !== "ADMIN") {
       return apiError("FORBIDDEN", "Admin required", 403);
     }
+    const _ar = user.adminRole ?? "superadmin";
+    if (!["superadmin", "content"].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
 
     const items = await prisma.content.findMany({
       orderBy: { updatedAt: "desc" },
@@ -27,6 +29,8 @@ export async function POST(req: NextRequest) {
     if (!user || user.role !== "ADMIN") {
       return apiError("FORBIDDEN", "Admin required", 403);
     }
+    const _ar = user.adminRole ?? "superadmin";
+    if (!["superadmin", "content"].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
 
     const body = await req.json();
     const { slug, title, body: contentBody, status = "draft", locale = "ru" } = body;
