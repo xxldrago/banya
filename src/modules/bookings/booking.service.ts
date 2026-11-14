@@ -378,7 +378,7 @@ export async function confirmBooking(id: string, userId: string, role: string) {
   const updated = await prisma.booking.update({
     where: { id },
     data: { status: "CONFIRMED" },
-    include: { venue: true, services: true, user: true },
+    include: { venue: true, services: true, user: { include: { profile: true } } },
   });
 
   // Notify the client (best-effort): email + SMS if phone exists

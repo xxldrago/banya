@@ -201,10 +201,17 @@ export async function getCurrentUser(userId: string) {
       role: true,
       status: true,
       createdAt: true,
+      profile: { select: { firstName: true, lastName: true, avatarUrl: true } },
     },
   });
   if (!user) {
     throw new Unauthorized("User not found");
   }
-  return user;
+  return {
+    ...user,
+    firstName: user.profile?.firstName ?? null,
+    lastName: user.profile?.lastName ?? null,
+    avatarUrl: user.profile?.avatarUrl ?? null,
+    profile: undefined,
+  };
 }

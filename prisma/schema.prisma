@@ -93,9 +93,6 @@ model User {
   email            String                 @unique
   phone            String?                @unique
   telegramChatId   String?
-  firstName        String?
-  lastName         String?
-  birthDate        DateTime?
   passwordHash     String
   role             Role                   @default(CLIENT)
   status           String                 @default("active")

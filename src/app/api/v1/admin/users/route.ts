@@ -20,8 +20,8 @@ export async function GET(req: NextRequest) {
   if (q) {
     where.OR = [
       { email: { contains: q, mode: "insensitive" } },
-      { firstName: { contains: q, mode: "insensitive" } },
-      { lastName: { contains: q, mode: "insensitive" } },
+      { profile: { firstName: { contains: q, mode: "insensitive" } } },
+      { profile: { lastName: { contains: q, mode: "insensitive" } } },
     ];
   }
   if (role) where.role = role;
@@ -29,10 +29,23 @@ export async function GET(req: NextRequest) {
 
   const users = await prisma.user.findMany({
     where,
-    select: { id: true, email: true, role: true, adminRole: true, status: true, createdAt: true },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      adminRole: true,
+      status: true,
+      createdAt: true,
+      profile: { select: { firstName: true, lastName: true } },
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
   });
 
-  return apiSuccess(users);
+  return apiSuccess(users.map((u) => ({
+    ...u,
+    firstName: u.profile?.firstName ?? null,
+    lastName: u.profile?.lastName ?? null,
+    profile: undefined,
+  })));
 }

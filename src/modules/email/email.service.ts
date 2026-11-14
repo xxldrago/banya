@@ -53,7 +53,7 @@ export class EmailService {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #2c5aa0;">Подтверждение бронирования</h2>
           
-          <p>Здравствуйте, ${bookingDetails.user?.firstName || "клиент"}</p>
+          <p>Здравствуйте, ${bookingDetails.user?.profile?.firstName || "клиент"}</p>
           
           <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
             <h3 style="margin-top: 0;">Детали бронирования</h3>
@@ -74,7 +74,7 @@ export class EmailService {
       text: `
         Подтверждение бронирования №${bookingDetails.id}
         
-        Здравствуйте, ${bookingDetails.user?.firstName || "клиент"}
+        Здравствуйте, ${bookingDetails.user?.profile?.firstName || "клиент"}
         
         Детали бронирования:
         - Номер брони: ${bookingDetails.id}
@@ -104,7 +104,7 @@ export class EmailService {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #2c5aa0;">Подтверждение оплаты</h2>
           
-          <p>Здравствуйте, ${bookingDetails.user?.firstName || "клиент"}</p>
+          <p>Здравствуйте, ${bookingDetails.user?.profile?.firstName || "клиент"}</p>
           
           <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
             <h3 style="margin-top: 0;">Детали платежа</h3>
@@ -134,7 +134,7 @@ export class EmailService {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #2c5aa0;">Напоминание о бронировании</h2>
           
-          <p>Здравствуйте, ${bookingDetails.user?.firstName || "клиент"}</p>
+          <p>Здравствуйте, ${bookingDetails.user?.profile?.firstName || "клиент"}</p>
           
           <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #ffc107;">
             <h3 style="margin-top: 0; color: #856404;">Напоминание</h3>
@@ -162,7 +162,7 @@ export class EmailService {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #dc3545;">Отмена бронирования</h2>
           
-          <p>Здравствуйте, ${bookingDetails.user?.firstName || "клиент"}</p>
+          <p>Здравствуйте, ${bookingDetails.user?.profile?.firstName || "клиент"}</p>
           
           <div style="background: #f8d7da; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #dc3545;">
             <h3 style="margin-top: 0; color: #721c24;">Отменено</h3>
@@ -190,7 +190,7 @@ export class EmailService {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #28a745;">Оставьте отзыв</h2>
           
-          <p>Здравствуйте, ${bookingDetails.user?.firstName || "клиент"}</p>
+          <p>Здравствуйте, ${bookingDetails.user?.profile?.firstName || "клиент"}</p>
           
           <p>Мы надеемся, что ваше посещение баньки прошло замечательно! 🎉</p>
           

@@ -351,7 +351,7 @@ export async function refreshPaymentStatus(bookingId: string, userId: string, ro
 export async function getReceipt(bookingId: string, userId: string, role: string) {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
-    include: { payment: true, venue: true, user: { select: { email: true, firstName: true, lastName: true } } },
+    include: { payment: true, venue: true, user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } } },
   });
   if (!booking) throw new HttpError("BOOKING_NOT_FOUND", "Booking not found", 404);
 

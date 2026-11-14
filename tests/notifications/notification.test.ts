@@ -17,9 +17,10 @@ describe("Notifications", () => {
       create: {
         email: "notify-test@banya.local",
         passwordHash: "test",
-        firstName: "Notify",
-        lastName: "Test",
         role: "CLIENT",
+        profile: {
+          create: { firstName: "Notify", lastName: "Test" },
+        },
       },
     });
     userId = user.id;

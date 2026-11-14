@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const refunds = await prisma.refund.findMany({
       where: status ? { status } : undefined,
       include: {
-        payment: { include: { booking: { include: { venue: { select: { title: true } }, user: { select: { email: true, firstName: true, lastName: true } } } } } },
+        payment: { include: { booking: { include: { venue: { select: { title: true } }, user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } } } } } },
       },
       orderBy: { createdAt: "desc" },
       take: 200,
