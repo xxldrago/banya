@@ -95,6 +95,19 @@ export default function ClientReviewsPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="text-sm">{r.comment}</div>
+                {r.criteria ? (
+                  <div className="text-xs text-muted-foreground">
+                    Чистота {r.criteria.cleanliness ?? "—"} · Парная {r.criteria.sauna ?? "—"} · Сервис {r.criteria.service ?? "—"} · Соответствие {r.criteria.accuracy ?? "—"} · Цена/качество {r.criteria.value ?? "—"}
+                  </div>
+                ) : null}
+                {r.photos && r.photos.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {r.photos.map((p: any) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={p.id} src={p.url} alt="фото отзыва" className="h-16 w-16 rounded object-cover" />
+                    ))}
+                  </div>
+                ) : null}
                 <div className="text-xs text-muted-foreground">
                   {r.status} · {new Date(r.createdAt).toLocaleDateString("ru-RU")}
                 </div>
@@ -103,6 +116,13 @@ export default function ClientReviewsPage() {
                     <b>Ответ владельца:</b> {r.response}
                   </div>
                 )}
+                <Button size="sm" variant="outline" onClick={async () => {
+                  const reason = prompt("Причина жалобы:");
+                  if (!reason) return;
+                  const res = await fetch(`/api/v1/reviews/${r.id}/complaint`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reason }) });
+                  if (res.ok) alert("Жалоба отправлена");
+                  else alert("Ошибка");
+                }}>Пожаловаться</Button>
               </CardContent>
             </Card>
           ))}

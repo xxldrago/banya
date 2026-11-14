@@ -437,8 +437,14 @@ model Review {
   user      User             @relation(fields: [userId], references: [id])
   rating    Int // 1-5
   comment   String
+  criteria  Json? // {cleanliness, sauna, service, accuracy, value}
   status    ReviewStatus     @default(PENDING)
   response  String? // partner response
+  responseAt DateTime?
+  complaintReason String?
+  complainedAt DateTime?
+  complaintResolved Boolean @default(false)
+  photos    ReviewPhoto[]
   responses ReviewResponse[]
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
@@ -446,6 +452,16 @@ model Review {
   @@index([venueId])
   @@index([userId])
   @@index([status])
+}
+
+model ReviewPhoto {
+  id        String   @id @default(cuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now())
+
+  @@index([reviewId])
 }
 
 model PromoCode {

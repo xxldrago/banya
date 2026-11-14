@@ -22,11 +22,16 @@ export async function createReview(bookingId: string, userId: string, input: any
       userId,
       rating: parsed.rating,
       comment: parsed.comment,
+      criteria: parsed.criteria ?? undefined,
       status: "PENDING",
+      photos: parsed.photos && parsed.photos.length > 0 ? {
+        create: parsed.photos.map((url) => ({ url })),
+      } : undefined,
     },
     include: {
       user: { select: { id: true, email: true } },
       venue: { select: { id: true, title: true, slug: true } },
+      photos: true,
     },
   });
 
@@ -41,6 +46,7 @@ export async function getVenueReviews(slug: string) {
     where: { venueId: venue.id, status: "APPROVED" },
     include: {
       user: { select: { id: true, email: true } },
+      photos: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -48,30 +54,16 @@ export async function getVenueReviews(slug: string) {
   return reviews;
 }
 
-export async function respondToReview(reviewId: string, partnerUserId: string, response: string) {
-  const review = await prisma.review.findUnique({
-    where: { id: reviewId },
-    include: { venue: { include: { partner: true } } },
-  });
-
+export async function complainReview(reviewId: string, userId: string, reason: string) {
+  const review = await prisma.review.findUnique({ where: { id: reviewId } });
   if (!review) throw new NotFound("Review not found");
-  if (review.venue.partner.userId !== partnerUserId) throw new HttpError("FORBIDDEN", "Forbidden", 403);
+  if (review.userId === userId) throw new HttpError("FORBIDDEN", "Cannot complain about own review", 403);
 
   const updated = await prisma.review.update({
     where: { id: reviewId },
-    data: { response },
-    include: { user: { select: { id: true, email: true } } },
+    data: { complaintReason: reason, complainedAt: new Date(), complaintResolved: false },
   });
-
   return updated;
-}
-
-export async function moderateReview(reviewId: string, status: "APPROVED" | "REJECTED") {
-  const review = await prisma.review.update({
-    where: { id: reviewId },
-    data: { status },
-  });
-  return review;
 }
 
 export async function getVenueRating(slug: string) {
@@ -80,15 +72,22 @@ export async function getVenueRating(slug: string) {
 
   const reviews = await prisma.review.findMany({
     where: { venueId: venue.id, status: "APPROVED" },
-    select: { rating: true },
+    select: { rating: true, booking: { select: { status: true } } },
   });
 
   if (reviews.length === 0) {
     return { average: 0, count: 0 };
   }
 
-  const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-  const average = sum / reviews.length;
+  // Weighted: confirmed/completed visits get weight 2, others weight 1
+  let weightedSum = 0;
+  let weightTotal = 0;
+  for (const r of reviews) {
+    const weight = r.booking?.status === "COMPLETED" ? 2 : 1;
+    weightedSum += r.rating * weight;
+    weightTotal += weight;
+  }
+  const average = weightTotal > 0 ? weightedSum / weightTotal : 0;
 
   return { average: Math.round(average * 10) / 10, count: reviews.length };
 }
