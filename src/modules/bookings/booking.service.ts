@@ -2,7 +2,7 @@ import { prisma } from "@/shared/db/client";
 import { HttpError, NotFound } from "@/shared/lib/errors";
 import { createBookingSchema, type BookingInput } from "./booking.schema";
 import { createConversationForBooking } from "@/modules/chat/chat.service";
-import { sendNotification, notifyPartnerNewBooking } from "@/modules/notifications/notification.service";
+import { sendNotification, notifyPartnerNewBooking, sendBookingConfirmation, sendBookingConfirmationSms } from "@/modules/notifications/notification.service";
 
 function hourlyPrice(venue: any, date: Date): number {
   const day = date.getDay();
@@ -220,6 +220,15 @@ export async function createBooking(input: BookingInput) {
     notifyPartnerNewBooking(partnerUserId, result).catch(() => {});
   }
 
+  // Notify the client about the confirmed booking (email + SMS if phone exists)
+  if (result && result.status === "CONFIRMED") {
+    const clientId = (result as any).userId;
+    if (clientId) {
+      sendBookingConfirmation(clientId, result).catch(() => {});
+      sendBookingConfirmationSms(clientId, result).catch(() => {});
+    }
+  }
+
   return result;
 }
 
@@ -371,6 +380,10 @@ export async function confirmBooking(id: string, userId: string, role: string) {
     data: { status: "CONFIRMED" },
     include: { venue: true, services: true, user: true },
   });
+
+  // Notify the client (best-effort): email + SMS if phone exists
+  sendBookingConfirmation(updated.userId, updated).catch(() => {});
+  sendBookingConfirmationSms(updated.userId, updated).catch(() => {});
 
   return updated;
 }

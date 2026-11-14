@@ -44,6 +44,23 @@ export async function sendBookingConfirmation(userId: string, booking: any) {
   );
 }
 
+export async function sendBookingConfirmationSms(userId: string, booking: any) {
+  const vars = {
+    venue: booking.venue?.title || "",
+    date: new Date(booking.startsAt).toLocaleString("ru-RU"),
+    id: booking.id.slice(-8),
+  };
+  return sendNotification(
+    userId,
+    "booking_confirmed",
+    "sms",
+    `Бронь #${vars.id} подтверждена`,
+    `Бронь #${vars.id} подтверждена: ${vars.venue}, ${vars.date}`,
+    { bookingId: booking.id },
+    vars,
+  );
+}
+
 export async function sendPaymentConfirmation(userId: string, payment: any) {
   const vars = { amount: String(payment.amount / 100), id: payment.id.slice(-8) };
   return sendNotification(

@@ -2,6 +2,7 @@ import { prisma } from "@/shared/db/client";
 import { HttpError } from "@/shared/lib/errors";
 import { BookingStatus, PaymentProvider, PaymentStatus } from "@prisma/client";
 import { createConversationForBooking } from "@/modules/chat/chat.service";
+import { sendPaymentConfirmation } from "@/modules/notifications/notification.service";
 import { getPaymentProvider, getProviderName, ReceiptItem } from "./providers/factory";
 
 /**
@@ -197,6 +198,8 @@ export async function processPaymentWebhook(payload: {
         await createConversationForBooking(tx, updatedBooking);
       });
     }
+    // Notify the client about the successful payment (best-effort)
+    sendPaymentConfirmation(payment.booking.userId, updatedPayment).catch(() => {});
   }
 
   return { payment: updatedPayment, booking: updatedBooking, alreadyProcessed: false };
