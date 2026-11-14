@@ -12,6 +12,7 @@ import {
 import { BookingWidget } from "@/components/catalog/booking-widget";
 import { VenueContacts } from "@/components/catalog/venue-contacts";
 import { WaitlistButton } from "@/components/catalog/waitlist-button";
+import { CompareToggle } from "@/components/catalog/compare-toggle";
 import { PhotoGallery } from "@/components/catalog/photo-gallery";
 
 function typeLabel(type: string): string {
@@ -182,30 +183,7 @@ export default async function VenueDetailPage({
           <Card>
             <CardHeader><CardTitle className="text-sm">Сравнение</CardTitle></CardHeader>
             <CardContent>
-              <button
-                type="button"
-                className="text-sm text-primary underline"
-                onClick={() => {
-                  try {
-                    const key = "parda_compare";
-                    const arr = JSON.parse(localStorage.getItem(key) || "[]");
-                    if (arr.includes(venue.slug)) {
-                      localStorage.setItem(key, JSON.stringify(arr.filter((x: string) => x !== venue.slug)));
-                      alert("Убрано из сравнения");
-                    } else {
-                      if (arr.length >= 4) { alert("Максимум 4 объекта"); return; }
-                      arr.push(venue.slug);
-                      localStorage.setItem(key, JSON.stringify(arr));
-                      alert("Добавлено к сравнению");
-                    }
-                  } catch {}
-                }}
-              >
-                Добавить/убрать из сравнения
-              </button>
-              <div className="mt-2">
-                <Link href="/client/compare" className="text-xs text-muted-foreground underline">Открыть сравнение</Link>
-              </div>
+              <CompareToggle slug={venue.slug} />
             </CardContent>
           </Card>
           <VenueContacts
