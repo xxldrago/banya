@@ -22,41 +22,41 @@
 - [x] **Phase 14: Безопасность и 2FA** - ТOTP-двухфакторная аутентификация, IDOR-защита, антифрод, аудит
 - [x] **Phase 15: i18n и финальная полировка** - Двуязычный интерфейс (русский/английский), культурная локализация, финальные правки
 
-- [ ] **Phase 16: Полнофункциональный кабинет владельца (по прототипу dashboard.html)** - 21 раздел, полностью функциональные, реальные данные (PARTNER-FULL-01..06)
+- [x] **Phase 16: Полнофункциональный кабинет владельца (по прототипу dashboard.html)** - 21 раздел, полностью функциональные, реальные данные (PARTNER-FULL-01..06)
 
-- [ ] **Phase 17: Полнофункциональный кабинет клиента (по прототипу dashboard-client.html)** - 11 разделов, полностью функциональные (CLIENT-FULL-01..06)
+- [x] **Phase 17: Полнофункциональный кабинет клиента (по прототипу dashboard-client.html)** - 11 разделов, полностью функциональные (CLIENT-FULL-01..06)
 
-- [ ] **Phase 18: Полнофункциональный кабинет клиента (по прототипу dashboard-client.html)** - 11 разделов (CLIENT-FULL-01..06)
+- [x] **Phase 18: Полнофункциональный кабинет клиента (по прототипу dashboard-client.html)** - 11 разделов (CLIENT-FULL-01..06)
 
-- [ ] **Phase 19: Полнофункциональный кабинет администратора (по прототипу admin.html)** - 16 разделов (ADMIN-FULL-01..06)
+- [x] **Phase 19: Полнофункциональный кабинет администратора (по прототипу admin.html)** - 16 разделов (ADMIN-FULL-01..06)
 
 - [x] **Phase 20: Полнофункциональная главная страница (по прототипу parda.html)** - Реальные данные API (cities/catalog/reviews/favorites/booking), BookingWidget на /catalog/[slug], реальные фото (HOME-FULL-01..06)
 
 - [ ] **Phase 21: Payments integration** - Real provider, webhook signature, receipts
 - [ ] **Phase 22: Notifications** - Real channels (email/SMS/Telegram/WhatsApp), templates, delivery logging
-- [ ] **Phase 23: Booking lifecycle** - Extended statuses, cancellation policy, refund calc, pay-on-site, buffer, manual booking UI
-- [ ] **Phase 24: Contact visibility and venue media** - Hide phone until booking, photo categories, video upload, full-screen gallery
-- [ ] **Phase 25: Search and ranking** - Meilisearch, autocomplete, saved searches, near-me, district/metro filters
-- [ ] **Phase 26: Pricing and tariffs** - Weekday/weekend/night, special offers, dynamic pricing, tariffs by day/hour
-- [ ] **Phase 27: Chat enhancements** - Attachments, read receipts, quick replies, templates, antispam
-- [ ] **Phase 28: Reviews and ratings** - Review photos, criteria storage, weighted rating, complaint flow
-- [ ] **Phase 29: Owner cabinet completion** - Deep analytics, schedules/exceptions, manual bookings UI, exports, templates, widgets, tariffs UI
-- [ ] **Phase 30: Admin platform** - Roles, configurable settings, SLA support, antifraud, SEO/banners/collections, audit deep
-- [ ] **Phase 31: Data model extensions** - districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles
-- [ ] **Phase 32: Extra features** - Waitlist, gift certs, packages, loyalty deep, comparison, route, AI picker
+- [x] **Phase 23: Booking lifecycle** - Extended statuses, cancellation policy, refund calc, pay-on-site, buffer, manual booking UI
+- [x] **Phase 24: Contact visibility and venue media** - Hide phone until booking, photo categories, video upload, full-screen gallery
+- [x] **Phase 25: Search and ranking** - Meilisearch, autocomplete, saved searches, near-me, district/metro filters
+- [x] **Phase 26: Pricing and tariffs** - Weekday/weekend/night, special offers, dynamic pricing, tariffs by day/hour
+- [x] **Phase 27: Chat enhancements** - Attachments, read receipts, quick replies, templates, antispam
+- [x] **Phase 28: Reviews and ratings** - Review photos, criteria storage, weighted rating, complaint flow
+- [x] **Phase 29: Owner cabinet completion** - Deep analytics, schedules/exceptions, manual bookings UI, exports, templates, widgets, tariffs UI
+- [x] **Phase 30: Admin platform** - Roles, configurable settings, SLA support, antifraud, SEO/banners/collections, audit deep
+- [x] **Phase 31: Data model extensions** - districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles
+- [x] **Phase 32: Extra features** - Waitlist, gift certs, packages, loyalty deep, comparison, route, AI picker
 - [ ] **Phase 33: NFR and monitoring** - Performance targets, logging, monitoring, backups, caching, search engine
 - [ ] **Phase 21: Payments integration: real provider, webhook signature verification, receipts**
 - [ ] **Phase 22: Notifications: real channels (email/SMS/Telegram/WhatsApp), templates with variables, delivery logging**
-- [ ] **Phase 23: Booking lifecycle: extended statuses, cancellation policy with refund calc, pay-on-site, buffer/min-max duration, manual booking UI**
-- [ ] **Phase 24: Contact visibility and venue media: hide phone until booking, photo categories, video upload, full-screen gallery**
-- [ ] **Phase 25: Search and ranking: Meilisearch integration, autocomplete, saved searches, near-me, district/metro filters, search hints**
-- [ ] **Phase 26: Pricing and tariffs: weekday/weekend/night tariffs, special offers, dynamic pricing, tariffs by day/hour**
-- [ ] **Phase 27: Chat enhancements: attachments (image/doc), read receipts, quick replies, templates, antispam**
-- [ ] **Phase 28: Reviews and ratings: review photos, criteria storage, weighted rating, complaint flow**
-- [ ] **Phase 29: Owner cabinet completion: deep analytics, schedules/exceptions, manual bookings UI, CSV/Excel export, templates, widgets, tariffs UI**
-- [ ] **Phase 30: Admin platform: role-based admin roles, configurable platform settings, SLA support, antifraud, SEO/banners/collections, audit deep**
-- [ ] **Phase 31: Data model extensions: districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles**
-- [ ] **Phase 32: Extra features: waitlist, gift certificates, packages, loyalty deep, comparison, route to venue, AI picker**
+- [x] **Phase 23: Booking lifecycle: extended statuses, cancellation policy with refund calc, pay-on-site, buffer/min-max duration, manual booking UI**
+- [x] **Phase 24: Contact visibility and venue media: hide phone until booking, photo categories, video upload, full-screen gallery**
+- [x] **Phase 25: Search and ranking: Meilisearch integration, autocomplete, saved searches, near-me, district/metro filters, search hints**
+- [x] **Phase 26: Pricing and tariffs: weekday/weekend/night tariffs, special offers, dynamic pricing, tariffs by day/hour**
+- [x] **Phase 27: Chat enhancements: attachments (image/doc), read receipts, quick replies, templates, antispam**
+- [x] **Phase 28: Reviews and ratings: review photos, criteria storage, weighted rating, complaint flow**
+- [x] **Phase 29: Owner cabinet completion: deep analytics, schedules/exceptions, manual bookings UI, CSV/Excel export, templates, widgets, tariffs UI**
+- [x] **Phase 30: Admin platform: role-based admin roles, configurable platform settings, SLA support, antifraud, SEO/banners/collections, audit deep**
+- [x] **Phase 31: Data model extensions: districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles**
+- [x] **Phase 32: Extra features: waitlist, gift certificates, packages, loyalty deep, comparison, route to venue, AI picker**
 - [ ] **Phase 33: NFR and monitoring: performance targets, logging, monitoring, backups, caching, search engine**
 
 ## Phase Details
