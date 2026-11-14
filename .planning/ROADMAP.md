@@ -32,8 +32,8 @@
 
 - [x] **Phase 20: Полнофункциональная главная страница (по прототипу parda.html)** - Реальные данные API (cities/catalog/reviews/favorites/booking), BookingWidget на /catalog/[slug], реальные фото (HOME-FULL-01..06)
 
-- [ ] **Phase 21: Payments integration** - Real provider, webhook signature, receipts
-- [ ] **Phase 22: Notifications** - Real channels (email/SMS/Telegram/WhatsApp), templates, delivery logging
+- [x] **Phase 21: Payments integration** - Real provider, webhook signature, receipts
+- [x] **Phase 22: Notifications** - Real channels (email/SMS/Telegram/WhatsApp), templates, delivery logging
 - [x] **Phase 23: Booking lifecycle** - Extended statuses, cancellation policy, refund calc, pay-on-site, buffer, manual booking UI
 - [x] **Phase 24: Contact visibility and venue media** - Hide phone until booking, photo categories, video upload, full-screen gallery
 - [x] **Phase 25: Search and ranking** - Meilisearch, autocomplete, saved searches, near-me, district/metro filters
@@ -45,8 +45,8 @@
 - [x] **Phase 31: Data model extensions** - districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles
 - [x] **Phase 32: Extra features** - Waitlist, gift certs, packages, loyalty deep, comparison, route, AI picker
 - [ ] **Phase 33: NFR and monitoring** - Performance targets, logging, monitoring, backups, caching, search engine
-- [ ] **Phase 21: Payments integration: real provider, webhook signature verification, receipts**
-- [ ] **Phase 22: Notifications: real channels (email/SMS/Telegram/WhatsApp), templates with variables, delivery logging**
+- [x] **Phase 21: Payments integration: real provider, webhook signature verification, receipts**
+- [x] **Phase 22: Notifications: real channels (email/SMS/Telegram/WhatsApp), templates with variables, delivery logging**
 - [x] **Phase 23: Booking lifecycle: extended statuses, cancellation policy with refund calc, pay-on-site, buffer/min-max duration, manual booking UI**
 - [x] **Phase 24: Contact visibility and venue media: hide phone until booking, photo categories, video upload, full-screen gallery**
 - [x] **Phase 25: Search and ranking: Meilisearch integration, autocomplete, saved searches, near-me, district/metro filters, search hints**

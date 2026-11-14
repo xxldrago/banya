@@ -106,12 +106,12 @@
     {
       "number": "21",
       "name": "Payments integration: real provider, webhook signature verification, receipts",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "22",
       "name": "Notifications: real channels (email/SMS/Telegram/WhatsApp), templates with variables, delivery logging",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "23",
