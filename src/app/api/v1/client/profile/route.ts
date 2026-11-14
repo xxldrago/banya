@@ -20,7 +20,10 @@ export async function PATCH(req: NextRequest) {
   const allowed = ["firstName", "lastName", "phone", "email", "birthDate"];
   const data: any = {};
   for (const k of allowed) {
-    if (body[k] !== undefined) data[k] = body[k];
+    if (body[k] !== undefined) {
+      if (k === "birthDate" && body[k]) data[k] = new Date(body[k]);
+      else data[k] = body[k];
+    }
   }
 
   const updated = await prisma.user.update({ where: { id: user.sub }, data });
