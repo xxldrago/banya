@@ -141,5 +141,17 @@ export async function getVenueBySlug(slug: string) {
     throw new NotFound("Venue not found");
   }
 
-  return venue;
+  // Attach rating/reviewsCount
+  const ratingRow = await prisma.review.groupBy({
+    by: ["venueId"],
+    where: { venueId: venue.id, status: "APPROVED" },
+    _avg: { rating: true },
+    _count: { _all: true },
+  });
+  const r = ratingRow[0];
+  return {
+    ...venue,
+    rating: r?._avg?.rating ?? 0,
+    reviewsCount: r?._count?._all ?? 0,
+  };
 }

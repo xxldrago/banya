@@ -13,17 +13,21 @@ export async function GET(req: NextRequest) {
 
   const referrals = await prisma.user.findMany({ where: { referredById: user.sub } });
   const referralBonus = referrals.length * 500;
+
+  const reviews = await prisma.review.findMany({ where: { userId: user.sub, status: "APPROVED" } });
+  const reviewBonus = reviews.length * 50;
   const referralLink = `/register?ref=${user.sub}`;
 
   return NextResponse.json({
     data: {
-      points: points + referralBonus,
+      points: points + referralBonus + reviewBonus,
       level,
       visits: completed,
       referrals: referrals.length,
       referralBonus,
+      reviewBonus,
       referralLink,
-      progress: Math.min(100, Math.round(((points + referralBonus) / 2000) * 100)),
+      progress: Math.min(100, Math.round(((points + referralBonus + reviewBonus) / 2000) * 100)),
     },
   });
 }

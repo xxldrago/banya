@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { BookingWidget } from "@/components/catalog/booking-widget";
 import { VenueContacts } from "@/components/catalog/venue-contacts";
+import { WaitlistButton } from "@/components/catalog/waitlist-button";
 import { PhotoGallery } from "@/components/catalog/photo-gallery";
 
 function typeLabel(type: string): string {
@@ -62,6 +63,16 @@ export default async function VenueDetailPage({
           </div>
           <h1 className="text-3xl font-bold tracking-tight">{venue.title}</h1>
           <p className="text-muted-foreground">{venue.address}</p>
+          {venue.lat && venue.lng ? (
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${venue.lat},${venue.lng}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-primary underline"
+            >
+              Построить маршрут
+            </a>
+          ) : null}
         </div>
         <Link
           href={`/catalog?cityId=${venue.cityId}`}
@@ -160,6 +171,41 @@ export default async function VenueDetailPage({
                 minDuration={venue.minDuration}
                 maxGuests={venue.maxGuests}
               />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Лист ожидания</CardTitle></CardHeader>
+            <CardContent>
+              <WaitlistButton venueId={venue.id} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Сравнение</CardTitle></CardHeader>
+            <CardContent>
+              <button
+                type="button"
+                className="text-sm text-primary underline"
+                onClick={() => {
+                  try {
+                    const key = "parda_compare";
+                    const arr = JSON.parse(localStorage.getItem(key) || "[]");
+                    if (arr.includes(venue.slug)) {
+                      localStorage.setItem(key, JSON.stringify(arr.filter((x: string) => x !== venue.slug)));
+                      alert("Убрано из сравнения");
+                    } else {
+                      if (arr.length >= 4) { alert("Максимум 4 объекта"); return; }
+                      arr.push(venue.slug);
+                      localStorage.setItem(key, JSON.stringify(arr));
+                      alert("Добавлено к сравнению");
+                    }
+                  } catch {}
+                }}
+              >
+                Добавить/убрать из сравнения
+              </button>
+              <div className="mt-2">
+                <Link href="/client/compare" className="text-xs text-muted-foreground underline">Открыть сравнение</Link>
+              </div>
             </CardContent>
           </Card>
           <VenueContacts
