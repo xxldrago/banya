@@ -147,6 +147,10 @@ model Venue {
   slug             String           @unique
   description      String           @db.Text
   address          String
+  phone            String?
+  email            String?
+  website          String?
+  socialLinks      Json?
   lat              Float?
   lng              Float?
   type             String // bath / sauna
@@ -165,6 +169,7 @@ model Venue {
   status           VenueStatus      @default(DRAFT)
   moderationStatus ModerationStatus @default(PENDING)
   publishedAt      DateTime?
+  showContactsBeforeBooking Boolean  @default(true)
   photos           VenuePhoto[]
   videos           VenueVideo[]
   amenities        VenueAmenity[]
@@ -233,6 +238,7 @@ model VenuePhoto {
   key       String
   sortOrder Int      @default(0)
   isCover   Boolean  @default(false)
+  category  String?  // парная, отдых, бассейн, территория, экстерьер, другое
   createdAt DateTime @default(now())
 }
 

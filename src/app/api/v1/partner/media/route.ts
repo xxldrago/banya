@@ -43,11 +43,13 @@ export async function POST(req: NextRequest) {
   let venueId: string;
   let type: string;
   let url: string;
+  let category: string | undefined;
 
   if (contentType.includes("multipart/form-data")) {
     const form = await req.formData();
     venueId = String(form.get("venueId") || "");
     type = String(form.get("type") || "photo");
+    category = (form.get("category") as string) || undefined;
     const file = form.get("file") as File | null;
     if (!venueId || !file) return NextResponse.json({ error: "venueId and file required" }, { status: 400 });
 
@@ -69,6 +71,7 @@ export async function POST(req: NextRequest) {
     venueId = body.venueId;
     type = body.type || "photo";
     url = body.url;
+    category = body.category;
     if (!venueId || !url) return NextResponse.json({ error: "venueId and url required" }, { status: 400 });
 
     const venue = await prisma.venue.findFirst({ where: { id: venueId, partnerId: partner.id } });
@@ -79,7 +82,7 @@ export async function POST(req: NextRequest) {
     const video = await prisma.venueVideo.create({ data: { venueId, url, key: url } });
     return NextResponse.json({ data: video }, { status: 201 });
   }
-  const photo = await prisma.venuePhoto.create({ data: { venueId, url, key: url } });
+  const photo = await prisma.venuePhoto.create({ data: { venueId, url, key: url, category: category || null } });
   return NextResponse.json({ data: photo }, { status: 201 });
 }
 

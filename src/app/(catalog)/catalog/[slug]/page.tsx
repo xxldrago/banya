@@ -10,6 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { BookingWidget } from "@/components/catalog/booking-widget";
+import { VenueContacts } from "@/components/catalog/venue-contacts";
+import { PhotoGallery } from "@/components/catalog/photo-gallery";
 
 function typeLabel(type: string): string {
   if (type === "sauna") return "Сауна";
@@ -71,32 +73,7 @@ export default async function VenueDetailPage({
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Фотографии</h2>
-        {orderedPhotos.length === 0 ? (
-          <div className="rounded-lg border border-dashed bg-muted/30 px-6 py-12 text-center text-muted-foreground">
-            Фотографии пока не добавлены
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {orderedPhotos.map((photo) => (
-              <div
-                key={photo.id}
-                className="relative aspect-[4/3] overflow-hidden rounded-lg border bg-muted"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={photo.url}
-                  alt={venue.title}
-                  className="h-full w-full object-cover"
-                />
-                {photo.isCover ? (
-                  <span className="absolute left-2 top-2 rounded bg-background/90 px-2 py-0.5 text-xs font-medium">
-                    Обложка
-                  </span>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        )}
+        <PhotoGallery photos={orderedPhotos} title={venue.title} />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -185,6 +162,13 @@ export default async function VenueDetailPage({
               />
             </CardContent>
           </Card>
+          <VenueContacts
+            venueId={venue.id}
+            showContactsBeforeBooking={venue.showContactsBeforeBooking}
+            phone={venue.phone}
+            email={venue.email}
+            website={venue.website}
+          />
         </aside>
       </div>
     </div>
