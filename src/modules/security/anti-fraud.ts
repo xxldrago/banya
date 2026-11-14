@@ -93,20 +93,26 @@ export class AntiFraudModule {
 
   async checkFraud(
     context: FraudContext,
-    customRules?: FraudRule[]
+    customRules?: FraudRule[],
+    opts?: { skip?: string[] }
   ): Promise<FraudCheckResult> {
-    const allRules = [...this.rules, ...(customRules || [])];
+    const skip = new Set(opts?.skip || []);
+    const allRules = [...this.rules, ...(customRules || [])].filter(
+      (rule) => !skip.has(rule.name),
+    );
     const enabledRules = allRules.filter(rule => rule.enabled);
 
     const results: FraudCheckResult[] = [];
-    let totalWeight = 0;
     let weightedScore = 0;
+    // Denominator = total weight of ALL enabled rules, so a single risky rule
+    // cannot dominate the average (e.g. bot UA alone must not deny a request).
+    const totalWeight = enabledRules.reduce((sum, rule) => sum + rule.weight, 0);
 
     for (const rule of enabledRules) {
       try {
         const result = await rule.check(context);
         results.push(result);
-        
+
         if (result.action === "deny") {
           return {
             allowed: false,
@@ -116,10 +122,9 @@ export class AntiFraudModule {
           };
         }
 
-        // Calculate weighted risk score
+        // Accumulate weighted risk
         if (result.riskScore > 0) {
           weightedScore += result.riskScore * rule.weight;
-          totalWeight += rule.weight;
         }
       } catch (error) {
         console.error(`Fraud check failed for rule ${rule.name}:`, error);
@@ -127,16 +132,16 @@ export class AntiFraudModule {
       }
     }
 
-    // Calculate final risk score
-    const riskScore = totalWeight > 0 ? Math.round((weightedScore / totalWeight) * 100) : 0;
+    // Calculate final risk score: weighted average of per-rule risks (0-100 scale)
+    const riskScore = totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 0;
 
     // Determine action based on risk score
     let action: "allow" | "deny" | "require_mfa" | "challenge" = "allow";
-    if (riskScore >= 80) {
+    if (riskScore >= 65) {
       action = "deny";
-    } else if (riskScore >= 60) {
-      action = "require_mfa";
     } else if (riskScore >= 40) {
+      action = "require_mfa";
+    } else if (riskScore >= 20) {
       action = "challenge";
     }
 
@@ -146,7 +151,7 @@ export class AntiFraudModule {
       allowed: action === "allow",
       riskScore,
       reasons: allReasons,
-      requiresReview: riskScore >= 70,
+      requiresReview: riskScore >= 40,
       action,
     };
   }
@@ -234,14 +239,12 @@ export class AntiFraudModule {
         "SUSPICIOUS_BOT_ACTIVITY",
         { userAgent, hasSession: !!context.userId }
       );
+      // Score the risk instead of hard-denying: pre-auth endpoints (login)
+      // legitimately have no session, and API clients may use non-browser UAs.
       return {
-        allowed: false,
-        riskScore: 70,
-        reasons: [
-          isBot ? "Bot-like user agent detected" : "Missing session",
-          "Automated activity suspected",
-        ],
-        action: "deny",
+        allowed: true,
+        riskScore: isBot ? 70 : 30,
+        reasons: isBot ? ["Bot-like user agent detected"] : [],
       };
     }
 

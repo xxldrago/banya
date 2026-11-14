@@ -3,10 +3,32 @@ import { requireAuth } from "@/shared/middlewares/require-auth";
 import { createBooking, listBookings } from "@/modules/bookings/booking.service";
 import { apiError, apiSuccess } from "@/shared/lib/api-response";
 import { HttpError } from "@/shared/lib/errors";
+import { antiFraudModule } from "@/modules/security/anti-fraud";
 
 export async function POST(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
+
+    // Anti-fraud screening on booking creation (full rule set).
+    try {
+      const fraud = await antiFraudModule.checkFraud({
+        request: req,
+        userId: auth.sub,
+        ip: (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "127.0.0.1",
+        userAgent: req.headers.get("user-agent") || "",
+        timestamp: new Date(),
+        action: "booking_create",
+        resourceType: "booking",
+      });
+      if (!fraud.allowed) {
+        return apiError("FRAUD_DENIED", "Request blocked by anti-fraud rules", 403, {
+          riskScore: fraud.riskScore,
+          reasons: fraud.reasons,
+        });
+      }
+    } catch (e) {
+      console.error("antifraud booking check failed", e); // fail-open
+    }
 
     const body = await req.json();
     const booking = await createBooking({

@@ -14,6 +14,11 @@ import {
 } from "@/modules/auth/token.service";
 import { apiError } from "@/shared/lib/api-response";
 import { HttpError } from "@/shared/lib/errors";
+import { antiFraudModule } from "@/modules/security/anti-fraud";
+
+function clientIp(req: NextRequest): string {
+  return (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "127.0.0.1";
+}
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -37,6 +42,28 @@ export async function POST(req: NextRequest) {
   }
 
   const { email } = parsed.data;
+
+  // Anti-fraud pre-auth screening: rate limit + IP blocking only
+  // (bot/account/behavioral rules need a session or would flag legitimate logins).
+  try {
+    const fraud = await antiFraudModule.checkFraud(
+      {
+        request: req,
+        ip: clientIp(req),
+        userAgent: req.headers.get("user-agent") || "",
+        timestamp: new Date(),
+        action: "login",
+        resourceType: "auth",
+      },
+      undefined,
+      { skip: ["bot_detection", "account_age", "behavioral_analysis"] },
+    );
+    if (!fraud.allowed) {
+      return apiError("FRAUD_DENIED", "Too many attempts from this address, try later", 429);
+    }
+  } catch (e) {
+    console.error("antifraud login check failed", e); // fail-open
+  }
 
   try {
     assertLoginAllowed(email);
