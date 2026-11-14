@@ -241,6 +241,7 @@ model Banner {
   title     String
   imageUrl  String
   linkUrl   String?
+  label     String?  @default("Реклама")
   position  String   @default("home") // home | catalog | sidebar
   isActive  Boolean  @default(true)
   startsAt  DateTime?
