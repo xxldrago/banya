@@ -57,13 +57,33 @@ export async function POST(req: NextRequest) {
     if (!venue) return NextResponse.json({ error: "Venue not found" }, { status: 404 });
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const ext = (file.name.split(".").pop() || "bin").toLowerCase();
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    let buffer = Buffer.from(bytes);
+    const rawExt = (file.name.split(".").pop() || "bin").toLowerCase();
     const fs = await import("fs/promises");
     const path = await import("path");
     const dir = path.join(process.cwd(), "public", "uploads", "partner");
     await fs.mkdir(dir, { recursive: true });
+
+    // Optimize raster images with sharp: cap dimensions, strip metadata, re-encode.
+    const imageExts = new Set(["jpg", "jpeg", "png", "webp", "gif", "heic"]);
+    let ext = rawExt;
+    if (imageExts.has(rawExt)) {
+      try {
+        const sharp = (await import("sharp")).default;
+        const optimized = await sharp(buffer)
+          .rotate() // respect EXIF orientation
+          .resize({ width: 1920, height: 1920, fit: "inside", withoutEnlargement: true })
+          .jpeg({ quality: 82, mozjpeg: true })
+          .toBuffer();
+        buffer = optimized;
+        ext = "jpg";
+      } catch (err) {
+        // Optimization is best-effort; keep the original bytes on failure.
+        console.error("[media] sharp optimization failed, storing original:", err);
+      }
+    }
+
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     await fs.writeFile(path.join(dir, filename), buffer);
     url = `/uploads/partner/${filename}`;
   } else {

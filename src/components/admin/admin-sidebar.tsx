@@ -35,6 +35,7 @@ const navigation: NavGroup[] = [
       { name: "Чат", href: "/admin/chat" },
       { name: "Поддержка", href: "/admin/support" },
       { name: "Сертификаты", href: "/admin/gift-certificates" },
+      { name: "Мониторинг", href: "/admin/monitoring" },
     ],
   },
   {
