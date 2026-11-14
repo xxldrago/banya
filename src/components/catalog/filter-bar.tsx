@@ -15,9 +15,18 @@ export function FilterBar() {
   const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") ?? "");
   const [district, setDistrict] = useState(searchParams.get("district") ?? "");
   const [metroStation, setMetroStation] = useState(searchParams.get("metroStation") ?? "");
+  const [objectType, setObjectType] = useState(searchParams.get("objectType") ?? "");
+  const [objectTypes, setObjectTypes] = useState<Array<{ slug: string; name: string }>>([]);
   const [amenityIds, setAmenityIds] = useState<Set<string>>(
     new Set(searchParams.getAll("amenityId")),
   );
+
+  useEffect(() => {
+    fetch("/api/v1/object-types")
+      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((d) => setObjectTypes(d.data ?? []))
+      .catch(() => setObjectTypes([]));
+  }, []);
 
   // Sync local state when URL changes
   useEffect(() => {
@@ -27,6 +36,7 @@ export function FilterBar() {
     setMaxPrice(searchParams.get("maxPrice") ?? "");
     setDistrict(searchParams.get("district") ?? "");
     setMetroStation(searchParams.get("metroStation") ?? "");
+    setObjectType(searchParams.get("objectType") ?? "");
     setAmenityIds(new Set(searchParams.getAll("amenityId")));
   }, [searchParams]);
 
@@ -45,6 +55,8 @@ export function FilterBar() {
     else params.delete("district");
     if (metroStation) params.set("metroStation", metroStation);
     else params.delete("metroStation");
+    if (objectType) params.set("objectType", objectType);
+    else params.delete("objectType");
     params.delete("amenityId");
     for (const id of amenityIds) params.append("amenityId", id);
     params.delete("offset"); // reset pagination on filter change
@@ -59,6 +71,7 @@ export function FilterBar() {
     params.delete("maxPrice");
     params.delete("district");
     params.delete("metroStation");
+    params.delete("objectType");
     params.delete("amenityId");
     params.delete("offset");
     setType("");
@@ -67,13 +80,14 @@ export function FilterBar() {
     setMaxPrice("");
     setDistrict("");
     setMetroStation("");
+    setObjectType("");
     setAmenityIds(new Set());
     router.replace(`${pathname}?${params.toString()}`);
   }
 
   const hasFilters = useMemo(
-    () => type || minGuests || minPrice || maxPrice || district || metroStation || amenityIds.size > 0,
-    [type, minGuests, minPrice, maxPrice, district, metroStation, amenityIds],
+    () => type || minGuests || minPrice || maxPrice || district || metroStation || objectType || amenityIds.size > 0,
+    [type, minGuests, minPrice, maxPrice, district, metroStation, objectType, amenityIds],
   );
 
   function toggleAmenity(id: string) {
@@ -87,7 +101,7 @@ export function FilterBar() {
 
   return (
     <div className="space-y-4 rounded-lg border bg-card p-4">
-      <div className="grid gap-4 md:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-7">
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Тип</label>
           <select
@@ -98,6 +112,22 @@ export function FilterBar() {
             <option value="">Все</option>
             <option value="bath">Баня</option>
             <option value="sauna">Сауна</option>
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Тип объекта</label>
+          <select
+            value={objectType}
+            onChange={(e) => setObjectType(e.target.value)}
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">Все</option>
+            {objectTypes.map((ot) => (
+              <option key={ot.slug} value={ot.slug}>
+                {ot.name}
+              </option>
+            ))}
           </select>
         </div>
 

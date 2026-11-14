@@ -29,6 +29,7 @@ export default async function CatalogPage({
   const maxPrice = params.maxPrice as string | undefined;
   const district = params.district as string | undefined;
   const metroStation = params.metroStation as string | undefined;
+  const objectType = params.objectType as string | undefined;
   const nearMe = params.nearMe === "1";
   const userLat = params.userLat ? Number(params.userLat) : null;
   const userLng = params.userLng ? Number(params.userLng) : null;
@@ -51,6 +52,7 @@ export default async function CatalogPage({
     amenityIds,
     district,
     metroStation,
+    objectType,
     sort: sort as "price_asc" | "price_desc" | "newest",
   });
 
