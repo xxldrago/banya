@@ -3,6 +3,48 @@ import { HttpError, NotFound } from "@/shared/lib/errors";
 import { createBookingSchema, type BookingInput } from "./booking.schema";
 import { createConversationForBooking } from "@/modules/chat/chat.service";
 
+function hourlyPrice(venue: any, date: Date): number {
+  const day = date.getDay();
+  const hour = date.getHours();
+  const isWeekend = day === 0 || day === 6;
+  if (isWeekend && venue.priceWeekend) return venue.priceWeekend;
+  const ns = venue.nightStartHour ?? 22;
+  const ne = venue.nightEndHour ?? 6;
+  const isNight = ns < ne ? (hour >= ns && hour < ne) : (hour >= ns || hour < ne);
+  if (isNight && venue.priceNight) return venue.priceNight;
+  return venue.priceFrom;
+}
+
+function computeBasePrice(venue: any, startsAt: Date, endsAt: Date): number {
+  const hours = Math.max(1, Math.round((endsAt.getTime() - startsAt.getTime()) / 3600000));
+  const hp = hourlyPrice(venue, startsAt);
+  let total = hp * hours;
+
+  const offers = venue.specialOffers || [];
+  const day = startsAt.getDay();
+  const hhmm = `${String(startsAt.getHours()).padStart(2, "0")}:${String(startsAt.getMinutes()).padStart(2, "0")}`;
+
+  let bestDiscount = 0;
+  for (const o of offers) {
+    if (!o.isActive) continue;
+    if (o.validFrom && startsAt < new Date(o.validFrom)) continue;
+    if (o.validTo && startsAt > new Date(o.validTo)) continue;
+    if (o.daysOfWeek) {
+      const days = String(o.daysOfWeek).split(",").map((d: string) => Number(d.trim()));
+      if (!days.includes(day)) continue;
+    }
+    if (o.timeFrom && hhmm < o.timeFrom) continue;
+    if (o.timeTo && hhmm > o.timeTo) continue;
+    if (hours < (o.minHours || 1)) continue;
+    const discount = o.discountType === "percent"
+      ? Math.round(total * (o.discountValue / 100))
+      : Math.min(o.discountValue, total);
+    if (discount > bestDiscount) bestDiscount = discount;
+  }
+  total = total - bestDiscount;
+  return Math.max(0, total);
+}
+
 function parseCancellationPolicy(policy: string | null): { freeHours: number; partialPercent: number; partialHours: number } {
   if (!policy) return { freeHours: 72, partialPercent: 50, partialHours: 24 };
   try {
@@ -36,6 +78,7 @@ export async function createBooking(input: BookingInput) {
 
       const venue = await tx.venue.findUnique({
         where: { id: parsed.venueId },
+        include: { specialOffers: true },
       });
 
       if (!venue) {
@@ -121,7 +164,7 @@ export async function createBooking(input: BookingInput) {
           status,
           bookingMode: parsed.bookingMode,
           allowBackToBack: parsed.allowBackToBack,
-          totalPrice: venue.priceFrom * Math.max(1, Math.round(durationMinutes / 60)),
+          totalPrice: computeBasePrice(venue, startsAt, endsAt),
         },
       });
 

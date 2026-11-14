@@ -160,6 +160,10 @@ model Venue {
   maxGuests        Int
   minDuration      Int              @default(60) // minutes
   priceFrom        Int // rubles
+  priceWeekend     Int?
+  priceNight       Int?
+  nightStartHour   Int              @default(22)
+  nightEndHour     Int              @default(6)
   rules            String?          @db.Text
   bufferMinutes    Int              @default(0)
   minDurationMinutes Int            @default(60)
@@ -179,6 +183,7 @@ model Venue {
   reviews          Review[]
   favorites        Favorite[]
   services         Service[]
+  specialOffers    SpecialOffer[]
   icalSyncJobs     ICalSyncJob[]
   waitlistEntries  WaitlistEntry[]
   createdAt        DateTime         @default(now())
@@ -221,6 +226,26 @@ model Tariff {
   updatedAt   DateTime @updatedAt
 
   @@index([partnerId])
+}
+
+model SpecialOffer {
+  id            String   @id @default(cuid())
+  venueId       String
+  venue         Venue    @relation(fields: [venueId], references: [id])
+  name          String
+  discountType  String   @default("percent") // percent / fixed
+  discountValue Int // percent (1-100) or rubles
+  validFrom     DateTime?
+  validTo       DateTime?
+  daysOfWeek    String? // comma-separated 0-6 (0=Sun)
+  timeFrom      String? // "HH:MM"
+  timeTo        String? // "HH:MM"
+  minHours      Int      @default(1)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([venueId])
 }
 
 model VenueAmenity {
