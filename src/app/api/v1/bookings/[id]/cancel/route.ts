@@ -1,17 +1,24 @@
 import { NextRequest } from "next/server";
-import { requireAuth } from "@/shared/middlewares/require-auth";
+import { getSession } from "@/shared/middlewares/get-session";
 import { cancelBooking } from "@/modules/bookings/booking.service";
 import { apiError, apiSuccess } from "@/shared/lib/api-response";
 import { HttpError } from "@/shared/lib/errors";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireAuth(req);
+    const user = await getSession(req);
+    if (!user) return apiError("UNAUTHORIZED", "Unauthorized", 401);
 
     const { id } = await params;
-    const booking = await cancelBooking(id, auth.sub, auth.role);
+    let body: any = {};
+    try { body = await req.json(); } catch {}
 
-    return apiSuccess(booking);
+    const cancelledBy = (body?.cancelledBy as "client" | "owner" | "admin") || "client";
+    const reason = body?.reason as string | undefined;
+
+    const result = await cancelBooking(id, user.sub, user.role, cancelledBy, reason);
+
+    return apiSuccess(result);
   } catch (err) {
     if (err instanceof HttpError) {
       return apiError(err.code, err.message, err.status);

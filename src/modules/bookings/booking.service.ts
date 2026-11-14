@@ -3,11 +3,34 @@ import { HttpError, NotFound } from "@/shared/lib/errors";
 import { createBookingSchema, type BookingInput } from "./booking.schema";
 import { createConversationForBooking } from "@/modules/chat/chat.service";
 
+function parseCancellationPolicy(policy: string | null): { freeHours: number; partialPercent: number; partialHours: number } {
+  if (!policy) return { freeHours: 72, partialPercent: 50, partialHours: 24 };
+  try {
+    const p = JSON.parse(policy);
+    return {
+      freeHours: p.freeHours ?? 72,
+      partialPercent: p.partialPercent ?? 50,
+      partialHours: p.partialHours ?? 24,
+    };
+  } catch {
+    return { freeHours: 72, partialPercent: 50, partialHours: 24 };
+  }
+}
+
+function computeRefundAmount(totalPrice: number | null, hoursUntilStart: number, policy: { freeHours: number; partialPercent: number; partialHours: number }): number {
+  if (totalPrice === null || totalPrice <= 0) return 0;
+  if (hoursUntilStart >= policy.freeHours) return totalPrice;
+  if (hoursUntilStart >= policy.partialHours) return Math.round(totalPrice * (policy.partialPercent / 100));
+  return 0;
+}
+
 export async function createBooking(input: BookingInput) {
   const parsed = createBookingSchema.parse(input);
 
-  const result = await prisma.$transaction(
-    async (tx) => {
+  let result;
+  try {
+    result = await prisma.$transaction(
+      async (tx) => {
       // Lock venue row
       await tx.$queryRawUnsafe(`SELECT id FROM "Venue" WHERE id = $1 FOR UPDATE`, parsed.venueId);
 
@@ -22,18 +45,50 @@ export async function createBooking(input: BookingInput) {
       const startsAt = new Date(parsed.startsAt);
       const endsAt = new Date(parsed.endsAt);
 
+      // Validate booking rules
+      const durationMinutes = Math.round((endsAt.getTime() - startsAt.getTime()) / 60000);
+      if (venue.minDurationMinutes > 0 && durationMinutes < venue.minDurationMinutes) {
+        throw new HttpError("DURATION_TOO_SHORT", `Minimum duration is ${venue.minDurationMinutes} minutes`, 400);
+      }
+      if (venue.maxDurationMinutes > 0 && durationMinutes > venue.maxDurationMinutes) {
+        throw new HttpError("DURATION_TOO_LONG", `Maximum duration is ${venue.maxDurationMinutes} minutes`, 400);
+      }
+      if (venue.bookingStepMinutes > 0 && durationMinutes % venue.bookingStepMinutes !== 0) {
+        throw new HttpError("INVALID_DURATION_STEP", `Duration must be a multiple of ${venue.bookingStepMinutes} minutes`, 400);
+      }
+
+      const now = new Date();
+      if (venue.leadTimeMinutes > 0) {
+        const leadTimeMs = venue.leadTimeMinutes * 60000;
+        if (startsAt.getTime() < now.getTime() + leadTimeMs) {
+          throw new HttpError("LEAD_TIME_VIOLATION", `Booking must be at least ${venue.leadTimeMinutes} minutes in advance`, 400);
+        }
+      }
+      if (venue.maxHorizonDays > 0) {
+        const maxHorizonMs = venue.maxHorizonDays * 24 * 60 * 60000;
+        if (startsAt.getTime() > now.getTime() + maxHorizonMs) {
+          throw new HttpError("HORIZON_EXCEEDED", `Booking cannot be more than ${venue.maxHorizonDays} days in advance`, 400);
+        }
+      }
+
+      // Buffer: expand interval for overlap check
+      const bufferMs = venue.bufferMinutes * 60000;
+      const checkStart = new Date(startsAt.getTime() - bufferMs);
+      const checkEnd = new Date(endsAt.getTime() + bufferMs);
+
       // Check for overlapping bookings
+      const endsAtOperator = parsed.allowBackToBack ? "gt" : "gte";
       const overlappingBookings = await tx.booking.findMany({
         where: {
           venueId: parsed.venueId,
           status: {
-            in: ["PENDING", "CONFIRMED"],
+            in: ["PENDING", "CONFIRMED", "PAID", "IN_PROGRESS"],
           },
           startsAt: {
-            lte: endsAt,
+            lt: checkEnd,
           },
           endsAt: {
-            gte: startsAt,
+            [endsAtOperator]: checkStart,
           },
         },
       });
@@ -41,13 +96,11 @@ export async function createBooking(input: BookingInput) {
       for (const existing of overlappingBookings) {
         let hasConflict = false;
         if (parsed.allowBackToBack) {
-          // If allowBackToBack=true: conflict if existing.startsAt < input.endsAt AND existing.endsAt > input.startsAt (strict)
-          if (existing.startsAt < endsAt && existing.endsAt > startsAt) {
+          if (existing.startsAt < checkEnd && existing.endsAt > checkStart) {
             hasConflict = true;
           }
         } else {
-          // If allowBackToBack=false: conflict if existing.startsAt <= input.endsAt AND existing.endsAt >= input.startsAt (touching counts)
-          if (existing.startsAt <= endsAt && existing.endsAt >= startsAt) {
+          if (existing.startsAt <= checkEnd && existing.endsAt >= checkStart) {
             hasConflict = true;
           }
         }
@@ -56,7 +109,8 @@ export async function createBooking(input: BookingInput) {
         }
       }
 
-      const status = parsed.bookingMode === "instant" ? "CONFIRMED" : "PENDING";
+      const status = parsed.bookingMode === "instant" ? "CONFIRMED" :
+        parsed.bookingMode === "pay_on_site" ? "CONFIRMED" : "PENDING";
 
       const booking = await tx.booking.create({
         data: {
@@ -67,6 +121,7 @@ export async function createBooking(input: BookingInput) {
           status,
           bookingMode: parsed.bookingMode,
           allowBackToBack: parsed.allowBackToBack,
+          totalPrice: venue.priceFrom * Math.max(1, Math.round(durationMinutes / 60)),
         },
       });
 
@@ -107,6 +162,12 @@ export async function createBooking(input: BookingInput) {
     },
     { isolationLevel: "Serializable" }
   );
+  } catch (err: any) {
+    if (err?.code === "P2034" || (err instanceof Error && /write conflict|deadlock/i.test(err.message))) {
+      throw new HttpError("SLOT_UNAVAILABLE", "Time slot is not available", 409);
+    }
+    throw err;
+  }
 
   return result;
 }
@@ -121,11 +182,9 @@ export async function getVenueAvailability(slug: string, dateStr: string) {
     throw new HttpError("VENUE_NOT_FOUND", "Venue not found", 404);
   }
 
-  // Parse date at start of day in UTC
   const date = new Date(dateStr + "T00:00:00.000Z");
   const slots = [];
 
-  // Generate 30-min slots for 24 hours
   for (let hour = 0; hour < 24; hour++) {
     for (let min = 0; min < 60; min += 30) {
       const slotStart = new Date(date);
@@ -133,18 +192,21 @@ export async function getVenueAvailability(slug: string, dateStr: string) {
       const slotEnd = new Date(slotStart);
       slotEnd.setUTCMinutes(slotEnd.getUTCMinutes() + 30);
 
-      // Check for overlapping bookings
+      const bufferMs = venue.bufferMinutes * 60000;
+      const checkStart = new Date(slotStart.getTime() - bufferMs);
+      const checkEnd = new Date(slotEnd.getTime() + bufferMs);
+
       const overlapping = await prisma.booking.findFirst({
         where: {
           venueId: venue.id,
           status: {
-            in: ["PENDING", "CONFIRMED"],
+            in: ["PENDING", "CONFIRMED", "PAID", "IN_PROGRESS"],
           },
           startsAt: {
-            lt: slotEnd,
+            lt: checkEnd,
           },
           endsAt: {
-            gt: slotStart,
+            gt: checkStart,
           },
         },
       });
@@ -216,7 +278,6 @@ export async function getBookingById(id: string, userId: string, role: string) {
     throw new NotFound("Booking not found");
   }
 
-  // Check authorization
   if (role === "CLIENT" && booking.userId !== userId) {
     throw new HttpError("FORBIDDEN", "Forbidden", 403);
   }
@@ -226,7 +287,6 @@ export async function getBookingById(id: string, userId: string, role: string) {
       throw new HttpError("FORBIDDEN", "Forbidden", 403);
     }
   }
-  // ADMIN can access all
 
   return booking;
 }
@@ -263,17 +323,16 @@ export async function confirmBooking(id: string, userId: string, role: string) {
   return updated;
 }
 
-export async function cancelBooking(id: string, userId: string, role: string) {
+export async function cancelBooking(id: string, userId: string, role: string, cancelledBy: "client" | "owner" | "admin" = "client", reason?: string) {
   const booking = await prisma.booking.findUnique({
     where: { id },
-    include: { venue: { include: { partner: true } } },
+    include: { venue: { include: { partner: true } }, payment: true },
   });
 
   if (!booking) {
     throw new NotFound("Booking not found");
   }
 
-  // Check authorization
   if (role === "CLIENT" && booking.userId !== userId) {
     throw new HttpError("FORBIDDEN", "Forbidden", 403);
   }
@@ -284,21 +343,132 @@ export async function cancelBooking(id: string, userId: string, role: string) {
     }
   }
 
-  if (booking.status === "CANCELLED") {
-    throw new HttpError("BOOKING_ALREADY_CANCELLED", "Booking already cancelled", 400);
+  const terminalStatuses = ["COMPLETED", "CANCELLED", "CANCELLED_BY_CLIENT", "CANCELLED_BY_OWNER", "CANCELLED_BY_ADMIN", "REFUNDED", "NO_SHOW"];
+  if (terminalStatuses.includes(booking.status)) {
+    throw new HttpError("BOOKING_NOT_CANCELLABLE", "Booking cannot be cancelled", 400);
   }
-  if (booking.status === "COMPLETED") {
-    throw new HttpError("BOOKING_COMPLETED", "Cannot cancel completed booking", 400);
-  }
+
+  const policy = parseCancellationPolicy(booking.venue.cancellationPolicy);
+  const hoursUntilStart = (booking.startsAt.getTime() - Date.now()) / 3600000;
+  const refundAmount = computeRefundAmount(booking.totalPrice, hoursUntilStart, policy);
+
+  const statusMap: Record<string, string> = {
+    client: "CANCELLED_BY_CLIENT",
+    owner: "CANCELLED_BY_OWNER",
+    admin: "CANCELLED_BY_ADMIN",
+  };
 
   const updated = await prisma.booking.update({
     where: { id },
-    data: { status: "CANCELLED" },
-    include: {
-      venue: true,
-      services: true,
+    data: {
+      status: statusMap[cancelledBy] as any,
+      cancellationReason: reason ?? null,
+      cancelledBy,
+      cancelledAt: new Date(),
+      paidAmount: booking.paidAmount ? booking.paidAmount - refundAmount : 0,
+    },
+    include: { venue: true, services: true },
+  });
+
+  // Create refund record if applicable
+  if (refundAmount > 0 && booking.payment) {
+    await prisma.refund.create({
+      data: {
+        paymentId: booking.payment.id,
+        amount: refundAmount * 100, // kopecks
+        reason: reason ?? "Cancellation",
+        status: "pending",
+      },
+    }).catch(() => {});
+  }
+
+  return { booking: updated, refundAmount };
+}
+
+export async function createManualBooking(partnerUserId: string, input: {
+  venueId: string;
+  startsAt: string;
+  endsAt: string;
+  guestName?: string;
+  guestPhone?: string;
+  guests?: number;
+  serviceIds?: string[];
+  quantities?: Record<string, number>;
+  price?: number;
+  status?: string;
+}) {
+  const partner = await prisma.partner.findFirst({ where: { userId: partnerUserId } });
+  if (!partner) throw new HttpError("PARTNER_NOT_FOUND", "Partner not found", 404);
+
+  const venue = await prisma.venue.findUnique({ where: { id: input.venueId } });
+  if (!venue || venue.partnerId !== partner.id) {
+    throw new HttpError("FORBIDDEN", "Forbidden", 403);
+  }
+
+  const startsAt = new Date(input.startsAt);
+  const endsAt = new Date(input.endsAt);
+  const durationMinutes = Math.round((endsAt.getTime() - startsAt.getTime()) / 60000);
+
+  if (durationMinutes < venue.minDurationMinutes) {
+    throw new HttpError("DURATION_TOO_SHORT", `Minimum duration is ${venue.minDurationMinutes} minutes`, 400);
+  }
+  if (durationMinutes > venue.maxDurationMinutes) {
+    throw new HttpError("DURATION_TOO_LONG", `Maximum duration is ${venue.maxDurationMinutes} minutes`, 400);
+  }
+
+  const bufferMs = venue.bufferMinutes * 60000;
+  const checkStart = new Date(startsAt.getTime() - bufferMs);
+  const checkEnd = new Date(endsAt.getTime() + bufferMs);
+
+  const overlapping = await prisma.booking.findMany({
+    where: {
+      venueId: input.venueId,
+      status: { in: ["PENDING", "CONFIRMED", "PAID", "IN_PROGRESS"] },
+      startsAt: { lt: checkEnd },
+      endsAt: { gt: checkStart },
     },
   });
 
-  return updated;
+  if (overlapping.length > 0) {
+    throw new HttpError("SLOT_UNAVAILABLE", "Time slot is not available", 409);
+  }
+
+  // Find or create guest user
+  let guestUser = null;
+  if (input.guestPhone) {
+    guestUser = await prisma.user.findFirst({ where: { phone: input.guestPhone } });
+  }
+  if (!guestUser) {
+    const email = `guest-${Date.now()}@manual.local`;
+    guestUser = await prisma.user.create({
+      data: { email, passwordHash: "", role: "CLIENT", phone: input.guestPhone ?? null },
+    });
+  }
+
+  const booking = await prisma.booking.create({
+    data: {
+      venueId: input.venueId,
+      userId: guestUser.id,
+      startsAt,
+      endsAt,
+      status: (input.status as any) ?? "CONFIRMED",
+      bookingMode: "instant",
+      allowBackToBack: false,
+      totalPrice: input.price ?? venue.priceFrom * Math.max(1, Math.round(durationMinutes / 60)),
+    },
+  });
+
+  if (input.serviceIds && input.serviceIds.length > 0) {
+    for (const serviceId of input.serviceIds) {
+      const service = await prisma.service.findUnique({ where: { id: serviceId } });
+      if (service) {
+        const quantity = input.quantities?.[serviceId] || 1;
+        await prisma.bookingService.create({
+          data: { bookingId: booking.id, serviceId: service.id, quantity, priceAtBooking: service.defaultPrice },
+        });
+      }
+    }
+  }
+
+  return booking;
 }
