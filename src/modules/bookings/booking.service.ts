@@ -2,7 +2,7 @@ import { prisma } from "@/shared/db/client";
 import { HttpError, NotFound } from "@/shared/lib/errors";
 import { createBookingSchema, type BookingInput } from "./booking.schema";
 import { createConversationForBooking } from "@/modules/chat/chat.service";
-import { sendNotification } from "@/modules/notifications/notification.service";
+import { sendNotification, notifyPartnerNewBooking } from "@/modules/notifications/notification.service";
 
 function hourlyPrice(venue: any, date: Date): number {
   const day = date.getDay();
@@ -199,6 +199,7 @@ export async function createBooking(input: BookingInput) {
         include: {
           services: true,
           conversation: true,
+          venue: { include: { partner: { select: { userId: true } } } },
         },
       });
 
@@ -211,6 +212,12 @@ export async function createBooking(input: BookingInput) {
       throw new HttpError("SLOT_UNAVAILABLE", "Time slot is not available", 409);
     }
     throw err;
+  }
+
+  // Notify the venue partner about the new booking (best-effort, Telegram with email fallback)
+  const partnerUserId = (result as any)?.venue?.partner?.userId;
+  if (result && partnerUserId) {
+    notifyPartnerNewBooking(partnerUserId, result).catch(() => {});
   }
 
   return result;

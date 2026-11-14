@@ -55,7 +55,7 @@ export function getEnvironmentConfig(): IntegrationConfig {
     },
     webhooks: {
       secret: process.env.WEBHOOK_SECRET || "test-webhook-secret",
-      url: process.env.WEBHOOK_URL || "/api/v1/webhooks/payment",
+      url: process.env.WEBHOOK_URL || "/api/v1/payments/webhook",
     },
   };
 }

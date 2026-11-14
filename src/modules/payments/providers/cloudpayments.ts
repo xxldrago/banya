@@ -26,7 +26,13 @@ export class CloudPaymentsService {
     this.config = config;
   }
 
-  async createPayment(amount: number, currency: string, description: string, orderId: string): Promise<CloudPaymentsResponse> {
+  async createPayment(
+    amount: number,
+    currency: string,
+    description: string,
+    orderId: string,
+    receipt?: Record<string, unknown>,
+  ): Promise<CloudPaymentsResponse> {
     try {
       const response = await axios.post(`${this.config.baseUrl}/api/v1/charge`, {
         amount,
@@ -36,6 +42,7 @@ export class CloudPaymentsService {
         auth_type: "cookie",
         skin: "simple",
         transaction_type: "charge",
+        ...(receipt ? { receipt } : {}),
         success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?order_id=${orderId}`,
         fail_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?order_id=${orderId}`,
       }, {

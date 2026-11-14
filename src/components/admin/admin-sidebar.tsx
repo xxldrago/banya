@@ -34,6 +34,7 @@ const navigation: NavGroup[] = [
       { name: "Возвраты", href: "/admin/refunds" },
       { name: "Чат", href: "/admin/chat" },
       { name: "Поддержка", href: "/admin/support" },
+      { name: "Сертификаты", href: "/admin/gift-certificates" },
     ],
   },
   {
@@ -49,6 +50,7 @@ const navigation: NavGroup[] = [
     title: "Система",
     items: [
       { name: "Аудит", href: "/admin/audit" },
+      { name: "Уведомления", href: "/admin/notifications" },
       { name: "Настройки", href: "/admin/settings" },
     ],
   },

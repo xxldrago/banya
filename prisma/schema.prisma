@@ -92,6 +92,7 @@ model User {
   id               String                 @id @default(cuid())
   email            String                 @unique
   phone            String?                @unique
+  telegramChatId   String?
   firstName        String?
   lastName         String?
   birthDate        DateTime?
@@ -690,11 +691,24 @@ model Notification {
   body      String    @db.Text
   status    String    @default("pending") // pending, sent, failed
   sentAt    DateTime?
+  error     String?
+  attempts  Int       @default(0)
   metadata  Json?
   createdAt DateTime  @default(now())
 
   @@index([userId])
   @@index([status])
+}
+
+model NotificationTemplate {
+  id       String  @id @default(cuid())
+  code     String  @unique // booking_confirmed, payment_confirmed, reminder, review_request, waitlist_slot_freed, booking_cancelled, partner_new_booking
+  channel  String // email, sms, telegram
+  subject  String
+  body     String  @db.Text // supports {{variables}}
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // --- Extended Models (Phase 11) ---

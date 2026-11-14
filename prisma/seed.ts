@@ -631,6 +631,25 @@ async function main() {
     console.log(`  ✓ Reviews seeded: ${reviewIndex}`);
   }
 
+  // --- Notification templates (Phase 22) ---
+  const defaultTemplates = [
+    { code: "booking_confirmed", channel: "email", subject: "Бронирование подтверждено #{{id}}", body: "Ваше бронирование подтверждено.\nДата: {{date}}\nМесто: {{venue}}\nСумма: {{amount}} ₽" },
+    { code: "payment_confirmed", channel: "email", subject: "Оплата прошла успешно #{{id}}", body: "Оплата на сумму {{amount}} RUB подтверждена." },
+    { code: "reminder", channel: "email", subject: "Напоминание о бронировании #{{id}}", body: "Напоминание: ваше бронирование {{date}} в {{time}}. Место: {{venue}}" },
+    { code: "review_request", channel: "email", subject: "Оставьте отзыв о вашем визите", body: "Пожалуйста, оцените ваше посещение {{venue}}." },
+    { code: "booking_cancelled", channel: "email", subject: "Бронирование отменено #{{id}}", body: "Ваше бронирование {{venue}} на {{date}} отменено. Сумма возврата: {{refund}} ₽" },
+    { code: "waitlist_slot_freed", channel: "email", subject: "Освободился слот в {{venue}}", body: "Хорошие новости! Освободилось время {{date}} в {{venue}}. Успейте забронировать." },
+    { code: "partner_new_booking", channel: "telegram", subject: "Новая бронь #{{id}}", body: "Новая заявка: {{venue}}, {{date}}, гостей: {{guests}}" },
+  ];
+  for (const t of defaultTemplates) {
+    await prisma.notificationTemplate.upsert({
+      where: { code: t.code },
+      update: {},
+      create: t,
+    });
+  }
+  console.log("  ✓ Notification templates seeded");
+
   console.log("✅ Seeding complete");
 }
 

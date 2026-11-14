@@ -7,9 +7,23 @@ describe("Notifications", () => {
   let userId: string;
 
   beforeAll(async () => {
-    await prisma.notification.deleteMany({});
-    const user = await prisma.user.findFirst({ where: { role: "CLIENT" } });
-    if (user) userId = user.id;
+    // Force the mock provider path: unit tests must not hit real email APIs
+    process.env.SENDGRID_API_KEY = "";
+    // Dedicated user with an email so dispatch resolves a recipient
+    // deterministically regardless of other tests' data.
+    const user = await prisma.user.upsert({
+      where: { email: "notify-test@banya.local" },
+      update: {},
+      create: {
+        email: "notify-test@banya.local",
+        passwordHash: "test",
+        firstName: "Notify",
+        lastName: "Test",
+        role: "CLIENT",
+      },
+    });
+    userId = user.id;
+    await prisma.notification.deleteMany({ where: { userId } });
   });
 
   it("sendNotification creates and sends notification", async () => {
