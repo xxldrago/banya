@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { reviewStatusLabels, label, formatDate } from "@/shared/lib/labels";
 
 export default function ClientReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -56,7 +57,7 @@ export default function ClientReviewsPage() {
             {pending.map((b) => (
               <div key={b.id} className="rounded border p-3">
                 <div className="font-medium">{b.venue?.title}</div>
-                <div className="text-sm text-muted-foreground">{new Date(b.startsAt).toLocaleDateString("ru-RU")}</div>
+                <div className="text-sm text-muted-foreground">{formatDate(b.startsAt)}</div>
                 {activeBooking === b.id ? (
                   <div className="mt-2 space-y-2">
                     <div className="flex gap-1">
@@ -109,7 +110,7 @@ export default function ClientReviewsPage() {
                   </div>
                 ) : null}
                 <div className="text-xs text-muted-foreground">
-                  {r.status} · {new Date(r.createdAt).toLocaleDateString("ru-RU")}
+                  {label(reviewStatusLabels, r.status)} · {formatDate(r.createdAt)}
                 </div>
                 {r.response && (
                   <div className="rounded bg-muted p-2 text-sm">

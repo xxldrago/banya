@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { bookingStatusLabels, label, formatRubles } from "@/shared/lib/labels";
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<any>(null);
@@ -60,7 +61,7 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Выручка</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.stats?.revenue || 0} ₽</div>
+            <div className="text-2xl font-bold">{formatRubles(stats?.stats?.revenue ?? 0)}</div>
           </CardContent>
         </Card>
       </div>
@@ -79,7 +80,7 @@ export default function AdminDashboardPage() {
                     <div className="font-medium">{booking.venue?.title}</div>
                     <div className="text-sm text-muted-foreground">{booking.user?.email}</div>
                   </div>
-                  <div className="text-sm text-muted-foreground">{booking.status}</div>
+                  <div className="text-sm text-muted-foreground">{label(bookingStatusLabels, booking.status)}</div>
                 </div>
               ))}
             </div>

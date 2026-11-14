@@ -58,8 +58,25 @@ export default function PartnerDashboardPage() {
       </Card>
       <Card>
         <CardHeader><CardTitle>Ближайшие бронирования</CardTitle></CardHeader>
-        <CardContent className="text-muted-foreground">
-          Список ближайших броней появится после загрузки данных.
+        <CardContent>
+          {!stats?.upcoming || stats.upcoming.length === 0 ? (
+            <div className="text-muted-foreground text-center py-4">Ближайших бронирований нет</div>
+          ) : (
+            <div className="space-y-2">
+              {stats.upcoming.map((b: any) => (
+                <div key={b.id} className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+                  <div>
+                    <div className="font-medium text-foreground">{b.venue?.title || "Объект"}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {b.user?.email ? `${b.user.email} · ` : ""}
+                      {new Date(b.startsAt).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      {b.totalPrice ? ` · ${new Intl.NumberFormat("ru-RU").format(b.totalPrice)} ₽` : ""}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

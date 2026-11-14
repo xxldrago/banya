@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { documentTypeLabels, documentStatusLabels, label } from "@/shared/lib/labels";
 
 export default function AdminDocumentsPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -35,7 +36,7 @@ export default function AdminDocumentsPage() {
             <Card key={d.id}>
               <CardContent className="flex items-center justify-between py-3">
                 <div>
-                  <b>{d.type}</b> · {d.partner?.companyName || d.partner?.id} · {d.status}
+                  <b>{label(documentTypeLabels, d.type)}</b> · {d.partner?.companyName || d.partner?.id} · {label(documentStatusLabels, d.status)}
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => setStatus(d.id, "approved")}>Одобрить</Button>

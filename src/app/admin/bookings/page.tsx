@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { bookingStatusLabels, label } from "@/shared/lib/labels";
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -33,7 +34,7 @@ export default function AdminBookingsPage() {
                 <div key={booking.id} className="flex items-center justify-between border-b pb-2">
                   <div>
                     <div className="font-medium">{booking.venue?.title}</div>
-                    <div className="text-sm text-muted-foreground">{booking.user?.email} • {booking.status}</div>
+                    <div className="text-sm text-muted-foreground">{booking.user?.email} • {label(bookingStatusLabels, booking.status)}</div>
                   </div>
                   <Button variant="outline" size="sm">Подробнее</Button>
                 </div>

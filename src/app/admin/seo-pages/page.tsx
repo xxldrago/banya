@@ -41,9 +41,9 @@ export default function AdminSeoPagesPage() {
         <CardContent>
           <form onSubmit={create} className="grid gap-3 md:grid-cols-2">
             <Input placeholder="slug (напр. moscow)" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} required />
-            <Input placeholder="title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-            <Input placeholder="description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            <textarea className="min-h-[80px] rounded border px-2 py-1" placeholder="content" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
+            <Input placeholder="Заголовок" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+            <Input placeholder="Описание" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <textarea className="min-h-[80px] rounded border px-2 py-1" placeholder="Контент" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
             <div className="md:col-span-2"><Button type="submit">Создать</Button></div>
           </form>
         </CardContent>
@@ -51,7 +51,7 @@ export default function AdminSeoPagesPage() {
       <Card>
         <CardHeader><CardTitle>Список</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          {items.length === 0 ? <p className="text-muted-foreground">Пусто</p> : items.map((it) => (
+          {items.length === 0 ? <p className="text-muted-foreground">Нет данных</p> : items.map((it) => (
             <div key={it.id} className="flex items-center justify-between rounded border p-3 text-sm">
               <div><b>{it.title}</b> <span className="text-muted-foreground">/{it.slug}</span></div>
               <Button size="sm" variant="outline" onClick={() => void remove(it.id)}>Удалить</Button>

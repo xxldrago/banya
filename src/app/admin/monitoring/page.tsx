@@ -61,13 +61,13 @@ export default function AdminMonitoringPage() {
           <CardHeader><CardTitle className="text-sm">Статус</CardTitle></CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${data.status === "ok" ? "text-green-600" : "text-red-600"}`}>
-              {data.status === "ok" ? "OK" : "Degraded"}
+              {data.status === "ok" ? "OK" : "Деградация"}
             </div>
             <p className="text-xs text-muted-foreground">обновлено {new Date(data.time).toLocaleTimeString()}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-sm">Uptime</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">Аптайм</CardTitle></CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{Math.floor(data.uptimeSeconds / 60)} мин</div>
             <p className="text-xs text-muted-foreground">память {data.memoryMb} МБ</p>
@@ -76,7 +76,7 @@ export default function AdminMonitoringPage() {
         <Card>
           <CardHeader><CardTitle className="text-sm">БД / Redis</CardTitle></CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.db === "up" ? "✓" : "✗"} / {data.redis}</div>
+            <div className="text-2xl font-bold">{data.db === "up" ? "✓" : "✗"} / {data.redis === "up" ? "✓" : "✗"}</div>
             <p className="text-xs text-muted-foreground">postgres / кэш</p>
           </CardContent>
         </Card>

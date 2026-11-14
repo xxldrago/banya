@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatRubles } from "@/shared/lib/labels";
 
 export default function PartnerCertificatesPage() {
   const [certs, setCerts] = useState<any[]>([]);
@@ -36,7 +37,7 @@ export default function PartnerCertificatesPage() {
               <CardContent className="py-3">
                 <div className="font-medium">{c.code}</div>
                 <div className="text-sm text-muted-foreground">
-                  {c.amount} ₽ · до {new Date(c.expiresAt).toLocaleDateString("ru-RU")}
+                  {formatRubles(c.amount)} · до {new Date(c.expiresAt).toLocaleDateString("ru-RU")}
                 </div>
               </CardContent>
             </Card>

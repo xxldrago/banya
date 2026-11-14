@@ -691,6 +691,7 @@ model Notification {
   body      String    @db.Text
   status    String    @default("pending") // pending, sent, failed
   sentAt    DateTime?
+  readAt    DateTime?
   error     String?
   attempts  Int       @default(0)
   metadata  Json?

@@ -3,23 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-const statusLabels: Record<string, string> = {
-  PENDING: "Ожидает",
-  CONFIRMED: "Подтверждено",
-  COMPLETED: "Завершено",
-  CANCELLED: "Отменено",
-  CANCELLED_BY_CLIENT: "Отменено клиентом",
-  CANCELLED_BY_OWNER: "Отменено владельцем",
-  CANCELLED_BY_ADMIN: "Отменено администратором",
-  EXPIRED: "Истекло",
-  PAID: "Оплачено",
-  IN_PROGRESS: "Идёт сейчас",
-  NO_SHOW: "Не пришёл",
-  DISPUTED: "Спор",
-  REFUNDED: "Возврат выполнен",
-  DRAFT: "Черновик",
-};
+import { bookingStatusLabels, label } from "@/shared/lib/labels";
 
 export default function PartnerBookingsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -64,7 +48,7 @@ export default function PartnerBookingsPage() {
     const rows = [
       ["ID", "Объект", "Клиент", "Начало", "Конец", "Статус", "Сумма"].join(";"),
       ...bookings.map((b) =>
-        [b.id, b.venue?.title || "", b.user?.email || "", new Date(b.startsAt).toISOString(), new Date(b.endsAt).toISOString(), b.status, b.totalPrice ?? ""].join(";"),
+        [b.id, b.venue?.title || "", b.user?.email || "", new Date(b.startsAt).toISOString(), new Date(b.endsAt).toISOString(), label(bookingStatusLabels, b.status), b.totalPrice ?? ""].join(";"),
       ),
     ].join("\n");
     const blob = new Blob([rows], { type: "text/csv;charset=utf-8;" });
@@ -174,7 +158,7 @@ export default function PartnerBookingsPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{booking.venue?.title || "Объект"}</CardTitle>
-                  <span className="text-sm">{statusLabels[booking.status] || booking.status}</span>
+                  <span className="text-sm">{label(bookingStatusLabels, booking.status)}</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { partnerStatusLabels, label } from "@/shared/lib/labels";
 
 export default function AdminPartnersPage() {
   const [partners, setPartners] = useState<any[]>([]);
@@ -28,7 +29,7 @@ export default function AdminPartnersPage() {
               <CardContent className="py-3">
                 <div className="font-medium">{p.companyName || p.user?.email}</div>
                 <div className="text-sm text-muted-foreground">
-                  {p.user?.email} · статус: {p.status} · объектов: {p.venues?.length ?? 0}
+                  {p.user?.email} · статус: {label(partnerStatusLabels, p.status)} · объектов: {p.venues?.length ?? 0}
                 </div>
               </CardContent>
             </Card>

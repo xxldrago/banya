@@ -26,9 +26,9 @@ export default function AdminChatPage() {
           {conversations.map((c) => (
             <Card key={c.id}>
               <CardContent className="py-3">
-                <div className="font-medium">{c.venue?.title || "Объект"}</div>
+                <div className="font-medium">{c.booking?.venue?.title || "Объект"}</div>
                 <div className="text-sm text-muted-foreground">
-                  {c.lastMessage?.body || "—"} · {new Date(c.updatedAt).toLocaleString("ru-RU")}
+                  {c.messages?.[0]?.body || "—"} · {new Date(c.updatedAt).toLocaleString("ru-RU")}
                 </div>
               </CardContent>
             </Card>

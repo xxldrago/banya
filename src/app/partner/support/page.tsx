@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { label, ticketStatusLabels } from "@/shared/lib/labels";
 
 export default function PartnerSupportPage() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -36,7 +37,7 @@ export default function PartnerSupportPage() {
               <CardContent className="py-3">
                 <div className="font-medium">{t.subject}</div>
                 <div className="text-sm text-muted-foreground">
-                  {t.status} · {new Date(t.createdAt).toLocaleDateString("ru-RU")}
+                  {label(ticketStatusLabels, t.status)} · {new Date(t.createdAt).toLocaleDateString("ru-RU")}
                 </div>
               </CardContent>
             </Card>

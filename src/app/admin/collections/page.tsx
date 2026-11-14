@@ -42,8 +42,8 @@ export default function AdminCollectionsPage() {
         <CardContent>
           <form onSubmit={create} className="grid gap-3 md:grid-cols-2">
             <Input placeholder="slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} required />
-            <Input placeholder="title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-            <Input placeholder="description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <Input placeholder="Заголовок" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+            <Input placeholder="Описание" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             <Input placeholder="ID объектов через запятую" value={form.itemIds} onChange={(e) => setForm({ ...form, itemIds: e.target.value })} />
             <div className="md:col-span-2"><Button type="submit">Создать</Button></div>
           </form>

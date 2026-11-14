@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/shared/lib/labels";
 
 export default function ClientWaitlistPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -46,7 +47,7 @@ export default function ClientWaitlistPage() {
                     <span className="font-medium">Объект</span>
                   )}
                   <div className="text-sm text-muted-foreground">
-                    Желаемая дата: {new Date(e.desiredDate).toLocaleDateString("ru-RU")}
+                    Желаемая дата: {formatDate(e.desiredDate)}
                     {e.notified ? " · уведомлены об освобождении" : " · ожидает освобождения"}
                   </div>
                 </div>

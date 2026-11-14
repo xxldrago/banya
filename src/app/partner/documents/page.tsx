@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { documentStatusLabels, documentTypeLabels, label } from "@/shared/lib/labels";
 
 export default function PartnerDocumentsPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -66,7 +67,7 @@ export default function PartnerDocumentsPage() {
         <CardContent className="space-y-2">
           {items.length === 0 ? <p className="text-muted-foreground">Документов пока нет</p> : items.map((d) => (
             <div key={d.id} className="flex items-center justify-between rounded border p-3 text-sm">
-              <div><b>{d.type}</b> <span className="text-muted-foreground">· {d.status}</span></div>
+              <div><b>{label(documentTypeLabels, d.type)}</b> <span className="text-muted-foreground">· {label(documentStatusLabels, d.status)}</span></div>
               <a href={d.url} target="_blank" rel="noreferrer" className="text-primary underline">Открыть</a>
             </div>
           ))}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatMoney } from "@/shared/lib/labels";
 
 export default function PartnerPromoCodesPage() {
   const [promos, setPromos] = useState<any[]>([]);
@@ -80,7 +81,7 @@ export default function PartnerPromoCodesPage() {
               <CardContent className="py-3">
                 <div className="font-medium">{p.code}</div>
                 <div className="text-sm text-muted-foreground">
-                  {p.discountType === "PERCENTAGE" ? `${p.discountValue}%` : `${p.discountValue} ₽`} · до {new Date(p.validUntil).toLocaleDateString("ru-RU")} · {p.active ? "активен" : "выключен"}
+                  {p.discountType === "PERCENTAGE" ? `${p.discountValue}%` : formatMoney(p.discountValue)} · до {new Date(p.validUntil).toLocaleDateString("ru-RU")} · {p.active ? "активен" : "выключен"}
                 </div>
               </CardContent>
             </Card>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { adCampaignStatusLabels, label, formatMoney } from "@/shared/lib/labels";
 
 export default function AdminAdsPage() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -28,10 +29,10 @@ export default function AdminAdsPage() {
               <CardContent className="py-3">
                 <div className="flex items-center justify-between">
                   <div className="font-medium">{c.title}</div>
-                  <span className="text-sm text-muted-foreground">{c.status}</span>
+                  <span className="text-sm text-muted-foreground">{label(adCampaignStatusLabels, c.status)}</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {c.partner?.companyName} · бюджет {c.budget} ₽ · потрачено {c.spent} ₽
+                  {c.partner?.companyName} · бюджет {formatMoney(c.budget)} · потрачено {formatMoney(c.spent)}
                 </div>
               </CardContent>
             </Card>

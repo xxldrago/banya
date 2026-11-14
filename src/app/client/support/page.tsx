@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ticketStatusLabels, priorityLabels, label, formatDate } from "@/shared/lib/labels";
 
 export default function ClientSupportPage() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -75,7 +76,7 @@ export default function ClientSupportPage() {
               <CardContent className="py-3">
                 <div className="font-medium">{t.subject}</div>
                 <div className="text-sm text-muted-foreground">
-                  {t.status} · {t.priority} · {new Date(t.createdAt).toLocaleDateString("ru-RU")}
+                  {label(ticketStatusLabels, t.status)} · {label(priorityLabels, t.priority)} · {formatDate(t.createdAt)}
                 </div>
               </CardContent>
             </Card>

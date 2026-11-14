@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { giftCertificateStatusLabels, label, formatRubles } from "@/shared/lib/labels";
 
 export default function AdminGiftCertificatesPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -53,7 +54,7 @@ export default function AdminGiftCertificatesPage() {
           {items.length === 0 ? <p className="text-muted-foreground">Сертификатов пока нет</p> : items.map((c) => (
             <div key={c.id} className="flex items-center justify-between rounded border p-3 text-sm">
               <div>
-                <b>{c.code}</b> — {c.amount} ₽ · {c.status}
+                <b>{c.code}</b> — {formatRubles(c.amount)} · {label(giftCertificateStatusLabels, c.status)}
                 {c.recipientEmail ? <span className="text-muted-foreground"> · {c.recipientEmail}</span> : null}
               </div>
             </div>

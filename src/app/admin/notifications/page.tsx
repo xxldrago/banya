@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { channelLabels, notificationTypeLabels, notificationStatusLabels, label } from "@/shared/lib/labels";
 
 export default function AdminNotificationsPage() {
   const [tab, setTab] = useState<"templates" | "logs">("templates");
@@ -100,7 +101,7 @@ export default function AdminNotificationsPage() {
                 <div key={t.id} className="rounded border p-3 text-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <b>{t.code}</b> <span className="text-muted-foreground">· {t.channel}</span>
+                      <b>{t.code}</b> <span className="text-muted-foreground">· {label(channelLabels, t.channel)}</span>
                       {!t.isActive && <span className="ml-2 text-xs text-red-500">выкл</span>}
                     </div>
                     <div className="flex gap-2">
@@ -137,8 +138,8 @@ export default function AdminNotificationsPage() {
             {logs.length === 0 ? <p className="text-muted-foreground">Лог пуст</p> : logs.map((l) => (
               <div key={l.id} className="rounded border p-2">
                 <div className="flex items-center justify-between">
-                  <span><b>{l.type}</b> · {l.channel}</span>
-                  <span className={l.status === "sent" ? "text-green-600" : l.status === "failed" ? "text-red-600" : "text-muted-foreground"}>{l.status}</span>
+                  <span><b>{label(notificationTypeLabels, l.type)}</b> · {label(channelLabels, l.channel)}</span>
+                  <span className={l.status === "sent" ? "text-green-600" : l.status === "failed" ? "text-red-600" : "text-muted-foreground"}>{label(notificationStatusLabels, l.status)}</span>
                 </div>
                 <div className="text-muted-foreground">{l.subject}</div>
                 {l.error ? <div className="text-xs text-red-500">{l.error}</div> : null}

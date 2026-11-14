@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { auditActionLabels, label } from "@/shared/lib/labels";
 
 export default function PartnerAuditPage() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -30,7 +31,7 @@ export default function PartnerAuditPage() {
           {logs.map((l) => (
             <Card key={l.id}>
               <CardContent className="py-3">
-                <div className="font-medium">{l.action}</div>
+                <div className="font-medium">{label(auditActionLabels, l.action)}</div>
                 <div className="text-sm text-muted-foreground">
                   {new Date(l.createdAt).toLocaleString("ru-RU")} · {l.userId}
                 </div>

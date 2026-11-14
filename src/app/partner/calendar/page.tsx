@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { bookingStatusLabels, icalStatusLabels, label } from "@/shared/lib/labels";
 
 export default function PartnerCalendarPage() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -135,7 +136,7 @@ export default function PartnerCalendarPage() {
             <div className="space-y-1">
               {jobs.map((j: any) => (
                 <div key={j.id} className="text-sm text-muted-foreground">
-                  {j.sourceUrl} — {j.status} ({new Date(j.createdAt).toLocaleString("ru-RU")})
+                  {j.sourceUrl} — {label(icalStatusLabels, j.status)} ({new Date(j.createdAt).toLocaleString("ru-RU")})
                 </div>
               ))}
             </div>
@@ -210,7 +211,7 @@ export default function PartnerCalendarPage() {
                   <div key={b.id} className="flex items-center justify-between border-b py-2 text-sm">
                     <span>{new Date(b.startsAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })} — {new Date(b.endsAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}</span>
                     <span>{b.venue?.title} · {b.user?.email}</span>
-                    <span className="text-muted-foreground">{b.status}</span>
+                    <span className="text-muted-foreground">{label(bookingStatusLabels, b.status)}</span>
                   </div>
                 ))}
               </CardContent>

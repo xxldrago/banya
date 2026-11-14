@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { contentTypeLabels, label } from "@/shared/lib/labels";
 
 type ContentItem = {
   id: string;
@@ -85,14 +86,14 @@ export default function AdminContentPage() {
             />
             <input
               className="h-10 rounded-md border border-input bg-background px-3"
-              placeholder="title"
+              placeholder="Заголовок"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
             />
             <textarea
               className="min-h-[120px] rounded-md border border-input bg-background px-3 py-2"
-              placeholder="body"
+              placeholder="Текст"
               value={form.body}
               onChange={(e) => setForm({ ...form, body: e.target.value })}
             />
@@ -102,8 +103,8 @@ export default function AdminContentPage() {
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
               >
-                <option value="draft">draft</option>
-                <option value="published">published</option>
+                <option value="draft">Черновик</option>
+                <option value="published">Опубликован</option>
               </select>
               <Button type="submit">{editingId ? "Сохранить" : "Создать"}</Button>
               {editingId ? (
@@ -127,7 +128,7 @@ export default function AdminContentPage() {
               <div key={item.id} className="flex items-center justify-between gap-4 rounded-md border border-border p-3">
                 <div>
                   <b>{item.title}</b> <span className="text-muted-foreground">/{item.slug}</span>
-                  <div className="text-sm text-muted-foreground">{item.status} · {item.locale}</div>
+                  <div className="text-sm text-muted-foreground">{label(contentTypeLabels, item.status)} · {item.locale}</div>
                 </div>
                 <div className="flex gap-2">
                   <Button

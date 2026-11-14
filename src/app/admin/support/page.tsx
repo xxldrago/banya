@@ -48,16 +48,16 @@ export default function AdminSupportPage() {
                 <div className="text-sm text-muted-foreground">{t.body}</div>
                 <div className="flex flex-wrap items-center gap-2">
                   <select className="rounded border px-2 py-1 text-sm" value={t.status} onChange={(e) => update(t.id, { status: e.target.value })}>
-                    <option value="open">open</option>
-                    <option value="in_progress">in_progress</option>
-                    <option value="resolved">resolved</option>
-                    <option value="closed">closed</option>
+                    <option value="open">Открыт</option>
+                    <option value="in_progress">В работе</option>
+                    <option value="resolved">Решён</option>
+                    <option value="closed">Закрыт</option>
                   </select>
                   <select className="rounded border px-2 py-1 text-sm" value={t.priority} onChange={(e) => update(t.id, { priority: e.target.value })}>
-                    <option value="low">low</option>
-                    <option value="medium">medium</option>
-                    <option value="high">high</option>
-                    <option value="urgent">urgent</option>
+                    <option value="low">Низкий</option>
+                    <option value="medium">Средний</option>
+                    <option value="high">Высокий</option>
+                    <option value="urgent">Срочный</option>
                   </select>
                   {t.slaDueAt && (
                     <span className={`text-xs ${new Date(t.slaDueAt) < new Date() ? "text-red-600" : "text-muted-foreground"}`}>

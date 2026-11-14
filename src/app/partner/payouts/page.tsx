@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatMoney, label, payoutMethodLabels, payoutStatusLabels } from "@/shared/lib/labels";
 
 export default function PartnerPayoutsPage() {
   const [payouts, setPayouts] = useState<any[]>([]);
@@ -72,11 +73,11 @@ export default function PartnerPayoutsPage() {
             <Card key={p.id}>
               <CardContent className="py-3">
                 <div className="flex items-center justify-between">
-                  <div className="font-medium">{p.amount} ₽</div>
-                  <span className="text-sm text-muted-foreground">{p.status}</span>
+                  <div className="font-medium">{formatMoney(p.amount)}</div>
+                  <span className="text-sm text-muted-foreground">{label(payoutStatusLabels, p.status)}</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {new Date(p.createdAt).toLocaleDateString("ru-RU")} · {p.method}
+                  {new Date(p.createdAt).toLocaleDateString("ru-RU")} · {label(payoutMethodLabels, p.method)}
                 </div>
               </CardContent>
             </Card>

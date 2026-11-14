@@ -78,7 +78,7 @@ export default function AdminSecurityPage() {
             <div className="space-y-2">
               <p className="text-sm">Отсканируйте QR-код в приложении (Google Authenticator, 1Password и т.п.):</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={setup.qrCodeUrl} alt="QR code" className="h-48 w-48" />
+              <img src={setup.qrCodeUrl} alt="QR-код" className="h-48 w-48" />
               <p className="text-xs text-muted-foreground">Секрет (вручную): <code>{setup.secret}</code></p>
             </div>
             <div className="space-y-1">

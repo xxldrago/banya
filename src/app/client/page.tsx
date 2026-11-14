@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { bookingStatusLabels, label, formatDateTime } from "@/shared/lib/labels";
 
 export default function ClientDashboardPage() {
   const [stats, setStats] = useState<any>(null);
@@ -63,8 +64,8 @@ export default function ClientDashboardPage() {
               {upcoming.slice(0, 3).map((b) => (
                 <div key={b.id} className="flex items-center justify-between border-b py-2 text-sm">
                   <span>{b.venue?.title}</span>
-                  <span>{new Date(b.startsAt).toLocaleString("ru-RU")}</span>
-                  <span className="text-muted-foreground">{b.status}</span>
+                  <span>{formatDateTime(b.startsAt)}</span>
+                  <span className="text-muted-foreground">{label(bookingStatusLabels, b.status)}</span>
                 </div>
               ))}
             </div>

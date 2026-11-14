@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { bookingStatusLabels, paymentStatusLabels, label, formatDateTime, formatRubles } from "@/shared/lib/labels";
 
 const statusColors: Record<string, string> = {
   DRAFT: "bg-[#F1E9DF] text-[#3B322C]",
@@ -21,24 +22,6 @@ const statusColors: Record<string, string> = {
   NO_SHOW: "bg-[#FDEDE4] text-[#B33F13]",
   DISPUTED: "bg-[#FDEDE4] text-[#B33F13]",
   REFUNDED: "bg-[#E6F4EC] text-[#1F7A4C]",
-};
-
-const statusLabels: Record<string, string> = {
-  DRAFT: "Черновик",
-  PENDING: "Ожидает",
-  PENDING_CONFIRMATION: "Ожидает подтверждения",
-  CONFIRMED: "Подтверждено",
-  PAID: "Оплачено",
-  IN_PROGRESS: "Идёт сейчас",
-  COMPLETED: "Завершено",
-  CANCELLED: "Отменено",
-  CANCELLED_BY_CLIENT: "Отменено клиентом",
-  CANCELLED_BY_OWNER: "Отменено владельцем",
-  CANCELLED_BY_ADMIN: "Отменено администратором",
-  EXPIRED: "Истекло",
-  NO_SHOW: "Не пришёл",
-  DISPUTED: "Спор",
-  REFUNDED: "Возврат выполнен",
 };
 
 export default function BookingsPage() {
@@ -62,7 +45,7 @@ export default function BookingsPage() {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       const refund = data?.data?.refundAmount ?? 0;
-      setRefundMsg(refund > 0 ? `Отменено. Возврат: ${refund} ₽` : "Отменено без возврата");
+      setRefundMsg(refund > 0 ? `Отменено. Возврат: ${formatRubles(refund)}` : "Отменено без возврата");
       load();
     } else {
       alert(data?.error?.message || data?.error || "Ошибка");
@@ -119,24 +102,24 @@ export default function BookingsPage() {
                     </Link>
                   </CardTitle>
                   <span className={`rounded-full px-2 py-1 text-xs ${statusColors[booking.status] || "bg-muted"}`}>
-                    {statusLabels[booking.status] || booking.status}
+                    {label(bookingStatusLabels, booking.status)}
                   </span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="text-sm">
                   <span className="text-muted-foreground">Дата:</span>{" "}
-                  {new Date(booking.startsAt).toLocaleString("ru-RU")}
+                  {formatDateTime(booking.startsAt)}
                 </div>
                 <div className="text-sm">
                   <span className="text-muted-foreground">Гостей:</span> {booking.guestsCount ?? "—"}
                 </div>
                 <div className="text-sm">
-                  <span className="text-muted-foreground">Сумма:</span> {booking.totalPrice ? `${booking.totalPrice} ₽` : "—"}
+                  <span className="text-muted-foreground">Сумма:</span> {booking.totalPrice ? formatRubles(booking.totalPrice) : "—"}
                 </div>
                 <div className="text-sm">
                   <span className="text-muted-foreground">Статус оплаты:</span>{" "}
-                  {booking.payment?.status || "Не оплачивалось"}
+                  {booking.payment?.status ? label(paymentStatusLabels, booking.payment.status) : "Не оплачивалось"}
                 </div>
                 {booking.cancellationReason && (
                   <div className="text-sm text-muted-foreground">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDateTime } from "@/shared/lib/labels";
 
 export default function ChatsPage() {
   const [conversations, setConversations] = useState<any[]>([]);
@@ -33,14 +34,22 @@ export default function ChatsPage() {
               <CardHeader>
                 <CardTitle className="text-lg">
                   <Link href={`/chat/${conv.id}`} className="hover:underline">
-                    Чат по бронированию {conv.bookingId?.slice(0, 8)}
+                    {conv.booking?.venue?.title || "Чат по бронированию"}
                   </Link>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-muted-foreground">
-                  Обновлён: {new Date(conv.updatedAt).toLocaleString("ru-RU")}
+                  {conv.booking?.venue && (
+                    <>Бронирование: {formatDateTime(conv.booking.startsAt)} · </>
+                  )}
+                  Обновлён: {formatDateTime(conv.updatedAt)}
                 </div>
+                {conv.messages?.[0]?.body && (
+                  <div className="text-sm mt-1 truncate">
+                    Последнее сообщение: {conv.messages[0].body}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

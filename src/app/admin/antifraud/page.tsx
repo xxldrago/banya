@@ -66,14 +66,14 @@ export default function AdminAntifraudPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>No-show</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Неявки (no-show)</CardTitle></CardHeader>
         <CardContent>
           {(data?.noShows?.length || 0) === 0 ? (
-            <p className="text-muted-foreground">Нет no-show</p>
+            <p className="text-muted-foreground">Неявок нет</p>
           ) : (
             <ul className="space-y-1 text-sm">
               {data.noShows.map((c: any) => (
-                <li key={c.userId}>{c.userId} — {c.count} no-show</li>
+                <li key={c.userId}>{c.userId} — неявок: {c.count}</li>
               ))}
             </ul>
           )}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { discountTypeLabels, label, formatMoney } from "@/shared/lib/labels";
 
 export default function AdminPromoCodesPage() {
   const [promos, setPromos] = useState<any[]>([]);
@@ -29,7 +30,9 @@ export default function AdminPromoCodesPage() {
               <CardContent className="py-3">
                 <div className="font-medium">{p.code}</div>
                 <div className="text-sm text-muted-foreground">
-                  {p.discountType} {p.discountValue} · {p.active ? "активен" : "выключен"} · использований: {p._count?.usages ?? 0}
+                  {label(discountTypeLabels, p.discountType)}{" "}
+                  {p.discountType === "PERCENTAGE" ? `${p.discountValue}%` : formatMoney(p.discountValue)} ·{" "}
+                  {p.active ? "активен" : "выключен"} · использований: {p._count?.usages ?? 0}
                 </div>
               </CardContent>
             </Card>

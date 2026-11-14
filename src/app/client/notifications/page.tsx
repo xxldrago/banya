@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatDateTime } from "@/shared/lib/labels";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -46,7 +47,7 @@ export default function NotificationsPage() {
               <CardContent className="space-y-2">
                 <p className="text-sm">{n.body}</p>
                 <div className="text-xs text-muted-foreground">
-                  {new Date(n.createdAt).toLocaleString("ru-RU")}
+                  {formatDateTime(n.createdAt)}
                 </div>
                 {!n.readAt && (
                   <Button variant="outline" size="sm" onClick={() => markRead(n.id)}>

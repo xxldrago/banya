@@ -58,7 +58,7 @@ export default function AdminBannersPage() {
         <CardContent className="space-y-2">
           {items.length === 0 ? <p className="text-muted-foreground">Баннеров пока нет</p> : items.map((b) => (
             <div key={b.id} className="flex items-center justify-between rounded border p-3 text-sm">
-              <div><b>{b.title}</b> <span className="text-muted-foreground">· {b.position} · {b.label || "Реклама"}</span></div>
+              <div><b>{b.title}</b> <span className="text-muted-foreground">· {b.position === "home" ? "Главная" : b.position === "catalog" ? "Каталог" : b.position === "sidebar" ? "Сайдбар" : b.position} · {b.label || "Реклама"}</span></div>
               <Button size="sm" variant="outline" onClick={() => void remove(b.id)}>Удалить</Button>
             </div>
           ))}

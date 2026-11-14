@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { roleLabels, adminRoleLabels, userStatusLabels, label } from "@/shared/lib/labels";
 
 const ADMIN_ROLES = ["", "superadmin", "moderator", "support", "finance", "marketing", "content"];
 
@@ -68,23 +69,23 @@ export function UsersView({ roleFilter }: { roleFilter?: string }) {
                 <div key={user.id} className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
                   <div>
                     <div className="font-medium">{user.email}</div>
-                    <div className="text-sm text-muted-foreground">{user.role} · {user.status}</div>
+                    <div className="text-sm text-muted-foreground">{label(roleLabels, user.role)} · {label(userStatusLabels, user.status)}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <select className="rounded border px-2 py-1 text-sm" value={user.role} onChange={(e) => update(user.id, { role: e.target.value })}>
-                      <option value="CLIENT">CLIENT</option>
-                      <option value="PARTNER">PARTNER</option>
-                      <option value="ADMIN">ADMIN</option>
+                      <option value="CLIENT">Клиент</option>
+                      <option value="PARTNER">Партнёр</option>
+                      <option value="ADMIN">Администратор</option>
                     </select>
                     {user.role === "ADMIN" && (
                       <select className="rounded border px-2 py-1 text-sm" value={user.adminRole || ""} onChange={(e) => update(user.id, { adminRole: e.target.value || null })}>
-                        {ADMIN_ROLES.map((r) => <option key={r} value={r}>{r || "—"}</option>)}
+                        {ADMIN_ROLES.map((r) => <option key={r} value={r}>{r ? label(adminRoleLabels, r) : "—"}</option>)}
                       </select>
                     )}
                     <select className="rounded border px-2 py-1 text-sm" value={user.status} onChange={(e) => update(user.id, { status: e.target.value })}>
-                      <option value="active">active</option>
-                      <option value="suspended">suspended</option>
-                      <option value="blocked">blocked</option>
+                      <option value="active">Активен</option>
+                      <option value="suspended">Приостановлен</option>
+                      <option value="blocked">Заблокирован</option>
                     </select>
                   </div>
                 </div>

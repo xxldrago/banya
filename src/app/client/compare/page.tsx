@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { venueTypeLabels, label } from "@/shared/lib/labels";
 
 export default function ComparePage() {
   const [slugs, setSlugs] = useState<string[]>([]);
@@ -46,7 +47,7 @@ export default function ComparePage() {
 
   const rows = [
     { label: "Название", get: (v: any) => v.title },
-    { label: "Тип", get: (v: any) => (v.type === "sauna" ? "Сауна" : "Баня") },
+    { label: "Тип", get: (v: any) => label(venueTypeLabels, v.type) },
     { label: "Город", get: (v: any) => v.city?.name },
     { label: "Адрес", get: (v: any) => v.address },
     { label: "Цена от", get: (v: any) => `${v.priceFrom} ₽/ч` },

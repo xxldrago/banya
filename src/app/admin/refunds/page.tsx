@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { refundStatusLabels, label, formatMoney } from "@/shared/lib/labels";
 
 export default function AdminRefundsPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -64,7 +65,7 @@ export default function AdminRefundsPage() {
                 <CardContent className="flex items-center justify-between gap-4 py-4">
                   <div className="min-w-0">
                     <div className="font-medium">
-                      {(r.amount / 100).toLocaleString("ru-RU")} ₽ · {r.status}
+                      {formatMoney(r.amount)} · {label(refundStatusLabels, r.status)}
                     </div>
                     <div className="text-sm text-muted-foreground truncate">
                       {booking?.venue?.title ?? "—"} · {booking?.user?.email ?? "—"} · бронирование {booking?.id?.slice(0, 8) ?? "—"}

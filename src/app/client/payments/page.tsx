@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { paymentStatusLabels, label, formatDate, formatMoney } from "@/shared/lib/labels";
 
 export default function ClientPaymentsPage() {
   const [payments, setPayments] = useState<any[]>([]);
@@ -32,10 +33,10 @@ export default function ClientPaymentsPage() {
               <CardContent className="py-3">
                 <div className="flex items-center justify-between">
                   <div className="font-medium">{p.booking?.venue?.title}</div>
-                  <span className="text-sm text-muted-foreground">{p.status}</span>
+                  <span className="text-sm text-muted-foreground">{label(paymentStatusLabels, p.status)}</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {p.amount} ₽ · {new Date(p.createdAt).toLocaleDateString("ru-RU")}
+                  {formatMoney(p.amount)} · {formatDate(p.createdAt)}
                 </div>
               </CardContent>
             </Card>

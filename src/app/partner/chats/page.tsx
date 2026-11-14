@@ -31,8 +31,8 @@ export default function PartnerChatsPage() {
           {conversations.map((c) => (
             <Card key={c.id}>
               <CardContent className="py-3">
-                <div className="font-medium">{c.venue?.title || "Объект"}</div>
-                <div className="text-sm text-muted-foreground">{c.lastMessage?.body || "—"}</div>
+                <div className="font-medium">{c.booking?.venue?.title || "Объект"}</div>
+                <div className="text-sm text-muted-foreground">{c.messages?.[0]?.body || "—"}</div>
               </CardContent>
             </Card>
           ))}

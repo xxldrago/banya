@@ -30,6 +30,17 @@ export async function GET(req: NextRequest) {
     ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length
     : 0;
 
+  const upcoming = await prisma.booking.findMany({
+    where: {
+      venueId: { in: venueIds },
+      startsAt: { gte: new Date() },
+      status: { notIn: ["CANCELLED", "CANCELLED_BY_CLIENT", "CANCELLED_BY_OWNER", "CANCELLED_BY_ADMIN", "EXPIRED"] },
+    },
+    include: { venue: { select: { title: true } }, user: { select: { email: true } } },
+    orderBy: { startsAt: "asc" },
+    take: 5,
+  });
+
   return NextResponse.json({
     data: {
       venues: venues.length,
@@ -40,6 +51,7 @@ export async function GET(req: NextRequest) {
       revenue,
       rating: Math.round(rating * 10) / 10,
       occupancy: venues.length > 0 ? Math.round((bookings.length / (venues.length * 10)) * 100) : 0,
+      upcoming,
     },
   });
 }

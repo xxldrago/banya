@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { label, moderationStatusLabels, venueStatusLabels } from "@/shared/lib/labels";
 
 export default function PartnerVenuesPage() {
   const [venues, setVenues] = useState<any[]>([]);
@@ -132,7 +133,7 @@ export default function PartnerVenuesPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{v.title}</CardTitle>
-                  <span className="text-sm text-muted-foreground">{v.status} · {v.moderationStatus}</span>
+                  <span className="text-sm text-muted-foreground">{label(venueStatusLabels, v.status)} · {label(moderationStatusLabels, v.moderationStatus)}</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">

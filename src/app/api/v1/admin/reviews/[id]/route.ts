@@ -1,28 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAllowedAdminRole } from "@/shared/middlewares/require-auth";
 import { prisma } from "@/lib/prisma";
-import { invalidatePrefix } from "@/shared/lib/cache";
-import { requireAuth } from "@/shared/lib/auth";
+import { getSession } from "@/shared/middlewares/get-session";
+import { isAllowedAdminRole } from "@/shared/middlewares/require-auth";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  const user = await requireAuth(req);
-  if (!user || !isAllowedAdminRole(user.adminRole, ["superadmin", "moderator"])) return NextResponse.json({ error: "Insufficient admin role" }, { status: 403 });
+/** Модерация отзыва: одобрить или отклонить. */
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getSession(req);
   if (!user || user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Admin required" }, { status: 403 });
+    return NextResponse.json({ error: "Admin required" }, { status: user ? 403 : 401 });
+  }
+  const ar = user.adminRole ?? "superadmin";
+  if (!isAllowedAdminRole(ar, ["moderator", "superadmin"])) {
+    return NextResponse.json({ error: "Insufficient admin role" }, { status: 403 });
   }
 
-  const body = await req.json();
-  const { status } = body;
+  const { id } = await params;
+  const body = await req.json().catch(() => ({}));
+  const action = body.action; // approve | reject
+
+  const status = action === "approve" ? "APPROVED" : action === "reject" ? "REJECTED" : null;
+  if (!status) return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 
   const review = await prisma.review.update({
     where: { id },
-    data: { status },
+    data: { status: status as any },
   });
-
-  await invalidatePrefix("catalog:");
-  return NextResponse.json({ data: review });
+  return NextResponse.json({ data: { id: review.id, status: review.status } });
 }

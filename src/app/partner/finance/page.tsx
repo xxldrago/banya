@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatMoney } from "@/shared/lib/labels";
 
 export default function PartnerFinancePage() {
   const [payouts, setPayouts] = useState<any[]>([]);
@@ -30,7 +31,7 @@ export default function PartnerFinancePage() {
               {payouts.map((p) => (
                 <div key={p.id} className="flex justify-between border-b py-2 text-sm">
                   <span>{new Date(p.createdAt).toLocaleDateString("ru-RU")}</span>
-                  <span className="font-medium">{p.amount} ₽</span>
+                  <span className="font-medium">{formatMoney(p.amount)}</span>
                 </div>
               ))}
             </div>

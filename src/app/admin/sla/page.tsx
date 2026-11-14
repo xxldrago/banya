@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { priorityLabels, label } from "@/shared/lib/labels";
 
 export default function AdminSlaPage() {
   const [data, setData] = useState<any>(null);
@@ -26,7 +27,7 @@ export default function AdminSlaPage() {
           <ul className="space-y-2 text-sm">
             {items.map((t: any) => (
               <li key={t.id} className="rounded border p-2">
-                <b>{t.subject}</b> · {t.priority} · SLA: {t.slaDueAt ? new Date(t.slaDueAt).toLocaleString("ru-RU") : "—"}
+                <b>{t.subject}</b> · {label(priorityLabels, t.priority)} · SLA: {t.slaDueAt ? new Date(t.slaDueAt).toLocaleString("ru-RU") : "—"}
                 <div className="text-muted-foreground">{t.body?.slice(0, 80)}</div>
               </li>
             ))}
