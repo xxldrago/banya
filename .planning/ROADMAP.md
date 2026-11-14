@@ -44,7 +44,6 @@
 - [x] **Phase 30: Admin platform** - Roles, configurable settings, SLA support, antifraud, SEO/banners/collections, audit deep
 - [x] **Phase 31: Data model extensions** - districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles
 - [x] **Phase 32: Extra features** - Waitlist, gift certs, packages, loyalty deep, comparison, route, AI picker
-- [ ] **Phase 33: NFR and monitoring** - Performance targets, logging, monitoring, backups, caching, search engine
 - [x] **Phase 21: Payments integration: real provider, webhook signature verification, receipts**
 - [x] **Phase 22: Notifications: real channels (email/SMS/Telegram/WhatsApp), templates with variables, delivery logging**
 - [x] **Phase 23: Booking lifecycle: extended statuses, cancellation policy with refund calc, pay-on-site, buffer/min-max duration, manual booking UI**
@@ -57,7 +56,7 @@
 - [x] **Phase 30: Admin platform: role-based admin roles, configurable platform settings, SLA support, antifraud, SEO/banners/collections, audit deep**
 - [x] **Phase 31: Data model extensions: districts, object_types, schedules, exceptions, review_photos, chat_attachments, seo_pages, banners, collections, partner_documents, user_profiles**
 - [x] **Phase 32: Extra features: waitlist, gift certificates, packages, loyalty deep, comparison, route to venue, AI picker**
-- [ ] **Phase 33: NFR and monitoring: performance targets, logging, monitoring, backups, caching, search engine**
+- [x] **Phase 33: NFR and monitoring: performance targets, logging, monitoring, backups, caching, search engine**
 
 ## Phase Details
 
