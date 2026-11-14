@@ -13,6 +13,7 @@ import { BookingWidget } from "@/components/catalog/booking-widget";
 import { VenueContacts } from "@/components/catalog/venue-contacts";
 import { WaitlistButton } from "@/components/catalog/waitlist-button";
 import { CompareToggle } from "@/components/catalog/compare-toggle";
+import { PackageList } from "@/components/catalog/package-list";
 import { PhotoGallery } from "@/components/catalog/photo-gallery";
 
 function typeLabel(type: string): string {
@@ -141,6 +142,7 @@ export default async function VenueDetailPage({
               </CardContent>
             </Card>
           ) : null}
+          <PackageList venueId={venue.id} />
         </div>
 
         <aside className="space-y-4">

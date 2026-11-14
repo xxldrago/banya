@@ -200,6 +200,7 @@ model Venue {
   favorites        Favorite[]
   services         Service[]
   specialOffers    SpecialOffer[]
+  packages         Package[]
   schedules        VenueSchedule[]
   exceptions       AvailabilityException[]
   icalSyncJobs     ICalSyncJob[]
@@ -219,6 +220,21 @@ model Amenity {
   icon      String?
   venues    VenueAmenity[]
   createdAt DateTime       @default(now())
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  venueId     String?
+  venue       Venue?   @relation(fields: [venueId], references: [id])
+  name        String
+  description String?  @db.Text
+  price       Int
+  includes    Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([venueId])
 }
 
 model GiftCertificate {
