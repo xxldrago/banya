@@ -103,6 +103,8 @@ model User {
   referredById     String?
   referredBy       User?                  @relation("Referral", fields: [referredById], references: [id])
   referrals        User[]                 @relation("Referral")
+  purchasedGifts   GiftCertificate[]      @relation("GiftPurchaser")
+  redeemedGifts    GiftCertificate[]      @relation("GiftRedeemer")
   partner          Partner?
   refreshTokens    RefreshToken[]
   bookings         Booking[]
@@ -217,6 +219,23 @@ model Amenity {
   icon      String?
   venues    VenueAmenity[]
   createdAt DateTime       @default(now())
+}
+
+model GiftCertificate {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  amount        Int // rubles
+  status        String   @default("active") // active, redeemed, expired
+  purchaserId   String?
+  purchaser     User?    @relation("GiftPurchaser", fields: [purchaserId], references: [id])
+  recipientEmail String?
+  redeemedById  String?
+  redeemedBy    User?    @relation("GiftRedeemer", fields: [redeemedById], references: [id])
+  redeemedAt    DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([code])
 }
 
 model District {
