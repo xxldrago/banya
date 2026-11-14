@@ -17,6 +17,18 @@ export async function requireAuth(req: Request): Promise<SessionUser> {
  * Role-based admin guard. `allowed` is a list of adminRole values.
  * A null adminRole is treated as superadmin (full access) for backward compatibility.
  */
+/**
+ * Role check for admin routes. `adminRole` null means superadmin.
+ * Returns true when the effective role is in `allowed` (or allowed contains "*").
+ */
+export function isAllowedAdminRole(
+  adminRole: string | null | undefined,
+  allowed: string[],
+): boolean {
+  const effective = adminRole ?? "superadmin";
+  return allowed.includes(effective) || allowed.includes("*");
+}
+
 export async function requireAdminRole(req: Request, allowed: string[]): Promise<SessionUser> {
   const user = await requireAuth(req);
   if (user.role !== "ADMIN") {

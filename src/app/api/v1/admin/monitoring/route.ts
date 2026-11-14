@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAllowedAdminRole } from "@/shared/middlewares/require-auth";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/shared/middlewares/get-session";
 import { readGlobalSnapshot, renderPrometheus } from "@/shared/lib/metrics";
@@ -17,6 +18,7 @@ function quantile(sorted: number[], q: number): number {
 export async function GET(req: NextRequest) {
   const user = await getSession(req);
   if (!user) return apiError("UNAUTHORIZED", "Unauthorized", 401);
+  if (!user || !isAllowedAdminRole(user.adminRole, ["superadmin", "support"])) return apiError("FORBIDDEN", "Insufficient admin role", 403);
   if (user.role !== "ADMIN") return apiError("FORBIDDEN", "Admin required", 403);
 
   let dbUp = false;

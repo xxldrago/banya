@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAllowedAdminRole } from "@/shared/middlewares/require-auth";
 import { prisma } from "@/lib/prisma";
 import { invalidatePrefix } from "@/shared/lib/cache";
 import { requireAuth } from "@/shared/lib/auth";
@@ -9,6 +10,7 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const user = await requireAuth(req);
+  if (!user || !isAllowedAdminRole(user.adminRole, ["superadmin", "moderator"])) return NextResponse.json({ error: "Insufficient admin role" }, { status: 403 });
   if (!user || user.role !== "ADMIN") {
     return NextResponse.json({ error: "Admin required" }, { status: 403 });
   }

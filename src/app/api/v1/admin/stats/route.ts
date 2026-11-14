@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { isAllowedAdminRole } from "@/shared/middlewares/require-auth";
 import { requireAuth } from "@/shared/middlewares/require-auth";
 import { apiSuccess, apiError } from "@/shared/lib/api-response";
 import { HttpError } from "@/shared/lib/errors";
@@ -7,6 +8,9 @@ import { prisma } from "@/shared/db/client";
 export async function GET(req: NextRequest) {
   try {
     const session = await requireAuth(req);
+    if (!session || !isAllowedAdminRole(session.adminRole, ["superadmin", "moderator", "support", "finance", "marketing", "content"])) {
+      throw new HttpError("FORBIDDEN", "Insufficient admin role", 403);
+    }
     if (session.role !== "ADMIN") {
       throw new HttpError("FORBIDDEN", "Admin access required", 403);
     }

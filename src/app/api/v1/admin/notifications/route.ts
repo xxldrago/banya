@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAllowedAdminRole } from "@/shared/middlewares/require-auth";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/shared/middlewares/get-session";
 import { apiSuccess, apiError } from "@/shared/lib/api-response";
 
 export async function GET(req: NextRequest) {
   const user = await getSession(req);
+  if (!user || !isAllowedAdminRole(user.adminRole, ["superadmin", "support", "marketing"])) return apiError("FORBIDDEN", "Insufficient admin role", 403);
   if (!user || user.role !== "ADMIN") return apiError("FORBIDDEN", "Admin required", 403);
 
   const { searchParams } = new URL(req.url);
@@ -25,6 +27,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const user = await getSession(req);
+  if (!user || !isAllowedAdminRole(user.adminRole, ["superadmin", "support", "marketing"])) return apiError("FORBIDDEN", "Insufficient admin role", 403);
   if (!user || user.role !== "ADMIN") return apiError("FORBIDDEN", "Admin required", 403);
   const body = await req.json();
   const { code, channel, subject, body: text } = body;

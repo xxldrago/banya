@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAllowedAdminRole } from "@/shared/middlewares/require-auth";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/shared/middlewares/get-session";
 import { apiSuccess, apiError } from "@/shared/lib/api-response";
 
 async function requireAdmin(req: NextRequest) {
   const user = await getSession(req);
+  if (!user || !isAllowedAdminRole(user.adminRole, ["superadmin", "moderator", "support"])) return null;
   if (!user || user.role !== "ADMIN") return null;
   return user;
 }
