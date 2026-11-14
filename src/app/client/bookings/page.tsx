@@ -6,25 +6,46 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const statusColors: Record<string, string> = {
+  DRAFT: "bg-[#F1E9DF] text-[#3B322C]",
   PENDING: "bg-[#FBF3DA] text-[#7A5E12]",
+  PENDING_CONFIRMATION: "bg-[#FBF3DA] text-[#7A5E12]",
   CONFIRMED: "bg-[#E6F4EC] text-[#1F7A4C]",
+  PAID: "bg-[#E7F0FA] text-[#23507F]",
+  IN_PROGRESS: "bg-[#FDEDE4] text-[#B33F13]",
   COMPLETED: "bg-[#E7F0FA] text-[#23507F]",
   CANCELLED: "bg-[#F1E9DF] text-[#3B322C]",
+  CANCELLED_BY_CLIENT: "bg-[#F1E9DF] text-[#3B322C]",
+  CANCELLED_BY_OWNER: "bg-[#F1E9DF] text-[#3B322C]",
+  CANCELLED_BY_ADMIN: "bg-[#F1E9DF] text-[#3B322C]",
   EXPIRED: "bg-[#FDEDE4] text-[#B33F13]",
+  NO_SHOW: "bg-[#FDEDE4] text-[#B33F13]",
+  DISPUTED: "bg-[#FDEDE4] text-[#B33F13]",
+  REFUNDED: "bg-[#E6F4EC] text-[#1F7A4C]",
 };
 
 const statusLabels: Record<string, string> = {
+  DRAFT: "Черновик",
   PENDING: "Ожидает",
+  PENDING_CONFIRMATION: "Ожидает подтверждения",
   CONFIRMED: "Подтверждено",
+  PAID: "Оплачено",
+  IN_PROGRESS: "Идёт сейчас",
   COMPLETED: "Завершено",
   CANCELLED: "Отменено",
+  CANCELLED_BY_CLIENT: "Отменено клиентом",
+  CANCELLED_BY_OWNER: "Отменено владельцем",
+  CANCELLED_BY_ADMIN: "Отменено администратором",
   EXPIRED: "Истекло",
+  NO_SHOW: "Не пришёл",
+  DISPUTED: "Спор",
+  REFUNDED: "Возврат выполнен",
 };
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"upcoming" | "past" | "cancelled">("upcoming");
+  const [refundMsg, setRefundMsg] = useState<string | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -38,10 +59,13 @@ export default function BookingsPage() {
 
   const cancel = async (id: string) => {
     const res = await fetch(`/api/v1/bookings/${id}/cancel`, { method: "PATCH", credentials: "include" });
-    if (res.ok) load();
-    else {
-      const err = await res.json().catch(() => ({}));
-      alert(err.error || err.message || "Ошибка");
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      const refund = data?.data?.refundAmount ?? 0;
+      setRefundMsg(refund > 0 ? `Отменено. Возврат: ${refund} ₽` : "Отменено без возврата");
+      load();
+    } else {
+      alert(data?.error?.message || data?.error || "Ошибка");
     }
   };
 
@@ -49,14 +73,21 @@ export default function BookingsPage() {
 
   const now = new Date();
   const filtered = bookings.filter((b) => {
-    if (tab === "upcoming") return new Date(b.startsAt) >= now && b.status !== "CANCELLED" && b.status !== "COMPLETED";
+    if (tab === "upcoming") return new Date(b.startsAt) >= now && !["CANCELLED", "CANCELLED_BY_CLIENT", "CANCELLED_BY_OWNER", "CANCELLED_BY_ADMIN", "COMPLETED", "EXPIRED", "REFUNDED"].includes(b.status);
     if (tab === "past") return b.status === "COMPLETED" || new Date(b.endsAt) < now;
-    return b.status === "CANCELLED" || b.status === "EXPIRED";
+    return ["CANCELLED", "CANCELLED_BY_CLIENT", "CANCELLED_BY_OWNER", "CANCELLED_BY_ADMIN", "EXPIRED", "REFUNDED", "NO_SHOW"].includes(b.status);
   });
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Мои бронирования</h1>
+
+      {refundMsg && (
+        <div className="rounded-md border border-[#BFE3CE] bg-[#E6F4EC] p-3 text-sm text-[#1F7A4C]">
+          {refundMsg}
+          <button className="ml-3 text-xs underline" onClick={() => setRefundMsg(null)}>закрыть</button>
+        </div>
+      )}
 
       <div className="flex gap-2 border-b">
         {(["upcoming", "past", "cancelled"] as const).map((t) => (
@@ -87,8 +118,8 @@ export default function BookingsPage() {
                       {booking.venue?.title}
                     </Link>
                   </CardTitle>
-                  <span className={`rounded-full px-2 py-1 text-xs ${statusColors[booking.status]}`}>
-                    {statusLabels[booking.status]}
+                  <span className={`rounded-full px-2 py-1 text-xs ${statusColors[booking.status] || "bg-muted"}`}>
+                    {statusLabels[booking.status] || booking.status}
                   </span>
                 </div>
               </CardHeader>
@@ -98,14 +129,22 @@ export default function BookingsPage() {
                   {new Date(booking.startsAt).toLocaleString("ru-RU")}
                 </div>
                 <div className="text-sm">
+                  <span className="text-muted-foreground">Гостей:</span> {booking.guestsCount ?? "—"}
+                </div>
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Сумма:</span> {booking.totalPrice ? `${booking.totalPrice} ₽` : "—"}
+                </div>
+                <div className="text-sm">
                   <span className="text-muted-foreground">Статус оплаты:</span>{" "}
                   {booking.payment?.status || "Не оплачивалось"}
                 </div>
+                {booking.cancellationReason && (
+                  <div className="text-sm text-muted-foreground">
+                    Причина отмены: {booking.cancellationReason}
+                  </div>
+                )}
                 <div className="flex gap-2">
-                  <Link href={`/bookings/${booking.id}`}>
-                    <Button variant="outline" size="sm">Подробнее</Button>
-                  </Link>
-                  {(booking.status === "PENDING" || booking.status === "CONFIRMED") && new Date(booking.startsAt) >= new Date() && (
+                  {(booking.status === "PENDING" || booking.status === "CONFIRMED" || booking.status === "PAID") && new Date(booking.startsAt) >= new Date() && (
                     <Button variant="outline" size="sm" onClick={() => cancel(booking.id)}>Отменить</Button>
                   )}
                 </div>
