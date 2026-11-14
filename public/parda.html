@@ -730,6 +730,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <div class="stat"><b data-count="24500">0</b><span>отзывов после визита</span></div>
     <div class="stat"><b>4<i>.8</i></b><span>средняя оценка объектов</span></div>
   </div>
+  <div id="adBanners" style="display:none;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:18px"></div>
 </div>
 
 <section class="sec" id="collections">
@@ -2788,6 +2789,25 @@ async function init(){
   if(VENUES.length)toast('Каталог загружен: '+VENUES.length+' объектов. Выберите город и забронируйте баню.');
 }
 init();
+
+// Ad banners (approved + active only, with the required ad marking)
+(async function loadAdBanners(){
+  try{
+    const r=await fetch('/api/v1/banners?position=home');
+    if(!r.ok)return;
+    const {data}=await r.json();
+    if(!data||!data.length)return;
+    const wrap=document.getElementById('adBanners');
+    if(!wrap)return;
+    wrap.style.display='grid';
+    wrap.innerHTML=data.map(b=>`
+      <a href="${(b.linkUrl||'#').replace(/"/g,'&quot;')}" target="${(b.linkUrl||'').startsWith('http')?'_blank':'_self'}" rel="noopener nofollow" style="position:relative;display:block;border-radius:14px;overflow:hidden;border:1px solid rgba(0,0,0,.08)">
+        <img src="${(b.imageUrl||'').replace(/"/g,'&quot;')}" alt="${(b.title||'').replace(/"/g,'&quot;')}" style="width:100%;height:150px;object-fit:cover;display:block">
+        <span style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px">${(b.label||'Реклама').replace(/</g,'&lt;')}</span>
+        <span style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.5);color:#fff;font-size:12px;padding:3px 10px;border-radius:999px">${(b.title||'').replace(/</g,'&lt;')}</span>
+      </a>`).join('');
+  }catch(e){/* banners are optional */}
+})();
 </script>
 </body>
 </html>

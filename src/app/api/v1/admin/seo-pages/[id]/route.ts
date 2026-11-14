@@ -27,7 +27,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!['superadmin', 'content'].includes(_ar)) return apiError("FORBIDDEN", "Insufficient admin role", 403);
   const { id } = await params;
   const body = await req.json();
-  const item = await prisma.seoPage.update({ where: { id }, data: body });
+  const item = await prisma.seoPage.update({ where: { id }, data: { ...body, moderationStatus: body.moderationStatus || "PENDING" } });
   return apiSuccess(item);
 }
 

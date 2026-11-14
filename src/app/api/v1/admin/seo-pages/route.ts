@@ -26,6 +26,6 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { slug, title, description, content, locale } = body;
   if (!slug || !title) return apiError("VALIDATION_ERROR", "slug and title required", 400);
-  const item = await prisma.seoPage.create({ data: { slug, title, description: description ?? null, content: content ?? null, locale: locale || "ru" } });
+  const item = await prisma.seoPage.create({ data: { slug, title, description: description ?? null, content: content ?? null, locale: locale || "ru", moderationStatus: "PENDING" } });
   return apiSuccess(item, undefined, 201);
 }

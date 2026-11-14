@@ -6,6 +6,7 @@ import { FilterBar } from "@/components/catalog/filter-bar";
 import { SearchBar } from "@/components/catalog/search-bar";
 import { SortDropdown } from "@/components/catalog/sort-dropdown";
 import { VenueList } from "@/components/venue-list";
+import { AdBanners } from "@/components/catalog/ad-banner";
 import { VenueMap } from "@/components/catalog/venue-map";
 import { ViewToggle } from "@/components/catalog/view-toggle";
 import type { VenueCardData } from "@/components/venue-card";
@@ -109,6 +110,8 @@ export default async function CatalogPage({
       <Suspense>
         <FilterBar />
       </Suspense>
+
+      <AdBanners position="catalog" />
 
       {view === "map" ? (
         <VenueMap cityId={cityId} />

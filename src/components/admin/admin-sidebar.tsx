@@ -23,6 +23,7 @@ const navigation: NavGroup[] = [
       { name: "Объекты", href: "/admin/venues" },
       { name: "Медиа", href: "/admin/media" },
       { name: "Контент", href: "/admin/content" },
+      { name: "Модерация", href: "/admin/moderation" },
       { name: "Справочники", href: "/admin/refs" },
     ],
   },

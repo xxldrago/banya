@@ -26,6 +26,6 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { slug, title, description, itemIds, isActive = true, sortOrder = 0 } = body;
   if (!slug || !title) return apiError("VALIDATION_ERROR", "slug and title required", 400);
-  const item = await prisma.collection.create({ data: { slug, title, description: description ?? null, itemIds: itemIds ?? null, isActive, sortOrder } });
+  const item = await prisma.collection.create({ data: { slug, title, description: description ?? null, itemIds: itemIds ?? null, isActive, sortOrder, moderationStatus: "PENDING" } });
   return apiSuccess(item, undefined, 201);
 }

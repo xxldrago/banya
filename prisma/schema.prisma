@@ -336,6 +336,7 @@ model SeoPage {
   description String?  @db.Text
   content     String?  @db.Text
   locale      String   @default("ru")
+  moderationStatus String @default("APPROVED") // PENDING | APPROVED | REJECTED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -351,6 +352,7 @@ model Banner {
   startsAt  DateTime?
   endsAt    DateTime?
   sortOrder Int      @default(0)
+  moderationStatus String @default("APPROVED") // PENDING | APPROVED | REJECTED
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -363,6 +365,7 @@ model Collection {
   itemIds     Json? // array of venue ids
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
+  moderationStatus String @default("APPROVED") // PENDING | APPROVED | REJECTED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

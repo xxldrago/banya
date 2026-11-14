@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   const { title, imageUrl, linkUrl, position = "home", label = "Реклама", isActive = true, startsAt, endsAt, sortOrder = 0 } = body;
   if (!title || !imageUrl) return apiError("VALIDATION_ERROR", "title and imageUrl required", 400);
   const item = await prisma.banner.create({
-    data: { title, imageUrl, linkUrl: linkUrl || null, position, label, isActive, startsAt: startsAt ? new Date(startsAt) : null, endsAt: endsAt ? new Date(endsAt) : null, sortOrder },
+    data: { title, imageUrl, linkUrl: linkUrl || null, position, label, isActive, startsAt: startsAt ? new Date(startsAt) : null, endsAt: endsAt ? new Date(endsAt) : null, sortOrder, moderationStatus: "PENDING" },
   });
   return apiSuccess(item, undefined, 201);
 }
