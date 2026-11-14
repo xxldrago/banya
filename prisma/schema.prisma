@@ -83,6 +83,7 @@ model City {
   isActive  Boolean  @default(true)
   timezone  String   @default("Europe/Moscow")
   venues    Venue[]
+  districts District[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -94,7 +95,8 @@ model User {
   passwordHash     String
   role             Role                   @default(CLIENT)
   status           String                 @default("active")
-  adminRole        String?                // superadmin | moderator | support | finance | marketing | content
+  adminRole        String?
+  profile          UserProfile?
   referredById     String?
   referredBy       User?                  @relation("Referral", fields: [referredById], references: [id])
   referrals        User[]                 @relation("Referral")
@@ -135,6 +137,8 @@ model Partner {
   staffMembers StaffMember[]
   tariffs     Tariff[]
   chatTemplates ChatTemplate[]
+  documents    PartnerDocument[]
+  payoutDetails PartnerPayoutDetails?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -150,6 +154,11 @@ model Venue {
   description      String           @db.Text
   address          String
   district         String?
+  districtId       String?
+  districtRef      District?  @relation(fields: [districtId], references: [id])
+  objectType       String?
+  objectTypeId     String?
+  objectTypeRef    ObjectType? @relation(fields: [objectTypeId], references: [id])
   metroStation     String?
   phone            String?
   email            String?
@@ -205,6 +214,62 @@ model Amenity {
   icon      String?
   venues    VenueAmenity[]
   createdAt DateTime       @default(now())
+}
+
+model District {
+  id        String   @id @default(cuid())
+  name      String
+  cityId    String
+  city      City     @relation(fields: [cityId], references: [id])
+  venues    Venue[]
+  createdAt DateTime @default(now())
+
+  @@unique([cityId, name])
+  @@index([cityId])
+}
+
+model ObjectType {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  venues    Venue[]
+  createdAt DateTime @default(now())
+}
+
+model UserProfile {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName   String?
+  lastName    String?
+  birthDate   DateTime?
+  avatarUrl   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PartnerDocument {
+  id        String   @id @default(cuid())
+  partnerId String
+  partner   Partner  @relation(fields: [partnerId], references: [id])
+  type      String // inn, ogrn, passport, etc.
+  url       String
+  status    String   @default("pending") // pending, approved, rejected
+  createdAt DateTime @default(now())
+
+  @@index([partnerId])
+}
+
+model PartnerPayoutDetails {
+  id            String   @id @default(cuid())
+  partnerId     String   @unique
+  partner       Partner  @relation(fields: [partnerId], references: [id])
+  bankName      String?
+  accountNumber String?
+  bik           String?
+  recipientName String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Content {

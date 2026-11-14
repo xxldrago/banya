@@ -301,6 +301,34 @@ async function main() {
     "gornaya-banya-ahun": "Хоста",
   };
 
+  // --- Districts & Object types ---
+  const objectTypes = [
+    { name: "Баня", slug: "bath" },
+    { name: "Сауна", slug: "sauna" },
+    { name: "Хамам", slug: "hamam" },
+    { name: "Офуро", slug: "ofuro" },
+    { name: "Банный комплекс", slug: "complex" },
+  ];
+  for (const ot of objectTypes) {
+    await prisma.objectType.upsert({ where: { slug: ot.slug }, update: { name: ot.name }, create: ot });
+  }
+  const objectTypeBySlug = new Map((await prisma.objectType.findMany()).map((o) => [o.slug, o]));
+
+  const cityDistricts: Record<string, string[]> = {
+    moscow: ["Центр", "Истра", "Север"],
+    spb: ["Центральный", "Приморский", "Невский"],
+    sochi: ["Хоста", "Центр", "Адлер"],
+  };
+  const districtMap: Record<string, string> = {};
+  for (const [citySlug, names] of Object.entries(cityDistricts)) {
+    const city = await prisma.city.findUnique({ where: { slug: citySlug } });
+    if (!city) continue;
+    for (const name of names) {
+      const d = await prisma.district.upsert({ where: { cityId_name: { cityId: city.id, name } }, update: {}, create: { cityId: city.id, name } });
+      districtMap[citySlug + ":" + name] = d.id;
+    }
+  }
+
   // --- Venues with photos + amenities ---
   for (const v of venues) {
     const city = await prisma.city.findUnique({ where: { slug: v.citySlug } });
@@ -315,6 +343,9 @@ async function main() {
         description: v.description,
         address: v.address,
         district: districts[v.slug] || null,
+        districtId: districtMap[city.slug + ':' + (districts[v.slug] || '')] || null,
+        objectType: v.type,
+        objectTypeId: objectTypeBySlug.get(v.type)?.id || null,
         cityId: city.id,
         partnerId: partner.id,
         lat: v.lat,
@@ -337,6 +368,9 @@ async function main() {
         description: v.description,
         address: v.address,
         district: districts[v.slug] || null,
+        districtId: districtMap[city.slug + ':' + (districts[v.slug] || '')] || null,
+        objectType: v.type,
+        objectTypeId: objectTypeBySlug.get(v.type)?.id || null,
         lat: v.lat,
         lng: v.lng,
         type: v.type,
