@@ -133,6 +133,7 @@ model Partner {
   certificates Certificate[]
   staffMembers StaffMember[]
   tariffs     Tariff[]
+  chatTemplates ChatTemplate[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -351,6 +352,7 @@ model ChatParticipant {
   userId         String
   user           User                @relation(fields: [userId], references: [id])
   role           ChatParticipantRole
+  lastReadAt     DateTime?
 
   @@unique([conversationId, userId])
   @@index([userId])
@@ -363,9 +365,35 @@ model ChatMessage {
   senderId       String
   sender         User             @relation(fields: [senderId], references: [id])
   body           String           @db.Text
+  attachments    ChatAttachment[]
   createdAt      DateTime         @default(now())
 
   @@index([conversationId, createdAt])
+}
+
+model ChatAttachment {
+  id        String      @id @default(cuid())
+  messageId String
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  url       String
+  type      String      // image / document
+  name      String?
+  size      Int?
+  createdAt DateTime    @default(now())
+
+  @@index([messageId])
+}
+
+model ChatTemplate {
+  id        String   @id @default(cuid())
+  partnerId String
+  partner   Partner  @relation(fields: [partnerId], references: [id])
+  name      String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([partnerId])
 }
 
 model Payment {

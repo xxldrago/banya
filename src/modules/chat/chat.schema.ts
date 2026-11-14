@@ -3,8 +3,19 @@ import { z } from "zod";
 export const SendMessageSchema = z.object({
   body: z
     .string()
-    .min(1, "Message body is required")
-    .max(2000, "Message body must be at most 2000 characters"),
+    .max(2000, "Message body must be at most 2000 characters")
+    .optional()
+    .default(""),
+  attachments: z
+    .array(
+      z.object({
+        url: z.string().min(1),
+        type: z.string().min(1),
+        name: z.string().optional(),
+        size: z.number().int().optional(),
+      }),
+    )
+    .optional(),
 });
 
 export type SendMessageInput = z.infer<typeof SendMessageSchema>;

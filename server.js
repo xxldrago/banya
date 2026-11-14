@@ -60,10 +60,10 @@ app.prepare().then(() => {
       
       ws.on("message", async (data) => {
         try {
-          const { body } = JSON.parse(data.toString());
+          const { body, attachments } = JSON.parse(data.toString());
           // Save message to DB
           const { sendMessage } = require("./src/modules/chat/chat.service");
-          const message = await sendMessage(conversationId, ws.userId, body);
+          const message = await sendMessage(conversationId, ws.userId, body || "", attachments);
           // Broadcast to all participants in conversation
           const conns = connections.get(conversationId);
           if (conns) {

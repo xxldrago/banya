@@ -69,7 +69,7 @@ export async function POST(
       );
     }
 
-    const message = await sendMessage(id, session.sub, parsed.data.body);
+    const message = await sendMessage(id, session.sub, parsed.data.body, parsed.data.attachments);
     return apiSuccess(message, undefined);
   } catch (err) {
     if (err instanceof HttpError) {

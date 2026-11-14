@@ -176,6 +176,7 @@ export async function getMessages(
     },
     include: {
       sender: true,
+      attachments: true,
     },
     orderBy: { createdAt: "asc" },
     take: limit,
@@ -192,12 +193,21 @@ export async function sendMessage(
   conversationId: string,
   userId: string,
   body: string,
+  attachments?: { url: string; type: string; name?: string; size?: number }[],
 ) {
-  // Validate body length
-  if (!body || body.trim().length === 0) {
-    throw new HttpError("VALIDATION_ERROR", "Message body is required", 400);
+  // Antispam: max 20 messages per minute per user
+  const oneMinuteAgo = new Date(Date.now() - 60000);
+  const recentCount = await prisma.chatMessage.count({
+    where: { senderId: userId, createdAt: { gte: oneMinuteAgo } },
+  });
+  if (recentCount >= 20) {
+    throw new HttpError("RATE_LIMITED", "Too many messages, please slow down", 429);
   }
-  if (body.length > 2000) {
+
+  if ((!body || body.trim().length === 0) && (!attachments || attachments.length === 0)) {
+    throw new HttpError("VALIDATION_ERROR", "Message body or attachment is required", 400);
+  }
+  if (body && body.length > 2000) {
     throw new HttpError(
       "VALIDATION_ERROR",
       "Message body must be at most 2000 characters",
@@ -205,7 +215,6 @@ export async function sendMessage(
     );
   }
 
-  // Check access
   const conversation = await prisma.chatConversation.findUnique({
     where: { id: conversationId },
   });
@@ -223,14 +232,58 @@ export async function sendMessage(
     data: {
       conversationId,
       senderId: userId,
-      body,
+      body: body || "",
+      attachments: attachments && attachments.length > 0 ? {
+        create: attachments.map((a) => ({
+          url: a.url,
+          type: a.type,
+          name: a.name ?? null,
+          size: a.size ?? null,
+        })),
+      } : undefined,
     },
     include: {
       sender: true,
+      attachments: true,
     },
   });
 
   return message;
+}
+
+/**
+ * Mark conversation as read for a user (update lastReadAt).
+ */
+export async function markRead(conversationId: string, userId: string) {
+  await prisma.chatParticipant.updateMany({
+    where: { conversationId, userId },
+    data: { lastReadAt: new Date() },
+  });
+  return { success: true };
+}
+
+/**
+ * List chat templates for a partner.
+ */
+export async function getChatTemplates(partnerUserId: string) {
+  const partner = await prisma.partner.findFirst({ where: { userId: partnerUserId } });
+  if (!partner) return [];
+  return prisma.chatTemplate.findMany({ where: { partnerId: partner.id }, orderBy: { createdAt: "desc" } });
+}
+
+export async function createChatTemplate(partnerUserId: string, name: string, body: string) {
+  const partner = await prisma.partner.findFirst({ where: { userId: partnerUserId } });
+  if (!partner) throw new HttpError("PARTNER_NOT_FOUND", "Partner not found", 404);
+  return prisma.chatTemplate.create({ data: { partnerId: partner.id, name, body } });
+}
+
+export async function deleteChatTemplate(partnerUserId: string, id: string) {
+  const partner = await prisma.partner.findFirst({ where: { userId: partnerUserId } });
+  if (!partner) throw new HttpError("PARTNER_NOT_FOUND", "Partner not found", 404);
+  const t = await prisma.chatTemplate.findUnique({ where: { id } });
+  if (!t || t.partnerId !== partner.id) throw new HttpError("NOT_FOUND", "Not found", 404);
+  await prisma.chatTemplate.delete({ where: { id } });
+  return { success: true };
 }
 
 /**
