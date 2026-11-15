@@ -779,8 +779,589 @@ async function main() {
   // --- Статусы партнёра/объектов для витрины ---
   await prisma.partner.update({ where: { id: partner.id }, data: { status: "active" } }).catch(() => {});
 
+  // ============================================================
+  // === 5 дополнительных бань с полным набором демо-данных ======
+  // ============================================================
+  const cityBySlug = new Map((await prisma.city.findMany()).map((c) => [c.slug, c]));
+  const amenityBySlug = new Map((await prisma.amenity.findMany()).map((a) => [a.slug, a]));
+  const objectTypeBySlug = new Map((await prisma.objectType.findMany()).map((o) => [o.slug, o]));
+
+  type DemoBookingDef = {
+    user: string;
+    from: Date;
+    to: Date;
+    status: any;
+    mode?: any;
+    total: number;
+    paid?: number;
+    payment?: { status: any; amount: number; paidAt?: Date };
+    review?: {
+      rating: number;
+      comment: string;
+      status: "APPROVED" | "PENDING";
+      criteria: Record<string, number>;
+      response?: string;
+    };
+  };
+
+  type DemoVenueDef = {
+    key: string;
+    title: string;
+    slug: string;
+    citySlug: string;
+    district: string;
+    type: "bath" | "sauna";
+    description: string;
+    address: string;
+    lat: number;
+    lng: number;
+    minGuests: number;
+    maxGuests: number;
+    minDuration: number;
+    priceFrom: number;
+    rules: string;
+    amenities: string[];
+    openTime: string;
+    closeTime: string;
+    closedDay: number | null;
+    photos: Array<{ url: string; key: string; category: string }>;
+    videos: Array<{ url: string; key: string }>;
+    services: Array<{ name: string; price: number }>;
+    exceptions: Array<{ offset: number; isClosed: boolean; openTime?: string; closeTime?: string; reason: string }>;
+    bookings: DemoBookingDef[];
+  };
+
+  const photo = (key: string, n: number, url: string, category: string) => ({
+    url,
+    key: `venues/${key}/photo-${n}.jpg`,
+    category,
+  });
+
+  const demoVenues: DemoVenueDef[] = [
+    {
+      key: "nv1",
+      title: "Баня «Серебряный бор»",
+      slug: "demo-banya-serebryanyy-bor",
+      citySlug: "moscow",
+      district: "Север",
+      type: "bath",
+      description:
+        "Русская баня на дровах в Серебряном бору: жаркая парная, купель с ледяной водой и просторная терраса с видом на сосны. Отлично подходит для семейного отдыха и встреч с друзьями.",
+      address: "г. Москва, ул. Таманская, 14",
+      lat: 55.7869,
+      lng: 37.4678,
+      minGuests: 2,
+      maxGuests: 10,
+      minDuration: 120,
+      priceFrom: 5500,
+      rules: "Курение только на улице. В парной не распивать напитки. Дети до 12 лет — со взрослыми.",
+      amenities: ["parking", "pool", "barbecue", "wifi"],
+      openTime: "10:00",
+      closeTime: "23:00",
+      closedDay: 1,
+      photos: [
+        photo("demo-banya-serebryanyy-bor", 1, "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200", "парная"),
+        photo("demo-banya-serebryanyy-bor", 2, "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1200", "отдых"),
+        photo("demo-banya-serebryanyy-bor", 3, "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1200", "бассейн"),
+        photo("demo-banya-serebryanyy-bor", 4, "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200", "территория"),
+      ],
+      videos: [{ url: "https://www.w3schools.com/html/mov_bbb.mp4", key: "venues/demo-banya-serebryanyy-bor/tour.mp4" }],
+      services: [
+        { name: "Банщик", price: 1200 },
+        { name: "Веник дубовый", price: 350 },
+        { name: "Аренда купели", price: 1500 },
+        { name: "Чайный набор", price: 500 },
+        { name: "Мангальная зона", price: 800 },
+      ],
+      exceptions: [
+        { offset: 9, isClosed: true, reason: "Плановое техническое обслуживание парной" },
+        { offset: 12, isClosed: false, openTime: "14:00", closeTime: "22:00", reason: "Сокращённый день — частное мероприятие" },
+      ],
+      bookings: [
+        { user: "client@banya.local", from: daysFromNow(2, 18), to: daysFromNow(2, 21), status: "CONFIRMED", mode: "instant", total: 16500, paid: 16500, payment: { status: "SUCCESS", amount: 1650000, paidAt: daysFromNow(-1, 14) } },
+        { user: "petrov@banya.local", from: daysFromNow(6, 12), to: daysFromNow(6, 16), status: "PENDING", mode: "confirm", total: 22000, payment: { status: "PENDING", amount: 2200000 } },
+        { user: "client@banya.local", from: daysFromNow(-9, 18), to: daysFromNow(-9, 21), status: "COMPLETED", mode: "instant", total: 16500, paid: 16500, payment: { status: "SUCCESS", amount: 1650000, paidAt: daysFromNow(-10, 10) }, review: { rating: 5, comment: "Прекрасная баня! Пар мягкий, купель бодрит, территория ухоженная. Отдельное спасибо банщику.", status: "APPROVED", criteria: { cleanliness: 5, sauna: 5, service: 5, accuracy: 5, value: 4 } } },
+        { user: "volkova@banya.local", from: daysFromNow(-20, 15), to: daysFromNow(-20, 19), status: "COMPLETED", mode: "instant", total: 22000, paid: 22000, payment: { status: "SUCCESS", amount: 2200000, paidAt: daysFromNow(-21, 9) }, review: { rating: 4, comment: "Хорошая баня, но в выходной было многовато людей на парковке. В остальном всё достойно.", status: "PENDING", criteria: { cleanliness: 4, sauna: 5, service: 4, accuracy: 4, value: 4 } } },
+      ],
+    },
+    {
+      key: "nv2",
+      title: "Сауна «Аврора»",
+      slug: "demo-sauna-aurora",
+      citySlug: "spb",
+      district: "Центральный",
+      type: "sauna",
+      description:
+        "Современная финская сауна в центре Петербурга. Сухой жар, панорамные окна, зона отдыха с проектором и небольшая купель. Идеально для встречи вдвоём или небольшой компанией.",
+      address: "г. Санкт-Петербург, ул. Марата, 18",
+      lat: 59.9311,
+      lng: 30.3609,
+      minGuests: 2,
+      maxGuests: 6,
+      minDuration: 90,
+      priceFrom: 4200,
+      rules: "Только мягкая обувь. Алкоголь — по согласованию. После 23:00 соблюдать тишину.",
+      amenities: ["wifi", "parking"],
+      openTime: "12:00",
+      closeTime: "00:00",
+      closedDay: 2,
+      photos: [
+        photo("demo-sauna-aurora", 1, "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=1200", "парная"),
+        photo("demo-sauna-aurora", 2, "https://images.unsplash.com/photo-1515362670799-8b4fb9697ddd?w=1200", "отдых"),
+        photo("demo-sauna-aurora", 3, "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=1200", "душ"),
+        photo("demo-sauna-aurora", 4, "https://images.unsplash.com/photo-1517133995379-5f69e7a4f27a?w=1200", "экстерьер"),
+      ],
+      videos: [{ url: "https://www.w3schools.com/html/mov_bbb.mp4", key: "venues/demo-sauna-aurora/tour.mp4" }],
+      services: [
+        { name: "Банщик", price: 1000 },
+        { name: "Ароматерапия", price: 600 },
+        { name: "Веник берёзовый", price: 300 },
+        { name: "Чайный набор", price: 450 },
+      ],
+      exceptions: [
+        { offset: 5, isClosed: true, reason: "Санитарный день" },
+        { offset: 11, isClosed: false, openTime: "16:00", closeTime: "23:00", reason: "Утренняя бронь под корпоратив" },
+      ],
+      bookings: [
+        { user: "sidorova@banya.local", from: daysFromNow(3, 19), to: daysFromNow(3, 22), status: "PAID", mode: "instant", total: 12600, paid: 12600, payment: { status: "SUCCESS", amount: 1260000, paidAt: daysFromNow(-1, 12) } },
+        { user: "client@banya.local", from: daysFromNow(-12, 19), to: daysFromNow(-12, 22), status: "COMPLETED", mode: "instant", total: 12600, paid: 12600, payment: { status: "SUCCESS", amount: 1260000, paidAt: daysFromNow(-13, 11) }, review: { rating: 5, comment: "Очень уютно и стильно. Проектор и купель — то, что нужно после рабочей недели.", status: "APPROVED", criteria: { cleanliness: 5, sauna: 5, service: 5, accuracy: 5, value: 5 }, response: "Спасибо большое! Ждём вас снова — для постоянных гостей у нас есть скидка." } },
+        { user: "kuznetsov@banya.local", from: daysFromNow(-2, 20), to: daysFromNow(-2, 23), status: "CANCELLED_BY_CLIENT", mode: "instant", total: 12600, paid: 12600, payment: { status: "REFUNDED", amount: 1260000, paidAt: daysFromNow(-4, 10) } },
+        { user: "smirnov@banya.local", from: daysFromNow(8, 18), to: daysFromNow(8, 21), status: "PENDING", mode: "confirm", total: 12600, payment: { status: "PENDING", amount: 1260000 } },
+      ],
+    },
+    {
+      key: "nv3",
+      title: "Баня «Морская»",
+      slug: "demo-banya-morskaya",
+      citySlug: "sochi",
+      district: "Хоста",
+      type: "bath",
+      description:
+        "Баня у моря с открытым подогреваемым бассейном, просторной парной и террасой для барбекю. Из зоны отдыха открывается вид на горы и море — идеальное место для отпуска.",
+      address: "г. Сочи, ул. Самшитовая, 6",
+      lat: 43.5678,
+      lng: 39.7531,
+      minGuests: 2,
+      maxGuests: 12,
+      minDuration: 120,
+      priceFrom: 7000,
+      rules: "В бассейне без стеклянной посуды. Курение — только на террасе. Мангал разжигает персонал.",
+      amenities: ["pool", "barbecue", "parking", "wifi"],
+      openTime: "09:00",
+      closeTime: "22:00",
+      closedDay: 3,
+      photos: [
+        photo("demo-banya-morskaya", 1, "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200", "парная"),
+        photo("demo-banya-morskaya", 2, "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=1200", "бассейн"),
+        photo("demo-banya-morskaya", 3, "https://images.unsplash.com/photo-1545071840-e0ee8ad9c588?w=1200", "территория"),
+        photo("demo-banya-morskaya", 4, "https://images.unsplash.com/photo-1583416750470-965b2707b355?w=1200", "отдых"),
+        photo("demo-banya-morskaya", 5, "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1200", "экстерьер"),
+      ],
+      videos: [
+        { url: "https://www.w3schools.com/html/mov_bbb.mp4", key: "venues/demo-banya-morskaya/tour.mp4" },
+        { url: "https://www.w3schools.com/html/mov_bbb.mp4", key: "venues/demo-banya-morskaya/pool.mp4" },
+      ],
+      services: [
+        { name: "Банщик", price: 1500 },
+        { name: "Веник дубовый", price: 400 },
+        { name: "Подогрев бассейна", price: 2000 },
+        { name: "Трансфер из аэропорта", price: 3000 },
+        { name: "Мангальная зона", price: 1000 },
+      ],
+      exceptions: [
+        { offset: 7, isClosed: true, reason: "Закрытая аренда под свадьбу" },
+        { offset: 14, isClosed: false, openTime: "12:00", closeTime: "20:00", reason: "Сокращённый день" },
+        { offset: 21, isClosed: true, reason: "Праздничный день — объект закрыт" },
+      ],
+      bookings: [
+        { user: "petrov@banya.local", from: daysFromNow(4, 16), to: daysFromNow(4, 20), status: "CONFIRMED", mode: "instant", total: 28000, paid: 28000, payment: { status: "SUCCESS", amount: 2800000, paidAt: daysFromNow(-1, 16) } },
+        { user: "client@banya.local", from: hoursFromNow(-1), to: hoursFromNow(2), status: "IN_PROGRESS", mode: "instant", total: 21000, paid: 21000, payment: { status: "SUCCESS", amount: 2100000, paidAt: hoursFromNow(-2) } },
+        { user: "sidorova@banya.local", from: daysFromNow(-15, 14), to: daysFromNow(-15, 18), status: "COMPLETED", mode: "instant", total: 28000, paid: 28000, payment: { status: "SUCCESS", amount: 2800000, paidAt: daysFromNow(-16, 10) }, review: { rating: 5, comment: "Вид на море, тёплый бассейн, отзывчивый персонал. Отпуск удался!", status: "APPROVED", criteria: { cleanliness: 5, sauna: 5, service: 5, accuracy: 5, value: 5 } } },
+        { user: "volkova@banya.local", from: daysFromNow(-25, 12), to: daysFromNow(-25, 16), status: "COMPLETED", mode: "instant", total: 28000, paid: 28000, payment: { status: "SUCCESS", amount: 2800000, paidAt: daysFromNow(-26, 9) }, review: { rating: 4, comment: "Всё понравилось, но в день заезда не работал один из кранов в душе. Быстро починили.", status: "APPROVED", criteria: { cleanliness: 4, sauna: 5, service: 4, accuracy: 4, value: 4 }, response: "Спасибо за отзыв и терпение! Кран заменили, ждём вас снова." } },
+        { user: "kuznetsov@banya.local", from: daysFromNow(5, 18), to: daysFromNow(5, 22), status: "CANCELLED_BY_OWNER", mode: "instant", total: 28000, paid: 28000, payment: { status: "REFUNDED", amount: 2800000, paidAt: daysFromNow(-2, 12) } },
+      ],
+    },
+    {
+      key: "nv4",
+      title: "Банный комплекс «Кедр»",
+      slug: "demo-bani-kedr",
+      citySlug: "moscow",
+      district: "Истра",
+      type: "bath",
+      description:
+        "Большой банный комплекс для компаний до 20 человек: две парные, бассейн 8 метров, бильярд, караоке и мангальная зона. Подходит для корпоративов и семейных праздников.",
+      address: "Московская обл., Истринский р-н, д. Кедрово, 3",
+      lat: 55.9142,
+      lng: 36.8567,
+      minGuests: 4,
+      maxGuests: 20,
+      minDuration: 180,
+      priceFrom: 9000,
+      rules: "Громкая музыка после 23:00 запрещена. Мангал — только в выделенной зоне. Депозит за ущерб — 5000 ₽.",
+      amenities: ["parking", "pool", "barbecue", "wifi"],
+      openTime: "10:00",
+      closeTime: "23:00",
+      closedDay: null,
+      photos: [
+        photo("demo-bani-kedr", 1, "https://images.unsplash.com/photo-1515362670799-8b4fb9697ddd?w=1200", "парная"),
+        photo("demo-bani-kedr", 2, "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1200", "бассейн"),
+        photo("demo-bani-kedr", 3, "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200", "отдых"),
+        photo("demo-bani-kedr", 4, "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1200", "бильярд"),
+        photo("demo-bani-kedr", 5, "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200", "территория"),
+      ],
+      videos: [{ url: "https://www.w3schools.com/html/mov_bbb.mp4", key: "venues/demo-bani-kedr/tour.mp4" }],
+      services: [
+        { name: "Банщик", price: 1800 },
+        { name: "Набор веников", price: 400 },
+        { name: "Кейтеринг", price: 5000 },
+        { name: "Бильярд", price: 1200 },
+        { name: "Трансфер", price: 3500 },
+      ],
+      exceptions: [
+        { offset: 3, isClosed: true, reason: "Корпоративная аренда всего комплекса" },
+        { offset: 10, isClosed: false, openTime: "15:00", closeTime: "23:00", reason: "Утреннее обслуживание бассейна" },
+        { offset: 17, isClosed: true, reason: "Техническое обслуживание парных" },
+      ],
+      bookings: [
+        { user: "sidorova@banya.local", from: daysFromNow(5, 12), to: daysFromNow(5, 18), status: "PAID", mode: "instant", total: 54000, paid: 54000, payment: { status: "SUCCESS", amount: 5400000, paidAt: daysFromNow(-1, 10) } },
+        { user: "smirnov@banya.local", from: daysFromNow(9, 17), to: daysFromNow(9, 22), status: "PENDING", mode: "confirm", total: 45000, payment: { status: "PENDING", amount: 4500000 } },
+        { user: "client@banya.local", from: daysFromNow(-7, 15), to: daysFromNow(-7, 21), status: "COMPLETED", mode: "instant", total: 54000, paid: 54000, payment: { status: "SUCCESS", amount: 5400000, paidAt: daysFromNow(-8, 12) }, review: { rating: 5, comment: "Отмечали юбилей — всё прошло идеально. Бассейн большой, персонал незаметный и заботливый.", status: "APPROVED", criteria: { cleanliness: 5, sauna: 5, service: 5, accuracy: 5, value: 5 } } },
+        { user: "kuznetsov@banya.local", from: daysFromNow(-18, 12), to: daysFromNow(-18, 17), status: "COMPLETED", mode: "instant", total: 45000, paid: 45000, payment: { status: "SUCCESS", amount: 4500000, paidAt: daysFromNow(-19, 9) }, review: { rating: 4, comment: "Хороший комплекс для компании. Немного не хватило парковочных мест.", status: "PENDING", criteria: { cleanliness: 4, sauna: 4, service: 5, accuracy: 4, value: 4 } } },
+        { user: "petrov@banya.local", from: daysFromNow(-1, 10), to: daysFromNow(-1, 14), status: "EXPIRED", mode: "confirm", total: 36000, payment: { status: "EXPIRED", amount: 3600000 } },
+      ],
+    },
+    {
+      key: "nv5",
+      title: "Сауна «Янтарь»",
+      slug: "demo-sauna-yantar",
+      citySlug: "spb",
+      district: "Невский",
+      type: "sauna",
+      description:
+        "Компактная сауна с инфракрасными панелями и традиционной парной, небольшим бассейном и уютной комнатой отдыха. Удобно добираться от метро, есть парковка.",
+      address: "г. Санкт-Петербург, Невский пр., 112",
+      lat: 59.9207,
+      lng: 30.3812,
+      minGuests: 2,
+      maxGuests: 8,
+      minDuration: 60,
+      priceFrom: 4800,
+      rules: "Не более 8 гостей. Курить запрещено. Питомцы — по предварительному согласованию.",
+      amenities: ["wifi", "parking", "pool"],
+      openTime: "11:00",
+      closeTime: "23:00",
+      closedDay: 4,
+      photos: [
+        photo("demo-sauna-yantar", 1, "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=1200", "парная"),
+        photo("demo-sauna-yantar", 2, "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=1200", "бассейн"),
+        photo("demo-sauna-yantar", 3, "https://images.unsplash.com/photo-1517133995379-5f69e7a4f27a?w=1200", "отдых"),
+        photo("demo-sauna-yantar", 4, "https://images.unsplash.com/photo-1545071840-e0ee8ad9c588?w=1200", "экстерьер"),
+      ],
+      videos: [{ url: "https://www.w3schools.com/html/mov_bbb.mp4", key: "venues/demo-sauna-yantar/tour.mp4" }],
+      services: [
+        { name: "Банщик", price: 1100 },
+        { name: "Ароматерапия", price: 700 },
+        { name: "Веник берёзовый", price: 300 },
+        { name: "Чайный набор", price: 450 },
+      ],
+      exceptions: [
+        { offset: 6, isClosed: true, reason: "Ремонт вентиляции" },
+        { offset: 13, isClosed: false, openTime: "15:00", closeTime: "23:00", reason: "Сокращённый день" },
+      ],
+      bookings: [
+        { user: "volkova@banya.local", from: daysFromNow(6, 18), to: daysFromNow(6, 21), status: "CONFIRMED", mode: "instant", total: 14400, paid: 14400, payment: { status: "SUCCESS", amount: 1440000, paidAt: daysFromNow(-1, 18) } },
+        { user: "client@banya.local", from: daysFromNow(2, 20), to: daysFromNow(2, 23), status: "PAID", mode: "instant", total: 14400, paid: 14400, payment: { status: "SUCCESS", amount: 1440000, paidAt: daysFromNow(-1, 20) } },
+        { user: "sidorova@banya.local", from: daysFromNow(-11, 19), to: daysFromNow(-11, 22), status: "COMPLETED", mode: "instant", total: 14400, paid: 14400, payment: { status: "SUCCESS", amount: 1440000, paidAt: daysFromNow(-12, 10) }, review: { rating: 5, comment: "Отличная сауна рядом с домом. Чисто, тепло, приветливый администратор.", status: "APPROVED", criteria: { cleanliness: 5, sauna: 5, service: 5, accuracy: 5, value: 5 } } },
+        { user: "petrov@banya.local", from: daysFromNow(1, 21), to: daysFromNow(1, 23), status: "CANCELLED_BY_CLIENT", mode: "instant", total: 9600, paid: 9600, payment: { status: "REFUNDED", amount: 960000, paidAt: daysFromNow(-1, 9) } },
+        { user: "kuznetsov@banya.local", from: daysFromNow(-22, 18), to: daysFromNow(-22, 21), status: "COMPLETED", mode: "instant", total: 14400, paid: 14400, payment: { status: "SUCCESS", amount: 1440000, paidAt: daysFromNow(-23, 11) }, review: { rating: 4, comment: "Хорошее место, но бассейн небольшой. Для компании из 4 человек — в самый раз.", status: "APPROVED", criteria: { cleanliness: 4, sauna: 4, service: 5, accuracy: 4, value: 4 } } },
+      ],
+    },
+  ];
+
+  let extraBookings = 0;
+  let extraReviews = 0;
+
+  for (const def of demoVenues) {
+    const city = cityBySlug.get(def.citySlug);
+    if (!city) throw new Error(`Город не найден: ${def.citySlug}`);
+    const district = await prisma.district.findUnique({
+      where: { cityId_name: { cityId: city.id, name: def.district } },
+    });
+    const objectType = objectTypeBySlug.get(def.type);
+
+    const venue = await prisma.venue.upsert({
+      where: { slug: def.slug },
+      update: {
+        title: def.title,
+        description: def.description,
+        address: def.address,
+        district: def.district,
+        districtId: district?.id ?? null,
+        objectType: def.type,
+        objectTypeId: objectType?.id ?? null,
+        cityId: city.id,
+        partnerId: partner.id,
+        lat: def.lat,
+        lng: def.lng,
+        type: def.type,
+        minGuests: def.minGuests,
+        maxGuests: def.maxGuests,
+        minDuration: def.minDuration,
+        priceFrom: def.priceFrom,
+        rules: def.rules,
+        status: "PUBLISHED",
+        moderationStatus: "APPROVED",
+        publishedAt: new Date(),
+      },
+      create: {
+        id: `demo-venue-${def.key}`,
+        partnerId: partner.id,
+        cityId: city.id,
+        title: def.title,
+        slug: def.slug,
+        description: def.description,
+        address: def.address,
+        district: def.district,
+        districtId: district?.id ?? null,
+        objectType: def.type,
+        objectTypeId: objectType?.id ?? null,
+        lat: def.lat,
+        lng: def.lng,
+        type: def.type,
+        minGuests: def.minGuests,
+        maxGuests: def.maxGuests,
+        minDuration: def.minDuration,
+        priceFrom: def.priceFrom,
+        rules: def.rules,
+        status: "PUBLISHED",
+        moderationStatus: "APPROVED",
+        publishedAt: new Date(),
+      },
+    });
+
+    // --- Фотографии ---
+    for (const [i, p] of def.photos.entries()) {
+      await prisma.venuePhoto.upsert({
+        where: { id: `demo-${def.key}-photo-${i + 1}` },
+        update: { url: p.url, key: p.key, sortOrder: i, isCover: i === 0, category: p.category },
+        create: {
+          id: `demo-${def.key}-photo-${i + 1}`,
+          venueId: venue.id,
+          url: p.url,
+          key: p.key,
+          sortOrder: i,
+          isCover: i === 0,
+          category: p.category,
+        },
+      });
+    }
+
+    // --- Видео ---
+    for (const [i, v] of def.videos.entries()) {
+      await prisma.venueVideo.upsert({
+        where: { id: `demo-${def.key}-video-${i + 1}` },
+        update: { url: v.url, key: v.key, sortOrder: i, isCover: i === 0, status: "APPROVED" },
+        create: {
+          id: `demo-${def.key}-video-${i + 1}`,
+          venueId: venue.id,
+          url: v.url,
+          key: v.key,
+          sortOrder: i,
+          isCover: i === 0,
+          status: "APPROVED",
+          moderatedAt: daysFromNow(-10),
+        },
+      });
+    }
+
+    // --- Удобства ---
+    await prisma.venueAmenity.deleteMany({ where: { venueId: venue.id } });
+    for (const slug of def.amenities) {
+      const amenity = amenityBySlug.get(slug);
+      if (!amenity) continue;
+      await prisma.venueAmenity.create({ data: { venueId: venue.id, amenityId: amenity.id } });
+    }
+
+    // --- Услуги ---
+    for (const [i, s] of def.services.entries()) {
+      await prisma.service.upsert({
+        where: { id: `demo-${def.key}-svc-${i + 1}` },
+        update: { name: s.name, defaultPrice: s.price },
+        create: {
+          id: `demo-${def.key}-svc-${i + 1}`,
+          venueId: venue.id,
+          name: s.name,
+          defaultPrice: s.price,
+        },
+      });
+    }
+
+    // --- Расписание на 7 дней ---
+    for (let day = 0; day < 7; day++) {
+      await prisma.venueSchedule.upsert({
+        where: { venueId_dayOfWeek: { venueId: venue.id, dayOfWeek: day } },
+        update: {
+          openTime: def.openTime,
+          closeTime: def.closeTime,
+          isClosed: def.closedDay === day,
+        },
+        create: {
+          id: `demo-${def.key}-sched-${day}`,
+          venueId: venue.id,
+          dayOfWeek: day,
+          openTime: def.openTime,
+          closeTime: def.closeTime,
+          isClosed: def.closedDay === day,
+        },
+      });
+    }
+
+    // --- Исключения доступности (разные даты занятости) ---
+    for (const [i, e] of def.exceptions.entries()) {
+      await prisma.availabilityException.upsert({
+        where: { id: `demo-${def.key}-exc-${i + 1}` },
+        update: {
+          date: daysFromNow(e.offset, 0),
+          isClosed: e.isClosed,
+          openTime: e.openTime ?? null,
+          closeTime: e.closeTime ?? null,
+          reason: e.reason,
+        },
+        create: {
+          id: `demo-${def.key}-exc-${i + 1}`,
+          venueId: venue.id,
+          date: daysFromNow(e.offset, 0),
+          isClosed: e.isClosed,
+          openTime: e.openTime ?? null,
+          closeTime: e.closeTime ?? null,
+          reason: e.reason,
+        },
+      });
+    }
+
+    // --- Бронирования, платежи и отзывы ---
+    for (const [i, b] of def.bookings.entries()) {
+      const bookingId = `demo-${def.key}-bk-${i + 1}`;
+      extraBookings++;
+      await prisma.booking.upsert({
+        where: { id: bookingId },
+        update: { status: b.status, totalPrice: b.total, paidAmount: b.paid ?? null },
+        create: {
+          id: bookingId,
+          venueId: venue.id,
+          userId: C(b.user),
+          startsAt: b.from,
+          endsAt: b.to,
+          status: b.status,
+          bookingMode: (b.mode ?? "instant") as any,
+          totalPrice: b.total,
+          paidAmount: b.paid ?? null,
+          createdAt: b.from,
+        },
+      });
+
+      await prisma.bookingStatusHistory.upsert({
+        where: { id: `${bookingId}-h1` },
+        update: {},
+        create: { id: `${bookingId}-h1`, bookingId, fromStatus: null, toStatus: "PENDING", createdAt: b.from },
+      });
+      if (b.status !== "PENDING") {
+        await prisma.bookingStatusHistory.upsert({
+          where: { id: `${bookingId}-h2` },
+          update: {},
+          create: {
+            id: `${bookingId}-h2`,
+            bookingId,
+            fromStatus: "PENDING",
+            toStatus: b.status,
+            createdAt: new Date(b.from.getTime() + 3600 * 1000),
+          },
+        });
+      }
+
+      if (b.status === "CANCELLED_BY_CLIENT") {
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: {
+            cancellationReason: "Изменились планы",
+            cancelledBy: "client",
+            cancelledAt: daysFromNow(-1, 12),
+          },
+        });
+      }
+      if (b.status === "CANCELLED_BY_OWNER") {
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: {
+            cancellationReason: "Объект закрыт на техническое обслуживание",
+            cancelledBy: "owner",
+            cancelledAt: daysFromNow(-2, 9),
+          },
+        });
+      }
+
+      if (b.payment) {
+        await prisma.payment.upsert({
+          where: { id: `demo-${def.key}-pay-${i + 1}` },
+          update: { status: b.payment.status, paidAt: b.payment.paidAt ?? null },
+          create: {
+            id: `demo-${def.key}-pay-${i + 1}`,
+            bookingId,
+            provider: "mock",
+            providerPaymentId: `mock_${def.key}_${i + 1}`,
+            amount: b.payment.amount,
+            status: b.payment.status,
+            paidAt: b.payment.paidAt ?? null,
+            refundedAt: b.payment.status === "REFUNDED" ? daysFromNow(-1, 15) : null,
+            createdAt: b.payment.paidAt ?? new Date(now.getTime() - 86400 * 1000),
+          },
+        });
+      }
+
+      if (b.review) {
+        const reviewId = `demo-${def.key}-rev-${i + 1}`;
+        extraReviews++;
+        await prisma.review.upsert({
+          where: { id: reviewId },
+          update: { status: b.review.status, rating: b.review.rating, comment: b.review.comment },
+          create: {
+            id: reviewId,
+            bookingId,
+            venueId: venue.id,
+            userId: C(b.user),
+            rating: b.review.rating,
+            comment: b.review.comment,
+            criteria: b.review.criteria,
+            status: b.review.status,
+            createdAt: new Date(b.to.getTime() + 86400 * 1000),
+          },
+        });
+        if (b.review.response) {
+          await prisma.reviewResponse.upsert({
+            where: { id: `${reviewId}-resp` },
+            update: {},
+            create: {
+              id: `${reviewId}-resp`,
+              reviewId,
+              userId: partnerUser.id,
+              body: b.review.response,
+              createdAt: new Date(b.to.getTime() + 2 * 86400 * 1000),
+            },
+          });
+          await prisma.review.update({
+            where: { id: reviewId },
+            data: { response: b.review.response, responseAt: new Date(b.to.getTime() + 2 * 86400 * 1000) },
+          });
+        }
+      }
+    }
+  }
+
   console.log("=== Демо-данные: готово ===");
   console.log(`Броней: ${bookings.length}, платежей: ${payments.length}, отзывов: ${reviews.length}`);
+  console.log(
+    `Дополнительных объектов: ${demoVenues.length}, броней: ${extraBookings}, отзывов: ${extraReviews}`,
+  );
 }
 
 main()
