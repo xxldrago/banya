@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/components/logout-button";
 
 type NavItem = { name: string; href: string };
 type NavGroup = { title: string; items: NavItem[] };
@@ -89,6 +90,9 @@ export function AdminSidebar() {
           </div>
         ))}
       </nav>
+      <div className="mt-4 border-t pt-4">
+        <LogoutButton />
+      </div>
     </aside>
   );
 }

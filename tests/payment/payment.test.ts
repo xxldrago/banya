@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { POST as initiatePay } from "@/app/api/v1/bookings/[id]/pay/route";
 import { GET as getPaymentStatus } from "@/app/api/v1/payments/status/[bookingId]/route";
 import { POST as webhook } from "@/app/api/v1/payments/webhook/route";
@@ -7,6 +7,9 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/shared/db/client";
 import { signAccess } from "@/modules/auth/token.service";
 import { simulatePaymentSuccess } from "@/modules/payments/payment.service";
+
+// Данные сюита маркируются префиксом email — демо-данные не затрагиваются.
+const TEST_PREFIX = "pay-test-";
 
 function req(url: string, init?: RequestInit) {
   return new NextRequest(new URL(url, "http://localhost:3000"), init as any);
@@ -18,20 +21,35 @@ describe("Payment API", () => {
   let venueId: string;
   let bookingId: string;
 
-  beforeAll(async () => {
-    // Clean up test data
-    await prisma.promoCodeUsage.deleteMany({});
-    await prisma.payment.deleteMany({});
-    await prisma.review.deleteMany({});
-    await prisma.bookingService.deleteMany({});
-    await prisma.chatMessage.deleteMany({});
-    await prisma.chatConversation.deleteMany({});
-    await prisma.booking.deleteMany({});
+  /** Удаляет только данные этого сюита (пользователи с префиксом pay-test-). */
+  async function cleanupOwnData() {
+    const users = await prisma.user.findMany({ where: { email: { startsWith: TEST_PREFIX } }, select: { id: true } });
+    const ids = users.map((u) => u.id);
+    if (ids.length === 0) return;
+    const bookings = await prisma.booking.findMany({ where: { userId: { in: ids } }, select: { id: true } });
+    const bookingIds = bookings.map((b) => b.id);
+    await prisma.bookingStatusHistory.deleteMany({ where: { bookingId: { in: bookingIds } } });
+    await prisma.bookingService.deleteMany({ where: { bookingId: { in: bookingIds } } });
+    await prisma.refund.deleteMany({ where: { payment: { bookingId: { in: bookingIds } } } });
+    await prisma.payment.deleteMany({ where: { bookingId: { in: bookingIds } } });
+    await prisma.booking.deleteMany({ where: { id: { in: bookingIds } } });
+    await prisma.user.deleteMany({ where: { id: { in: ids } } });
+  }
 
-    const user = await prisma.user.findFirst({ where: { email: { contains: "client" } } });
-    if (!user) throw new Error("No client user found");
+  beforeAll(async () => {
+    // Чистим только остатки предыдущих запусков этого сюита — глобальные таблицы не трогаем.
+    await cleanupOwnData();
+
+    const user = await prisma.user.create({
+      data: {
+        email: `${TEST_PREFIX}client-${Date.now()}@example.com`,
+        passwordHash: "x",
+        role: "CLIENT",
+        status: "active",
+      },
+    });
     clientUserId = user.id;
-    clientToken = await signAccess(user.id, user.role);
+    clientToken = await signAccess(user.id, "CLIENT");
 
     const venue = await prisma.venue.findFirst({ where: { status: "PUBLISHED" } });
     if (!venue) throw new Error("No venue found");
@@ -49,6 +67,10 @@ describe("Payment API", () => {
       },
     });
     bookingId = booking.id;
+  });
+
+  afterAll(async () => {
+    await cleanupOwnData();
   });
 
   it("POST /api/v1/bookings/[id]/pay initiates mock payment", async () => {

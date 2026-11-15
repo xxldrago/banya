@@ -1,9 +1,13 @@
 // @vitest-environment node
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { POST as cancelBookingRoute } from "@/app/api/v1/bookings/[id]/cancel/route";
 import { NextRequest } from "next/server";
 import { prisma } from "@/shared/db/client";
 import { signAccess } from "@/modules/auth/token.service";
+import { cleanupTestDataByUserPrefix, createTestUser } from "../helpers/test-cleanup";
+
+// Данные сюита маркируются префиксом email — демо-данные не затрагиваются.
+const TEST_PREFIX = "cancel-test-";
 
 let clientToken: string;
 let clientUserId: string;
@@ -28,14 +32,20 @@ async function makeBooking(startsAt: Date, endsAt: Date) {
 
 describe("Booking cancellation refunds", () => {
   beforeAll(async () => {
-    const user = await prisma.user.findFirst({ where: { email: { contains: "client" } } });
-    if (!user) throw new Error("No client user found");
+    // Чистим только остатки предыдущих запусков этого сюита.
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
+
+    const user = await createTestUser(TEST_PREFIX);
     clientUserId = user.id;
-    clientToken = await signAccess(user.id, user.role);
+    clientToken = await signAccess(user.id, "CLIENT");
 
     const venue = await prisma.venue.findFirst({ where: { status: "PUBLISHED" } });
     if (!venue) throw new Error("No venue found");
     venueId = venue.id;
+  });
+
+  afterAll(async () => {
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
   });
 
   it("full refund when cancelled >= freeHours (72h) before start", async () => {

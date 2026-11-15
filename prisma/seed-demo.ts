@@ -42,6 +42,27 @@ async function main() {
   if (venues.length < 5) throw new Error("Ожидалось 5 объектов из основного seed");
   const [vBanya, vLoft, vSever, vNeva, vAhun] = venues;
 
+  // --- Объект на модерации (очередь модерации в админке) ---
+  const pendingVenue = await prisma.venue.upsert({
+    where: { slug: "demo-pending-bath" },
+    update: { moderationStatus: "PENDING", status: "DRAFT" },
+    create: {
+      id: "demo-venue-pending",
+      partnerId: partner.id,
+      cityId: vBanya.cityId,
+      title: "Баня «Пар над Невой» (на модерации)",
+      slug: "demo-pending-bath",
+      description:
+        "Новый объект партнёра, ожидает проверки модератором: фотографии, описание и документы загружены.",
+      address: "Санкт-Петербург, наб. реки Мойки, 12",
+      type: "bath",
+      maxGuests: 8,
+      priceFrom: 3200,
+      status: "DRAFT",
+      moderationStatus: "PENDING",
+    },
+  });
+
   // --- Дополнительные админы (для вкладки «Сотрудники» и SLA-автоназначения) ---
   const supportAdmin = await prisma.user.upsert({
     where: { email: "support@banya.local" },
@@ -111,7 +132,7 @@ async function main() {
   // Профиль основного клиента
   await prisma.userProfile.upsert({
     where: { userId: mainClient.id },
-    update: {},
+    update: { firstName: "Дмитрий", lastName: "Иванов", birthDate: new Date(1990, 5, 15) },
     create: { id: "demo-up-main-client", userId: mainClient.id, firstName: "Дмитрий", lastName: "Иванов", birthDate: new Date(1990, 5, 15) },
   });
 

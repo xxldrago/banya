@@ -1,7 +1,11 @@
 // @vitest-environment node
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { prisma } from "@/shared/db/client";
 import { createReview } from "@/modules/reviews/review.service";
+import { cleanupTestDataByUserPrefix, createTestUser } from "../helpers/test-cleanup";
+
+// Данные сюита маркируются префиксом email — демо-данные не затрагиваются.
+const TEST_PREFIX = "integration-review-test-";
 
 describe("Integration: Review → Rating", () => {
   let venueId: string;
@@ -9,29 +13,34 @@ describe("Integration: Review → Rating", () => {
   let bookingId: string;
 
   beforeAll(async () => {
-    try {
-      await prisma.review.deleteMany({});
-      await prisma.booking.deleteMany({});
-    } catch (e) {
-      // ignore
-    }
+    // Чистим только остатки предыдущих запусков этого сюита.
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
 
     const venue = await prisma.venue.findFirst({ where: { status: "PUBLISHED" } });
-    const client = await prisma.user.findFirst({ where: { role: "CLIENT" } });
     if (venue) venueId = venue.id;
-    if (client) clientUserId = client.id;
+    const client = await createTestUser(TEST_PREFIX);
+    clientUserId = client.id;
+
+    // Собственная завершённая бронь — не зависим от демо-данных.
+    const booking = await prisma.booking.create({
+      data: {
+        venueId,
+        userId: clientUserId,
+        startsAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+        endsAt: new Date(Date.now() - 86400000).toISOString(),
+        bookingMode: "instant",
+        status: "COMPLETED",
+      },
+    });
+    bookingId = booking.id;
+  });
+
+  afterAll(async () => {
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
   });
 
   it("creates a review for a completed booking", async () => {
-    // Note: requires a completed booking; skip if none
-    const completedBooking = await prisma.booking.findFirst({
-      where: { status: "COMPLETED", userId: clientUserId },
-    });
-    if (!completedBooking) {
-      console.log("No completed booking found, skipping");
-      return;
-    }
-    const review = await createReview(completedBooking.id, clientUserId, {
+    const review = await createReview(bookingId, clientUserId, {
       rating: 5,
       comment: "Отличная баня!",
     });

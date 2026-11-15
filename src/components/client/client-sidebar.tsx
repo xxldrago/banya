@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/components/logout-button";
 
 const navigation = [
   { name: "Дашборд", href: "/client" },
@@ -41,6 +42,9 @@ export function ClientSidebar() {
           </Link>
         ))}
       </nav>
+      <div className="mt-4 border-t pt-4">
+        <LogoutButton />
+      </div>
     </aside>
   );
 }

@@ -1,8 +1,12 @@
 // @vitest-environment node
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { prisma } from "@/shared/db/client";
 import { createBooking } from "@/modules/bookings/booking.service";
 import { initiatePayment, processPaymentWebhook } from "@/modules/payments/payment.service";
+import { cleanupTestDataByUserPrefix, createTestUser } from "../helpers/test-cleanup";
+
+// Данные сюита маркируются префиксом email — демо-данные не затрагиваются.
+const TEST_PREFIX = "integration-bpc-test-";
 
 describe("Integration: Booking → Payment → Chat", () => {
   let venueId: string;
@@ -10,22 +14,17 @@ describe("Integration: Booking → Payment → Chat", () => {
   let bookingId: string;
 
   beforeAll(async () => {
-    try {
-      await prisma.payment.deleteMany({});
-      await prisma.promoCodeUsage.deleteMany({});
-      await prisma.review.deleteMany({});
-      await prisma.chatMessage.deleteMany({});
-      await prisma.chatConversation.deleteMany({});
-      await prisma.bookingService.deleteMany({});
-      await prisma.booking.deleteMany({});
-    } catch (e) {
-      // ignore cleanup errors
-    }
+    // Чистим только остатки предыдущих запусков этого сюита.
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
 
     const venue = await prisma.venue.findFirst({ where: { status: "PUBLISHED" } });
-    const client = await prisma.user.findFirst({ where: { role: "CLIENT" } });
+    const client = await createTestUser(TEST_PREFIX);
     if (venue) venueId = venue.id;
-    if (client) clientUserId = client.id;
+    clientUserId = client.id;
+  });
+
+  afterAll(async () => {
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
   });
 
   it("creates confirm-mode booking", async () => {

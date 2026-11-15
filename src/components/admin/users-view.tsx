@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,10 +69,20 @@ export function UsersView({ roleFilter }: { roleFilter?: string }) {
               {users.map((user) => (
                 <div key={user.id} className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
                   <div>
-                    <div className="font-medium">{user.email}</div>
-                    <div className="text-sm text-muted-foreground">{label(roleLabels, user.role)} · {label(userStatusLabels, user.status)}</div>
+                    <Link href={`/admin/users/${user.id}`} className="font-medium hover:underline">
+                      {user.email}
+                    </Link>
+                    <div className="text-sm text-muted-foreground">
+                      {user.firstName || user.lastName
+                        ? `${[user.firstName, user.lastName].filter(Boolean).join(" ")} · `
+                        : ""}
+                      {label(roleLabels, user.role)} · {label(userStatusLabels, user.status)}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Link href={`/admin/users/${user.id}`}>
+                      <Button variant="outline" size="sm">Подробнее</Button>
+                    </Link>
                     <select className="rounded border px-2 py-1 text-sm" value={user.role} onChange={(e) => update(user.id, { role: e.target.value })}>
                       <option value="CLIENT">Клиент</option>
                       <option value="PARTNER">Партнёр</option>

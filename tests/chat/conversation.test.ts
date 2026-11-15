@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { NextRequest } from "next/server";
 import { prisma } from "@/shared/db/client";
 import { signAccess } from "@/modules/auth/token.service";
@@ -8,6 +8,9 @@ import { GET as listConversations } from "@/app/api/v1/chat/conversations/route"
 import { GET as getConversation } from "@/app/api/v1/chat/conversations/[id]/route";
 import { GET as getMessages, POST as postMessage } from "@/app/api/v1/chat/conversations/[id]/messages/route";
 import { GET as adminListConversations } from "@/app/api/v1/admin/chat/conversations/route";
+
+// Все данные этого сюита маркируются префиксом email — демо-данные не затрагиваются.
+const TEST_PREFIX = "chat-test-";
 
 function withCookie(token: string) {
   return { headers: { cookie: `${ACCESS_COOKIE_NAME}=${token}` } };
@@ -20,28 +23,50 @@ describe("Chat conversations", () => {
   let conversationId: string;
   let nonParticipantToken: string;
 
+  /** Удаляет только данные этого сюита (пользователи с префиксом chat-test-). */
+  async function cleanupOwnData() {
+    const users = await prisma.user.findMany({ where: { email: { startsWith: TEST_PREFIX } }, select: { id: true } });
+    const ids = users.map((u) => u.id);
+    if (ids.length === 0) return;
+    const bookings = await prisma.booking.findMany({ where: { userId: { in: ids } }, select: { id: true } });
+    const bookingIds = bookings.map((b) => b.id);
+    const convs = await prisma.chatConversation.findMany({ where: { bookingId: { in: bookingIds } }, select: { id: true } });
+    const convIds = convs.map((c) => c.id);
+    if (convIds.length > 0) {
+      await prisma.chatMessage.deleteMany({ where: { conversationId: { in: convIds } } });
+      await prisma.chatParticipant.deleteMany({ where: { conversationId: { in: convIds } } });
+      await prisma.chatConversation.deleteMany({ where: { id: { in: convIds } } });
+    }
+    await prisma.bookingStatusHistory.deleteMany({ where: { bookingId: { in: bookingIds } } });
+    await prisma.bookingService.deleteMany({ where: { bookingId: { in: bookingIds } } });
+    await prisma.refund.deleteMany({ where: { payment: { bookingId: { in: bookingIds } } } });
+    await prisma.payment.deleteMany({ where: { bookingId: { in: bookingIds } } });
+    await prisma.booking.deleteMany({ where: { id: { in: bookingIds } } });
+    await prisma.user.deleteMany({ where: { id: { in: ids } } });
+  }
+
   beforeAll(async () => {
-    // Clean up test data from other test suites
-    await prisma.promoCodeUsage.deleteMany({});
-    await prisma.payment.deleteMany({});
-    await prisma.review.deleteMany({});
-    await prisma.bookingService.deleteMany({});
-    await prisma.chatMessage.deleteMany({});
-    await prisma.chatConversation.deleteMany({});
-    await prisma.booking.deleteMany({});
+    // Чистим только остатки предыдущих запусков этого сюита — глобальные таблицы не трогаем.
+    await cleanupOwnData();
 
-    const client = await prisma.user.findUnique({ where: { email: "client@banya.local" } });
-    const partner = await prisma.user.findUnique({ where: { email: "partner@banya.local" } });
+    const stamp = Date.now();
+    const testClient = await prisma.user.create({
+      data: { email: `${TEST_PREFIX}client-${stamp}@example.com`, passwordHash: "x", role: "CLIENT", status: "active" },
+    });
+    const testPartner = await prisma.user.create({
+      data: { email: `${TEST_PREFIX}partner-${stamp}@example.com`, passwordHash: "x", role: "PARTNER", status: "active" },
+    });
+
+    clientToken = await signAccess(testClient.id, "CLIENT");
+    partnerToken = await signAccess(testPartner.id, "PARTNER");
+
     const admin = await prisma.user.findUnique({ where: { email: "admin@banya.local" } });
-
-    clientToken = await signAccess(client!.id, "CLIENT");
-    partnerToken = await signAccess(partner!.id, "PARTNER");
     adminToken = await signAccess(admin!.id, "ADMIN");
 
     // Create a non-participant user
     const np = await prisma.user.create({
       data: {
-        email: `np-${Date.now()}@example.com`,
+        email: `${TEST_PREFIX}np-${stamp}@example.com`,
         passwordHash: "x",
         role: "CLIENT",
         status: "active",
@@ -54,7 +79,7 @@ describe("Chat conversations", () => {
     const testBooking = await prisma.booking.create({
       data: {
         venueId: venue!.id,
-        userId: client!.id,
+        userId: testClient.id,
         startsAt: new Date(Date.now() + 86400000 * 50).toISOString(),
         endsAt: new Date(Date.now() + 86400000 * 50 + 7200000).toISOString(),
         bookingMode: "instant",
@@ -68,8 +93,8 @@ describe("Chat conversations", () => {
         bookingId: testBooking.id,
         participants: {
           create: [
-            { userId: client!.id, role: "client" },
-            { userId: partner!.id, role: "partner" },
+            { userId: testClient.id, role: "client" },
+            { userId: testPartner.id, role: "partner" },
           ],
         },
       },
@@ -78,6 +103,10 @@ describe("Chat conversations", () => {
       },
     });
     conversationId = conv.id;
+  });
+
+  afterAll(async () => {
+    await cleanupOwnData();
   });
 
   it("lists user's conversations", async () => {
@@ -93,7 +122,7 @@ describe("Chat conversations", () => {
   it("returns empty for user without bookings", async () => {
     const client2 = await prisma.user.create({
       data: {
-        email: `empty-${Date.now()}@example.com`,
+        email: `${TEST_PREFIX}empty-${Date.now()}@example.com`,
         passwordHash: "x",
         role: "CLIENT",
         status: "active",

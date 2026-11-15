@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { venueStatusLabels, moderationStatusLabels, label, formatRubles } from "@/shared/lib/labels";
@@ -54,7 +55,9 @@ export default function AdminVenuesPage() {
               {venues.map((venue) => (
                 <div key={venue.id} className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
                   <div>
-                    <div className="font-medium">{venue.title}</div>
+                    <Link href={`/admin/venues/${venue.id}`} className="font-medium hover:underline">
+                      {venue.title}
+                    </Link>
                     <div className="text-sm text-muted-foreground">
                       {venue.city?.name} • {label(venueStatusLabels, venue.status)} •{" "}
                       {label(moderationStatusLabels, venue.moderationStatus)} • от {formatRubles(venue.priceFrom)}
@@ -62,6 +65,9 @@ export default function AdminVenuesPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    <Link href={`/admin/venues/${venue.id}`}>
+                      <Button variant="outline" size="sm">Подробнее</Button>
+                    </Link>
                     <Button size="sm" onClick={() => moderate(venue.id, "approve")}>Одобрить</Button>
                     <Button variant="outline" size="sm" onClick={() => moderate(venue.id, "reject")}>Отклонить</Button>
                   </div>

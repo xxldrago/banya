@@ -1,10 +1,14 @@
 // @vitest-environment node
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { POST as createBooking } from "@/app/api/v1/bookings/route";
 import { GET as getAvailability } from "@/app/api/v1/venues/[slug]/availability/route";
 import { NextRequest } from "next/server";
 import { prisma } from "@/shared/db/client";
 import { signAccess } from "@/modules/auth/token.service";
+import { cleanupTestDataByUserPrefix, createTestUser } from "../helpers/test-cleanup";
+
+// Данные сюита маркируются префиксом email — демо-данные не затрагиваются.
+const TEST_PREFIX = "create-test-";
 
 let clientToken: string;
 let clientUserId: string;
@@ -17,24 +21,21 @@ function req(url: string, init?: RequestInit) {
 
 describe("Booking API", () => {
   beforeAll(async () => {
-    const user = await prisma.user.findFirst({ where: { email: { contains: "client" } } });
-    if (!user) throw new Error("No client user found");
+    // Чистим только остатки предыдущих запусков этого сюита — глобальные таблицы не трогаем.
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
+
+    const user = await createTestUser(TEST_PREFIX);
     clientUserId = user.id;
-    clientToken = await signAccess(user.id, user.role);
+    clientToken = await signAccess(user.id, "CLIENT");
 
     const venue = await prisma.venue.findFirst({ where: { status: "PUBLISHED" } });
     if (!venue) throw new Error("No venue found");
     venueSlug = venue.slug;
     venueId = venue.id;
+  });
 
-    // Clean test data
-    await prisma.promoCodeUsage.deleteMany({});
-    await prisma.payment.deleteMany({});
-    await prisma.review.deleteMany({});
-    await prisma.bookingService.deleteMany({});
-    await prisma.chatMessage.deleteMany({});
-    await prisma.chatConversation.deleteMany({});
-    await prisma.booking.deleteMany({});
+  afterAll(async () => {
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
   });
 
   it("GET /api/v1/venues/[slug]/availability returns 30-min slots", async () => {

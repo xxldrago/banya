@@ -1,8 +1,12 @@
 // @vitest-environment node
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { prisma } from "@/shared/db/client";
 import { createBooking } from "@/modules/bookings/booking.service";
 import { HttpError } from "@/shared/lib/errors";
+import { cleanupTestDataByUserPrefix, createTestUser } from "../helpers/test-cleanup";
+
+// Данные сюита маркируются префиксом email — демо-данные не затрагиваются.
+const TEST_PREFIX = "avail-test-";
 
 describe("Booking availability", () => {
   let venueId: string;
@@ -10,22 +14,16 @@ describe("Booking availability", () => {
   let serviceId: string;
 
   beforeAll(async () => {
-    // Clean test bookings first
-    await prisma.promoCodeUsage.deleteMany({});
-    await prisma.payment.deleteMany({});
-    await prisma.review.deleteMany({});
-    await prisma.bookingService.deleteMany({});
-    await prisma.chatMessage.deleteMany({});
-    await prisma.chatConversation.deleteMany({});
-    await prisma.booking.deleteMany({});
+    // Чистим только остатки предыдущих запусков этого сюита — глобальные таблицы не трогаем.
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
 
     const venues = await prisma.venue.findMany({ where: { status: "PUBLISHED" } });
     const venue = venues[venues.length - 1] || venues[0];
-    const client = await prisma.user.findFirst({ where: { role: "CLIENT" } });
+    const client = await createTestUser(TEST_PREFIX);
     const service = await prisma.service.findFirst({ where: { venueId: venue?.id } }) || await prisma.service.findFirst();
 
     if (venue) venueId = venue.id;
-    if (client) clientUserId = client.id;
+    clientUserId = client.id;
     if (service) serviceId = service.id;
   });
 
@@ -197,5 +195,9 @@ describe("Booking availability", () => {
 
     expect(conversation).toBeTruthy();
     expect(conversation?.participants.length).toBe(2);
+  });
+
+  afterAll(async () => {
+    await cleanupTestDataByUserPrefix(TEST_PREFIX);
   });
 });

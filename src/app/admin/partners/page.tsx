@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { partnerStatusLabels, label } from "@/shared/lib/labels";
 
 export default function AdminPartnersPage() {
@@ -26,11 +28,18 @@ export default function AdminPartnersPage() {
         <div className="space-y-2">
           {partners.map((p) => (
             <Card key={p.id}>
-              <CardContent className="py-3">
-                <div className="font-medium">{p.companyName || p.user?.email}</div>
-                <div className="text-sm text-muted-foreground">
-                  {p.user?.email} · статус: {label(partnerStatusLabels, p.status)} · объектов: {p.venues?.length ?? 0}
+              <CardContent className="flex flex-wrap items-center justify-between gap-2 py-3">
+                <div>
+                  <Link href={`/admin/partners/${p.id}`} className="font-medium hover:underline">
+                    {p.companyName || p.user?.email}
+                  </Link>
+                  <div className="text-sm text-muted-foreground">
+                    {p.user?.email} · статус: {label(partnerStatusLabels, p.status)} · объектов: {p.venues?.length ?? 0}
+                  </div>
                 </div>
+                <Link href={`/admin/partners/${p.id}`}>
+                  <Button variant="outline" size="sm">Подробнее</Button>
+                </Link>
               </CardContent>
             </Card>
           ))}

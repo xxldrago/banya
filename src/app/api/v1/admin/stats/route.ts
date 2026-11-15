@@ -15,31 +15,52 @@ export async function GET(req: NextRequest) {
       throw new HttpError("FORBIDDEN", "Admin access required", 403);
     }
 
-    const [usersCount, venuesCount, bookingsCount, reviewsCount, paymentsCount] = await Promise.all([
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const [
+      usersCount,
+      venuesCount,
+      bookingsCount,
+      reviewsCount,
+      paymentsCount,
+      revenueAgg,
+      monthRevenueAgg,
+      pendingVenues,
+      pendingReviews,
+      pendingBanners,
+      pendingCollections,
+    ] = await Promise.all([
       prisma.user.count(),
       prisma.venue.count(),
       prisma.booking.count(),
       prisma.review.count({ where: { status: "APPROVED" } }),
       prisma.payment.count({ where: { status: "SUCCESS" } }),
+      // Выручка — сумма всех успешных платежей (в копейках)
+      prisma.payment.aggregate({ where: { status: "SUCCESS" }, _sum: { amount: true } }),
+      prisma.payment.aggregate({
+        where: { status: "SUCCESS", paidAt: { gte: monthStart } },
+        _sum: { amount: true },
+      }),
+      prisma.venue.count({ where: { moderationStatus: "PENDING" } }),
+      prisma.review.count({ where: { status: "PENDING" } }),
+      prisma.banner.count({ where: { moderationStatus: "PENDING" } }),
+      prisma.collection.count({ where: { moderationStatus: "PENDING" } }),
     ]);
-
-    const bookings = await prisma.booking.findMany({
-      where: { status: "CONFIRMED" },
-      include: { services: true, payment: true },
-    });
-
-    let revenue = 0;
-    for (const booking of bookings) {
-      if (booking.payment && booking.payment.status === "SUCCESS") {
-        revenue += booking.payment.amount;
-      } else {
-        const servicesTotal = booking.services.reduce((acc, bs) => acc + bs.priceAtBooking * bs.quantity, 0);
-        revenue += servicesTotal || 500000;
-      }
-    }
 
     const recentBookings = await prisma.booking.findMany({
       take: 10,
+      orderBy: { createdAt: "desc" },
+      include: {
+        venue: { select: { title: true } },
+        user: { select: { email: true } },
+        payment: { select: { amount: true, status: true } },
+      },
+    });
+
+    const recentReviews = await prisma.review.findMany({
+      take: 5,
       orderBy: { createdAt: "desc" },
       include: {
         venue: { select: { title: true } },
@@ -54,9 +75,17 @@ export async function GET(req: NextRequest) {
         bookings: bookingsCount,
         reviews: reviewsCount,
         payments: paymentsCount,
-        revenue: revenue / 100, // in rubles
+        // В рубли
+        revenue: Math.round((revenueAgg._sum.amount ?? 0) / 100),
+        monthRevenue: Math.round((monthRevenueAgg._sum.amount ?? 0) / 100),
+        pendingModeration: pendingVenues + pendingReviews + pendingBanners + pendingCollections,
+        pendingVenues,
+        pendingReviews,
+        pendingBanners,
+        pendingCollections,
       },
       recentBookings,
+      recentReviews,
     });
   } catch (err) {
     if (err instanceof HttpError) {

@@ -294,14 +294,14 @@ describe("auth middlewares", () => {
   });
 
   it("requireRole(['PARTNER']) throws 403 Forbidden for CLIENT", async () => {
-    const user = { sub: userId, role: "CLIENT" };
+    const user = { sub: userId, role: "CLIENT", adminRole: null };
     expect(() => requireRole(["PARTNER"])(user)).toThrowError(
       expect.objectContaining({ name: "Forbidden", status: 403 }),
     );
   });
 
   it("requireRole(['ADMIN']) passes for ADMIN", async () => {
-    const user = { sub: userId, role: "ADMIN" };
+    const user = { sub: userId, role: "ADMIN", adminRole: null };
     const checked = requireRole(["ADMIN"])(user);
     expect(checked.role).toBe("ADMIN");
   });
