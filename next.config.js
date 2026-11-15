@@ -46,8 +46,8 @@ const nextConfig = {
   },
 
   // Output configuration
-  output: 'standalone',
-
+  // The app runs via the custom server.js (WebSocket chat), so the full
+  // .next build + node_modules are shipped instead of Next's standalone bundle.
   // Disable Next.js logo in build output
   poweredByHeader: false,
 };
